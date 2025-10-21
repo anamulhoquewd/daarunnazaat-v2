@@ -75,8 +75,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               href="/"
               className="flex items-center gap-2 font-semibold md:flex"
             >
-              {/* <Image src={logo} width={50} height={50} alt="TASFIN" /> */}
-              <span className="hidden md:inline-block">TASFIN</span>
+              {/* <Image src={logo} width={50} height={50} alt="darunnazat" /> */}
+              <span className="hidden md:inline-block">DARUNNAZAT</span>
             </Link>
           </div>
 
@@ -91,7 +91,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                       .split(" ")
                       .map((ch) => ch[0])
                       .join("")
-                      .toUpperCase() || "TASFIN"}
+                      .toUpperCase() || "DARUNNAZAT"}
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>

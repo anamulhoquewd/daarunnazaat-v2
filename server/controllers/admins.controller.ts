@@ -13,8 +13,9 @@ import { generateAccessToken, setAuthCookie } from "../utils";
 import { accessTokenExpMinutes, refreshTokenExpDays } from "../config/default";
 import { Admin } from "../models/admins.model";
 
-const JWT_REFRESH_SECRET =
-  (process.env.JWT_REFRESH_SECRET as string) || "JWT_REFRESH_SECRET";
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
+
+const DOMAIN_NAME = process.env.DOMAIN_NAME as string;
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
@@ -265,23 +266,23 @@ export const refreshToken = async (c: Context) => {
 
 // signOut admin
 export const signOut = async (c: Context) => {
+  // Clear cookie using Hono's deleteCookie
+  deleteCookie(c, "accessToken", {
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    domain: process.env.NODE_ENV === "production" ? DOMAIN_NAME : undefined,
+  });
+  const refreshToken = deleteCookie(c, "refreshToken", {
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    domain: process.env.NODE_ENV === "production" ? DOMAIN_NAME : undefined,
+  });
+
+  if (!refreshToken) {
+    return authenticationError(c);
+  }
+
   try {
-    // Clear cookie using Hono's deleteCookie
-    deleteCookie(c, "accessToken", {
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      domain: process.env.NODE_ENV === "production" ? "tasfin.com" : undefined,
-    });
-    const refreshToken = deleteCookie(c, "refreshToken", {
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      domain: process.env.NODE_ENV === "production" ? "tasfin.com" : undefined,
-    });
-
-    if (!refreshToken) {
-      return authenticationError(c);
-    }
-
     const { payload } = decode(refreshToken as string) as any;
 
     if (!payload) {
