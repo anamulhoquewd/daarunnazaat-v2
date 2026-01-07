@@ -1,4 +1,4 @@
-import { IPagination } from "@/interfaces";
+import { IPagination } from "@/validations";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -54,4 +54,5 @@ export const defaultPagination: IPagination = {
   totalPages: 0,
   nextPage: null,
   prevPage: null,
+  limit: 10,
 };

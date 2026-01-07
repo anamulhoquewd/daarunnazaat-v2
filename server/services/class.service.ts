@@ -6,7 +6,7 @@ import {
   classUpdateZ,
   idSchemaZ,
   type TClassCreate,
-} from "./../validations/zod";
+} from "../../validations/zod";
 
 export const register = async (body: TClassCreate) => {
   // Safe Parse for better error handling
@@ -169,7 +169,7 @@ export const updates = async ({
     designation: string; // পদবী
     join_date: Date;
     is_active: boolean;
-    is_blocked: boolean;
+    isBlocked: boolean;
   };
 }) => {
   // Validate ID

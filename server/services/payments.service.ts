@@ -6,7 +6,7 @@ import {
   paymentCreateZ,
   paymentUpdateZ,
   type TPaymentCreate,
-} from "./../validations/zod";
+} from "../../validations/zod";
 
 export const register = async (body: TPaymentCreate) => {
   // Safe Parse for better error handling

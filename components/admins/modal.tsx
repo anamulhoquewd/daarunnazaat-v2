@@ -42,7 +42,7 @@ function AddModal({
             phone: "",
             role: "admin",
             is_active: true,
-            is_blocked: false,
+            isBlocked: false,
             join_date: new Date(),
             address: "",
             designation: "",

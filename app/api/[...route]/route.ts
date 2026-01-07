@@ -1,15 +1,13 @@
 import connectDB from "@/server/config/db";
-import { notFound } from "@/server/error";
-import adminRoutes from "@/server/routes/admins.route";
-import classRoutes from "@/server/routes/classes.route";
-import paymentRoutes from "@/server/routes/payment.route";
-import studentsRoutes from "@/server/routes/students.route";
-import { adminServices } from "@/server/services";
+import { notFoundError } from "@/server/error";
+import authRoutes from "@/server/routes/auth.route";
+import userRoutes from "@/server/routes/users.route";
+import { userServices } from "@/server/services";
 import { Hono } from "hono";
-import { handle } from "hono/vercel";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
+import { handle } from "hono/vercel";
 
 const app = new Hono().basePath("/api/v1");
 
@@ -25,7 +23,7 @@ app.get("/hello", (c) => {
 connectDB()
   .then(async () => {
     // Call the Super Admin Service function after connecting to MongoDB
-    const result = await adminServices.registerSuperAdmin();
+    const result = await userServices.registerSuperAdmin();
 
     if (result.success) {
       console.log(result.message || "Super admin created successfully!");
@@ -50,16 +48,19 @@ app.use(
 app.get("/health", (c) => c.json({ message: "API is healthy!" }));
 
 // Admin routes
-app.route("/admins", adminRoutes);
+app.route("/users", userRoutes);
 
-// Class routes
-app.route("/classes", classRoutes);
+// Admin routes
+app.route("/auth", authRoutes);
 
-// Students routes
-app.route("/students", studentsRoutes);
+// // Class routes
+// app.route("/classes", classRoutes);
 
-// Payments routes
-app.route("/payments", paymentRoutes);
+// // Students routes
+// app.route("/students", studentsRoutes);
+
+// // Payments routes
+// app.route("/payments", paymentRoutes);
 
 // Global Error Handler
 app.onError((error: any, c) => {
@@ -76,7 +77,7 @@ app.onError((error: any, c) => {
 
 // Not Found Handler
 app.notFound((c) => {
-  const error = notFound(c);
+  const error = notFoundError(c);
   return error;
 });
 

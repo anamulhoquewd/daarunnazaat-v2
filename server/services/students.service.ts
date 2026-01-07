@@ -6,7 +6,7 @@ import {
   idSchemaZ,
   studentCreateZ,
   type TStudentCreate,
-} from "./../validations/zod";
+} from "../../validations/zod";
 
 export const register = async (body: TStudentCreate) => {
   // Safe Parse for better error handling

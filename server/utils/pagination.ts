@@ -1,4 +1,4 @@
-import type { IPagination } from "../interfaces";
+import { IPagination } from "@/validations";
 
 // Interface of props
 interface PaginationProps {

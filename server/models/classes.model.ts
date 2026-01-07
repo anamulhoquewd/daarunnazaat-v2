@@ -1,30 +1,21 @@
-import { Model, model, models, Schema } from "mongoose";
-import type { IClass } from "../interfaces";
+import { BatchType, Branch, IClass } from "@/validations";
+import { model, Model, models, Schema } from "mongoose";
 
-const ClassSchema = new Schema<IClass>(
+// Class Model
+const ClassSchema = new Schema<IClass & Document>(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-      unique: true,
-    },
-    teacher: {
-      type: String,
-      trim: true,
-    },
-    description: {
-      type: String,
-      trim: true,
-    },
-    opening_date: {
-      type: Date,
-      default: Date.now,
-    },
+    className: { type: String, required: true },
+    description: { type: String },
+    branch: { type: String, enum: Object.values(Branch), required: true },
+    batchType: { type: String, enum: Object.values(BatchType), required: true },
+    monthlyFee: { type: Number, required: true, min: 0 },
+    capacity: { type: Number, min: 1 },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
-// ✅ Fix: Reuse model if already exists
-export const Class: Model<IClass> =
-  models.Class || model<IClass>("Class", ClassSchema);
+ClassSchema.index({ branch: 1, batchType: 1 });
+
+export const Class: Model<IClass & Document> =
+  models.Class || model<IClass & Document>("Class", ClassSchema);

@@ -1,32 +1,16 @@
-import {
-  adminCreateZ,
-  adminUpdateZ,
-  changePasswordZ,
-  forgotPasswordZ,
-  idSchemaZ,
-  loginSchemeZ,
-  type TAdminCreate,
-  type TAdminUpdate,
-} from "./../validations/zod";
-import z from "zod";
-import { schemaValidationError } from "../error";
-import { Admin } from "../models/admins.model";
-import { stringGenerator } from "../utils/string-generator";
-import pagination from "../utils/pagination";
+import { changePasswordZ, IUser, loginZ, mongoIdZ, userZ } from "@/validations";
 import { transporter } from "../config/email";
+import { schemaValidationError } from "../error";
+import { User } from "../models/users.model";
+import { stringGenerator } from "../utils/string-generator";
+import z from "zod";
 import { generateAccessToken, generateRefreshToken } from "../utils";
+import mongoose from "mongoose";
+import pagination from "../utils/pagination";
 
-// Get environment variables
-const NAME = process.env.ADMIN_NAME as string | "Anamul Hoque";
-const EMAIL = process.env.ADMIN_EMAIL as string | "anamulhoquewd@gmail.com";
-const PHONE = process.env.ADMIN_PHONE as string | "01975024262";
-const PASSWORD = process.env.ADMIN_PASSWORD as string | "password";
-
-const EMAIL_USER = process.env.EMAIL_USER;
-
-export const register = async (body: TAdminCreate) => {
+export const register = async (body: IUser) => {
   // Safe Parse for better error handling
-  const validData = adminCreateZ.safeParse(body);
+  const validData = userZ.safeParse(body);
 
   if (!validData.success) {
     return {
@@ -35,15 +19,15 @@ export const register = async (body: TAdminCreate) => {
   }
 
   try {
-    // Check if admin already exists
-    const isExistAdmin = await Admin.findOne({
+    // Check if user already exists
+    const isUserExist = await User.findOne({
       $or: [{ email: validData.data.email }, { phone: validData.data.phone }],
-    });
+    }).select("-password");
 
-    if (isExistAdmin) {
+    if (isUserExist) {
       return {
         error: {
-          message: "Sorry! This admin already exists.",
+          message: "Sorry! This email already exists.",
           fields: [
             {
               name: "email",
@@ -61,31 +45,31 @@ export const register = async (body: TAdminCreate) => {
     // Generate Password
     const password = stringGenerator(8);
 
-    // Create Admin
-    const admin = new Admin({
+    // Create user
+    const user = new User({
       ...validData.data,
       password,
-      role: "admin",
+      role: validData.data.role,
     });
 
-    // Save Admin
-    const docs = await admin.save();
+    // Save user
+    const docs = await user.save();
 
-    // Send Email to admin
+    // Send Email to user
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: validData.data.email,
       subject: "Your Account Details",
-      text: `Hello ${validData.data.name},\n\nYour account has been created successfully. Here are your login details:\n\nEmail: ${validData.data.email}\nPassword: ${password}\n\nPlease log in and change your password immediately for security.\n\nThank you!`,
+      text: `Assalamu Alikum,\n\nYour account has been created successfully. Here are your login details:\n\nEmail: ${validData.data.email}\nPassword: ${password}\n\nPlease log in and change your password immediately for security.\n\nJazakallah!`,
     };
 
     // Send Email
-    await transporter.sendMail(mailOptions);
+    // await transporter.sendMail(mailOptions);
 
     return {
       success: {
         success: true,
-        message: "Admin created successfully",
+        message: "User created successfully",
         data: docs,
       },
     };
@@ -102,10 +86,9 @@ export const register = async (body: TAdminCreate) => {
 
 export const registerSuperAdmin = async () => {
   // Safe Parse for better error handling
-  const validData = adminCreateZ.omit({ role: true }).safeParse({
-    name: NAME,
-    email: EMAIL,
-    phone: PHONE,
+  const validData = userZ.omit({ role: true }).safeParse({
+    email: process.env.ADMIN_EMAIL,
+    phone: process.env.ADMIN_PHONE,
   });
 
   if (!validData.success) {
@@ -115,32 +98,31 @@ export const registerSuperAdmin = async () => {
   }
   try {
     // Check if super admin already exists
-    const isExistSuperAdmin = await Admin.findOne({ role: "super_admin" });
+    const isSuperAdminExist = await User.findOne({ role: "super_admin" });
 
-    if (isExistSuperAdmin) {
+    if (isSuperAdminExist) {
       return {
         success: false,
         error: {
-          message: "Super Admin already exists",
+          message: "Super admin already exists",
         },
       };
     }
 
-    // Create Super Admin
-    const admin = new Admin({
-      name: validData.data.name,
+    // Create Super user
+    const user = new User({
       email: validData.data.email,
       phone: validData.data.phone,
-      password: PASSWORD,
+      password: process.env.ADMIN_PASSWORD as string,
       role: "super_admin",
     });
 
-    // Save Super Admin
-    const docs = await admin.save();
+    // Save Super user
+    const docs = await user.save();
 
     // Response
     return {
-      message: "Super Admin created successfully!",
+      message: "Super admin created successfully!",
       success: true,
       data: docs,
     };
@@ -160,6 +142,7 @@ export const gets = async (queryParams: {
   limit: number;
   sortBy: string;
   sortType: string;
+
   search: string;
 }) => {
   try {
@@ -170,25 +153,32 @@ export const gets = async (queryParams: {
         { name: { $regex: queryParams.search, $options: "i" } },
         { email: { $regex: queryParams.search, $options: "i" } },
         { phone: { $regex: queryParams.search, $options: "i" } },
+        { NID: { $regex: queryParams.search, $options: "i" } },
       ];
+
+      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
+        query.$or.push({
+          _id: new mongoose.Types.ObjectId(queryParams.search),
+        });
+      }
     }
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "name", "email"].includes(
       queryParams.sortBy
     )
       ? queryParams.sortBy
-      : "name";
+      : "createdAt";
     const sortDirection =
       queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
 
-    // Fetch admins
-    const [admins, total] = await Promise.all([
-      Admin.find(query)
+    // Fetch users
+    const [users, total] = await Promise.all([
+      User.find(query)
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
         .limit(queryParams.limit)
         .exec(),
-      Admin.countDocuments(),
+      User.countDocuments(query),
     ]);
 
     // Pagination
@@ -201,8 +191,8 @@ export const gets = async (queryParams: {
     return {
       success: {
         success: true,
-        message: "Admins fetched successfully!",
-        data: admins,
+        message: "Users fetched successfully!",
+        data: users,
         pagination: createPagination,
       },
     };
@@ -217,21 +207,33 @@ export const gets = async (queryParams: {
   }
 };
 
-export const get = async (_id: string) => {
+// FIXME
+export const get = async (
+  _id: string,
+  { userType }: { userType: "user" | "admin" }
+) => {
   // Validate ID
-  const idValidation = idSchemaZ.safeParse({ _id });
+  const idValidation = mongoIdZ.safeParse({ _id });
   if (!idValidation.success) {
-    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+    return {
+      error: schemaValidationError(idValidation.error, "Invalid ID"),
+    };
   }
 
   try {
     // Check if admin exists
-    const admin = await Admin.findById(idValidation.data._id);
+    let data;
 
-    if (!admin) {
+    if (userType === "admin") {
+      data = await User.findById(idValidation.data._id);
+    } else if (userType === "user") {
+      data = await User.findById(idValidation.data._id);
+    }
+
+    if (!data) {
       return {
         error: {
-          message: `Admin not found with provided ID!`,
+          message: `${userType} not found with provided ID!`,
         },
       };
     }
@@ -239,97 +241,8 @@ export const get = async (_id: string) => {
     return {
       success: {
         success: true,
-        message: `Admin fetched successfully!`,
-        data: admin,
-      },
-    };
-  } catch (error: any) {
-    return {
-      serverError: {
-        success: false,
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? null : error.stack,
-      },
-    };
-  }
-};
-
-export const updates = async ({
-  _id,
-  body,
-}: {
-  _id: string;
-  body: {
-    name: string;
-    phone: string;
-    email: string;
-    address: string;
-    designation: string; // পদবী
-    join_date: Date;
-    is_active: boolean;
-    is_blocked: boolean;
-  };
-}) => {
-  // Validate ID
-  const idValidation = idSchemaZ.safeParse({ _id });
-  if (!idValidation.success) {
-    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
-  }
-
-  // Validate Body
-  const validData = adminUpdateZ.omit({ role: true }).safeParse(body);
-  if (!validData.success) {
-    return {
-      error: schemaValidationError(validData.error, "Invalid request body"),
-    };
-  }
-
-  try {
-    // Check if admin exists
-    const admin = await Admin.findById(idValidation.data._id).select(
-      "-password"
-    );
-
-    if (!admin) {
-      return {
-        error: {
-          message: "Admin not fount with the provided ID",
-        },
-      };
-    }
-
-    if (
-      admin.role === "super_admin" &&
-      (validData.data?.is_blocked || !validData.data?.is_active)
-    ) {
-      return {
-        error: {
-          message: "It is not possible to block or diactive the super admin.",
-        },
-      };
-    }
-
-    // Check if all fields are empty
-    if (Object.keys(validData.data).length === 0) {
-      return {
-        success: {
-          success: true,
-          message: "No updates provided, returning existing user",
-
-          data: admin,
-        },
-      };
-    }
-
-    // Update only provided fields
-    Object.assign(admin, validData.data);
-    const docs = await admin.save();
-
-    return {
-      success: {
-        success: true,
-        message: "Admin updated successfully",
-        data: docs,
+        message: `${userType} fetched successfully!`,
+        data: data,
       },
     };
   } catch (error: any) {
@@ -344,22 +257,14 @@ export const updates = async ({
 };
 
 export const updateProfile = async ({
-  admin,
+  user,
   body,
 }: {
-  admin: any;
-  body: TAdminUpdate;
+  user: any;
+  body: TUpdateAdmin;
 }) => {
   // Validation without NID for update
-  const validData = adminUpdateZ
-    .omit({
-      email: true,
-      role: true,
-      designation: true,
-      is_active: true,
-      is_blocked: true,
-    })
-    .safeParse(body);
+  const validData = userZ.omit({ nid: true, role: true }).safeParse(body);
 
   if (!validData.success) {
     return {
@@ -368,25 +273,15 @@ export const updateProfile = async ({
   }
 
   try {
-    // Check if all fields are empty
-    if (Object.keys(validData.data).length === 0) {
-      return {
-        success: {
-          success: true,
-          message: "No updates provided, returning existing admin",
-          data: admin,
-        },
-      };
-    }
-    // Merge only allowed fields into admin
-    Object.assign(admin, validData.data);
+    // Merge only allowed fields into user
+    Object.assign(user, validData.data);
 
-    const docs = await admin.save();
+    const docs = await user.save();
 
     return {
       success: {
         success: true,
-        message: "Admin profile updated successfully!",
+        message: "User profile updated successfully!",
         data: docs,
       },
     };
@@ -401,20 +296,22 @@ export const updateProfile = async ({
   }
 };
 
-export const deletes = async (_id: string) => {
+export const deleteUser = async (_id: string) => {
   // Validate ID
-  const idValidation = idSchemaZ.safeParse({ _id: _id });
+  const idValidation = mongoIdZ.safeParse({ _id: _id });
   if (!idValidation.success) {
-    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+    return {
+      error: schemaValidationError(idValidation.error, "Invalid ID"),
+    };
   }
 
   try {
-    const data = await Admin.findById(idValidation.data._id);
+    const data = await User.findById(idValidation.data._id);
 
     if (!data) {
       return {
         error: {
-          message: `Admin not found with provided ID!`,
+          message: `User not found with provided ID!`,
         },
       };
     }
@@ -427,14 +324,14 @@ export const deletes = async (_id: string) => {
       };
     }
 
-    // Delete admin
+    // Delete user
     await data.deleteOne();
 
     // Response
     return {
       success: {
         success: true,
-        message: `Admin deleted successfully!`,
+        message: `User deleted successfully!`,
       },
     };
   } catch (error: any) {
@@ -449,10 +346,10 @@ export const deletes = async (_id: string) => {
 };
 
 export const changePassword = async ({
-  admin,
+  user,
   body,
 }: {
-  admin: any;
+  user: any;
   body: {
     currentPassword: string;
     newPassword: string;
@@ -485,7 +382,7 @@ export const changePassword = async ({
 
   try {
     // Validate current password
-    if (!(await admin.matchPassword(currentPassword))) {
+    if (!(await user.matchPassword(currentPassword))) {
       return {
         error: {
           message: "Current password is incorrect",
@@ -500,8 +397,8 @@ export const changePassword = async ({
     }
 
     // Update password
-    admin.password = newPassword;
-    await admin.save();
+    user.password = newPassword;
+    await user.save();
 
     return {
       success: {
@@ -521,7 +418,12 @@ export const changePassword = async ({
 };
 
 export const forgotPassword = async (email: string) => {
-  const validData = forgotPasswordZ.safeParse({ email });
+  // Validate email
+  const validateSchema = z.object({
+    email: z.string().email({ message: "Please enter a valid email address." }),
+  });
+
+  const validData = validateSchema.safeParse({ email });
   if (!validData.success) {
     return {
       error: schemaValidationError(validData.error, "Invalid request body"),
@@ -529,9 +431,9 @@ export const forgotPassword = async (email: string) => {
   }
 
   try {
-    const data = await Admin.findOne({ email: validData.data.email });
+    const user = await User.findOne({ email: validData.data.email });
 
-    if (!data) {
+    if (!user) {
       return {
         error: {
           message: "User not found with this email",
@@ -546,20 +448,20 @@ export const forgotPassword = async (email: string) => {
     }
 
     // Generate reset token
-    const resetToken = data.generateResetPasswordToken();
+    const resetToken = user.generateResetPasswordToken(15);
 
     // Save the reset token and expire time
-    await data.save();
+    await user.save();
 
     // Generate URL
-    const resetUrl = `https://daarunnazaat.vercel.app/auth/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.DOMAIN}/auth/reset-password/${resetToken}`;
 
     // Send Email
     const mailOptions = {
-      from: EMAIL_USER,
+      from: process.env.EMAIL_USER,
       to: email,
       subject: "Your Account Details",
-      text: `Hello ${data.name},\n\nClick the link below to reset your password:\n\n${resetUrl}\n\nIf you didn't request this, please ignore this email. This token will expire in 30 minutes.\n\nBest regards,\n${data.name}`,
+      text: `Assalamu alikum,\n\nClick the link below to reset your password:\n\n${resetUrl}\n\nIf you didn't request this, please ignore this email. This token will expire in 30 minutes.\n\nJazakallah!`,
     };
 
     await transporter.sendMail(mailOptions);
@@ -618,12 +520,12 @@ export const resetPassword = async ({
   }
 
   try {
-    const data = await Admin.findOne({
+    const user = await User.findOne({
       resetPasswordToken: resetToken,
       resetPasswordExpireDate: { $gt: Date.now() },
     });
 
-    if (!data) {
+    if (!user) {
       return {
         error: {
           message: "Invalid or expired reset token",
@@ -631,11 +533,11 @@ export const resetPassword = async ({
       };
     }
 
-    data.password = password;
-    data.resetPasswordToken = null;
-    data.resetPasswordExpireDate = null;
+    user.password = password;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpireDate = null;
 
-    await data.save();
+    await user.save();
 
     return {
       success: {
@@ -660,7 +562,7 @@ export const login = async (body: {
   password: string;
 }) => {
   // Safe Parse for better error handling
-  const validData = loginSchemeZ.safeParse(body);
+  const validData = loginZ.safeParse(body);
 
   if (!validData.success) {
     return {
@@ -672,42 +574,37 @@ export const login = async (body: {
   const { email, phone, password } = validData.data;
 
   try {
-    // Check if admin exists
-    const admin = await Admin.findOne({
+    // Check if user exists
+    const user = await User.findOne({
       $or: [{ email }, { phone }],
-    }).select("password email role");
+    }).select("password email role isActive isBlocked refreshTokens");
 
-    if (!admin) {
+    if (!user) {
       return {
         error: {
           message: "Invalid credentials",
           fields: [
             {
               name: "email",
-              message: "Admin not found with this email or phone",
+              message: "User not found with this email or phone",
             },
           ],
         },
       };
     }
 
-    // 🚫 Check if blocked
-    if (admin.is_blocked) {
-      return {
-        error: {
-          message: "Your account is blocked. Please contact support.",
-          fields: [
-            {
-              name: "email",
-              message: "This account is currently blocked.",
-            },
-          ],
-        },
-      };
+    // Check if user is active
+    if (!user.isActive) {
+      throw new Error("Account is inactive. Please contact admin.");
+    }
+
+    // Check if user is blockd
+    if (user.isBlocked) {
+      throw new Error("Account is blocked. Please contact admin.");
     }
 
     // Validate password
-    if (!(await admin.matchPassword(password))) {
+    if (!(await user.matchPassword(password))) {
       return {
         error: {
           message: "Invalid credentials",
@@ -722,14 +619,22 @@ export const login = async (body: {
     }
 
     // Generate access token
-    const accessToken = await generateAccessToken({ user: admin });
+    const accessToken = await generateAccessToken({ user });
 
     // Generate refresh token
-    const refreshToken = await generateRefreshToken({ user: admin });
+    const refreshToken = await generateRefreshToken({ user });
 
-    // Refresh token store in database
-    admin.refresh = refreshToken;
-    await admin.save();
+    // Refresh tokens store in database
+    if (!user.refreshTokens.includes(refreshToken)) {
+      user.refreshTokens.push(refreshToken);
+    }
+
+    // Remove old refresh tokens
+    if (user.refreshTokens.length > 2) {
+      user.refreshTokens = user.refreshTokens.slice(-2); // last 2 tokens
+    }
+
+    await user.save();
 
     // Response
     return {

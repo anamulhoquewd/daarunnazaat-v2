@@ -1,8 +1,7 @@
 import { sign } from "hono/jwt";
 import { setSignedCookie } from "hono/cookie";
-import type { IAdmin } from "../interfaces";
 import type { Context } from "hono";
-import { accessTokenExpMinutes, refreshTokenExpDays } from "../config/default";
+import { IUser } from "@/validations";
 
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 
@@ -15,9 +14,9 @@ const DOMAIN_NAME = process.env.DOMAIN_NAME as string;
 // Generate Access Token
 export const generateAccessToken = async ({
   user,
-  expMinutes = accessTokenExpMinutes,
+  expMinutes = 15,
 }: {
-  user: IAdmin;
+  user: IUser;
   expMinutes?: number;
 }) => {
   const token = await sign(
@@ -40,9 +39,9 @@ export const generateAccessToken = async ({
 // Generate Refresh Token
 export const generateRefreshToken = async ({
   user,
-  expDays = refreshTokenExpDays,
+  expDays = 7,
 }: {
-  user: IAdmin;
+  user: IUser;
   expDays?: number;
 }) => {
   const token = await sign(
@@ -59,22 +58,4 @@ export const generateRefreshToken = async ({
     throw new Error("Token generated failed");
   }
   return token;
-};
-
-export const setAuthCookie = async (
-  c: Context,
-  name: string,
-  value: string,
-  maxAgeSeconds: number
-) => {
-  console.log("Called setAuthCookie function");
-  return await setSignedCookie(c, name, value, COOKIE_SECRET as string, {
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-    httpOnly: true,
-    maxAge: maxAgeSeconds,
-    expires: new Date(Date.now() + maxAgeSeconds * 1000),
-    domain: process.env.NODE_ENV === "production" ? DOMAIN_NAME : undefined,
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-  });
 };

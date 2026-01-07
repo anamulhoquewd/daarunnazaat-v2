@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 
 // Server Error Handler
-export const serverErrorHandler = (c: Context, error: any) => {
+export const serverError = (c: Context, error: any) => {
   console.error("Error: ", error);
   return c.json(
     {
@@ -14,7 +14,7 @@ export const serverErrorHandler = (c: Context, error: any) => {
 };
 
 // Bad Request Handler
-export const badRequestHandler = (
+export const badRequestError = (
   c: Context,
   {
     message = "Bad Request",
@@ -36,7 +36,7 @@ export const badRequestHandler = (
 };
 
 // Conflict Error Handler
-export const conflictHandler = (
+export const conflictError = (
   c: Context,
   {
     message = "Conflict",
@@ -58,7 +58,7 @@ export const conflictHandler = (
 };
 
 // Not Found Handler
-export const notFound = (c: Context) => {
+export const notFoundError = (c: Context) => {
   console.error("Not Found: ", c.req.url);
   return c.json(
     {

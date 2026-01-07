@@ -134,7 +134,7 @@ export default function UsersPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {admin.is_blocked ? (
+                        {admin.isBlocked ? (
                           <Badge className="bg-destructive">True</Badge>
                         ) : (
                           <Badge className="bg-primary">False</Badge>
