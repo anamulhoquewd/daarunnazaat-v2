@@ -12,28 +12,39 @@ const UserSchema = new Schema<IUser & Document>(
     alternativePhone: { type: String },
     whatsApp: { type: String },
     role: { type: String, enum: Object.values(UserRole), required: true },
+    nid: { type: String, unique: true },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+    blockedAt: {
+      type: Date,
+      default: null,
+    },
     refreshTokens: [{ type: String, required: false }],
     passwordResetToken: { type: String, select: false },
-    ResetTokenExpires: { type: Date, select: false },
+    passwordResetExpires: { type: Date, select: false },
   },
   { timestamps: true }
 );
 
 UserSchema.methods.generateResetPasswordToken = function (expMinutes = 30) {
-  let resetToken = crypto.randomBytes(32).toString("hex");
+  // 1. Generate plain token
+  const plainToken = crypto.randomBytes(32).toString("hex");
 
-  // Hash the token and save it in the database
-  resetToken = this.resetPasswordToken = crypto
+  // 2. Hash token & store in DB
+  this.passwordResetToken = crypto
     .createHash("sha256")
-    .update(resetToken)
+    .update(plainToken)
     .digest("hex");
 
-  // Set token expiration
-  this.resetPasswordExpireDate = Date.now() + expMinutes * 60 * 1000; // default 30 minutes
+  // 3. Expiration time
+  this.passwordResetExpires = new Date(Date.now() + expMinutes * 60 * 1000);
 
-  return resetToken;
+  // 4. Return plain token (email-এ যাবে)
+  return plainToken;
 };
 
 // Match user entered password to hashed password in database

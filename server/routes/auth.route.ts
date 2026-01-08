@@ -14,10 +14,6 @@ authRoutes.post(
 
 authRoutes.patch("/change-password", (c) => usersController.changePassword(c));
 
-authRoutes.patch("/reset-password/:resetToken", (c) =>
-  usersController.resetPassword(c)
-);
-
 authRoutes.post("/forgot-password", (c) => usersController.forgotPassword(c));
 
 authRoutes.post("/refresh", (c) => usersController.refreshToken(c));
@@ -26,10 +22,33 @@ authRoutes.post("/sign-in", (c) => usersController.signIn(c));
 
 authRoutes.post("/sign-out", (c) => usersController.signOut(c));
 
-authRoutes.patch("/me", (c) => usersController.updateMe(c));
+authRoutes.patch("/reset-password/:resetToken", (c) =>
+  usersController.resetPassword(c)
+);
 
-authRoutes.patch("/:_id", (c) => usersController.updateUser(c));
+authRoutes.patch(
+  "/:_id",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => usersController.updateUser(c)
+);
 
-authRoutes.delete("/:_id", (c) => usersController.deleteUser(c));
+authRoutes.patch(
+  "/:_id/block",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => usersController.blockUser(c)
+);
+
+authRoutes.patch(
+  "/:_id/unblock",
+  authenticate,
+  authorize(UserRole.SUPER_ADMIN),
+  (c) => usersController.unblockUser(c)
+);
+
+authRoutes.delete("/:_id", authenticate, authorize(UserRole.SUPER_ADMIN), (c) =>
+  usersController.deleteUser(c)
+);
 
 export default authRoutes;

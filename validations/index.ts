@@ -5,7 +5,6 @@ import z from "zod";
 export enum UserRole {
   SUPER_ADMIN = "super_admin",
   ADMIN = "admin",
-  MANAGER = "manager",
   STAFF = "staff",
   STUDENT = "student",
   GUARDIAN = "guardian",
@@ -157,18 +156,33 @@ export const userZ = z.object({
     .trim()
     .optional(),
   role: z.nativeEnum(UserRole),
-  isActive: z.boolean().default(true),
+  nid: z
+    .string()
+    .refine((val) => /^\d{10}$|^\d{17}$/.test(val), {
+      message: "NID must be either 10 or 17 digits",
+    })
+    .trim(),
+  isActive: z.boolean().optional(),
   lastLogin: z.coerce.date().optional(),
   refreshTokens: z.array(z.string()).optional(),
-  passwordResetToken: z.string().optional(),
+  passwordResetToken: z.string().nullable().optional(),
   ResetTokenExpires: z.coerce.date().optional(),
 
-  isBlocked: z.boolean().default(false),
+  isBlocked: z.boolean().optional(),
   blockedAt: z.coerce.date().optional(),
 
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
+
+// If you want a separate update  where fields can be optional:
+export const userUpdateZ = userZ.partial().refine(
+  (data) => {
+    // ensure at least one field present on update
+    return Object.keys(data).length > 0;
+  },
+  { message: "At least one field must be provided for update" }
+);
 
 // change password
 export const changePasswordZ = z
@@ -593,11 +607,12 @@ export type TChangePassword = z.infer<typeof changePasswordZ>;
 export type IUser = z.infer<typeof userZ> & {
   matchPassword: (password: string) => Promise<boolean>;
   generateResetPasswordToken: (expMinutes?: number) => string;
-  resetPasswordToken: string | null;
-  resetPasswordExpireDate: Date | null;
+  passwordResetToken: string | null;
+  passwordResetExpires: Date | null;
   refreshTokens: string[];
   password: string;
 };
+export type IUpdateUser = z.infer<typeof userUpdateZ>;
 export type IStudent = z.infer<typeof studentZ>;
 export type IGuardian = z.infer<typeof guardianZ>;
 export type IStaff = z.infer<typeof staffZ>;

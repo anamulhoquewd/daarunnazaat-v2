@@ -1,12 +1,21 @@
-import { changePasswordZ, IUser, loginZ, mongoIdZ, userZ } from "@/validations";
-import { transporter } from "../config/email";
+import {
+  changePasswordZ,
+  IUpdateUser,
+  IUser,
+  loginZ,
+  mongoIdZ,
+  UserRole,
+  userUpdateZ,
+  userZ,
+} from "@/validations";
+import crypto from "crypto";
+import mongoose from "mongoose";
+import z from "zod";
 import { schemaValidationError } from "../error";
 import { User } from "../models/users.model";
-import { stringGenerator } from "../utils/string-generator";
-import z from "zod";
 import { generateAccessToken, generateRefreshToken } from "../utils";
-import mongoose from "mongoose";
 import pagination from "../utils/pagination";
+import { stringGenerator } from "../utils/string-generator";
 
 export const register = async (body: IUser) => {
   // Safe Parse for better error handling
@@ -89,6 +98,7 @@ export const registerSuperAdmin = async () => {
   const validData = userZ.omit({ role: true }).safeParse({
     email: process.env.ADMIN_EMAIL,
     phone: process.env.ADMIN_PHONE,
+    nid: process.env.ADMIN_NID,
   });
 
   if (!validData.success) {
@@ -153,7 +163,7 @@ export const gets = async (queryParams: {
         { name: { $regex: queryParams.search, $options: "i" } },
         { email: { $regex: queryParams.search, $options: "i" } },
         { phone: { $regex: queryParams.search, $options: "i" } },
-        { NID: { $regex: queryParams.search, $options: "i" } },
+        { nid: { $regex: queryParams.search, $options: "i" } },
       ];
 
       if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
@@ -207,7 +217,6 @@ export const gets = async (queryParams: {
   }
 };
 
-// FIXME
 export const get = async (
   _id: string,
   { userType }: { userType: "user" | "admin" }
@@ -256,15 +265,179 @@ export const get = async (
   }
 };
 
+export const updateUser = async ({
+  _id,
+  body,
+}: {
+  _id: string;
+  body: {
+    isActive: boolean;
+    email: string;
+    phone: string;
+    nid: string;
+    role: UserRole;
+  };
+}) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  // Validate Body
+  const validData = userUpdateZ
+    .omit({ alternativePhone: true, whatsApp: true, isBlocked: true })
+    .safeParse(body);
+
+  console.log("Valid Data: ", validData);
+
+  if (!validData.success) {
+    return {
+      error: schemaValidationError(idValidation.error, "Invalid request body"),
+    };
+  }
+
+  try {
+    // Check if user exists
+    const user = await User.findById(idValidation.data._id).select("-password");
+
+    if (!user) {
+      return {
+        error: {
+          message: "User not fount with the provided ID",
+        },
+      };
+    }
+
+    // Check if all fields are empty
+    if (Object.keys(validData.data).length === 0) {
+      return {
+        success: {
+          success: true,
+          message: "No updates provided, returning existing user",
+
+          data: user,
+        },
+      };
+    }
+
+    // Update only provided fields
+    Object.assign(user, validData.data);
+    const docs = await user.save();
+
+    return {
+      success: {
+        success: true,
+        message: "User updated successfully",
+        data: docs,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const blockUser = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const user = await User.findById(idValidation.data._id);
+
+    if (!user) {
+      return { error: { message: "User not found!" } };
+    }
+
+    if (user.role === "super_admin") {
+      return { error: { message: "Super admin cannot be blocked." } };
+    }
+
+    if (user.isBlocked) {
+      return { error: { message: "User already blocked." } };
+    }
+
+    user.isBlocked = true;
+    user.blockedAt = new Date();
+
+    await user.save();
+
+    return {
+      success: {
+        success: true,
+        message: "User blocked successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const unblockUser = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // optional: check user exists
+    const user = await User.findById(_id);
+
+    if (!user) {
+      return {
+        error: {
+          message: `User not found with provided ID!`,
+        },
+      };
+    }
+
+    if (!user.isBlocked) {
+      return { error: { message: "User NOT blocked." } };
+    }
+
+    user.isBlocked = false;
+    user.blockedAt = new Date();
+
+    return {
+      success: {
+        success: true,
+        message: "User UN_BLOCKED successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
 export const updateProfile = async ({
   user,
   body,
 }: {
   user: any;
-  body: TUpdateAdmin;
+  body: IUpdateUser;
 }) => {
   // Validation without NID for update
-  const validData = userZ.omit({ nid: true, role: true }).safeParse(body);
+  const validData = userUpdateZ.omit({ nid: true, role: true }).safeParse(body);
 
   if (!validData.success) {
     return {
@@ -273,6 +446,18 @@ export const updateProfile = async ({
   }
 
   try {
+    // Check if all fields are empty
+    if (Object.keys(validData.data).length === 0) {
+      return {
+        success: {
+          success: true,
+          message: "No updates provided, returning existing user",
+
+          data: user,
+        },
+      };
+    }
+
     // Merge only allowed fields into user
     Object.assign(user, validData.data);
 
@@ -306,9 +491,9 @@ export const deleteUser = async (_id: string) => {
   }
 
   try {
-    const data = await User.findById(idValidation.data._id);
+    const user = await User.findById(idValidation.data._id);
 
-    if (!data) {
+    if (!user) {
       return {
         error: {
           message: `User not found with provided ID!`,
@@ -316,7 +501,7 @@ export const deleteUser = async (_id: string) => {
       };
     }
 
-    if (data.role === "super_admin") {
+    if (user.role === "super_admin") {
       return {
         error: {
           message: "It is not possible to delete the super admin.",
@@ -325,7 +510,7 @@ export const deleteUser = async (_id: string) => {
     }
 
     // Delete user
-    await data.deleteOne();
+    await user.deleteOne();
 
     // Response
     return {
@@ -420,7 +605,10 @@ export const changePassword = async ({
 export const forgotPassword = async (email: string) => {
   // Validate email
   const validateSchema = z.object({
-    email: z.string().email({ message: "Please enter a valid email address." }),
+    email: z
+      .string()
+      .trim()
+      .email({ message: "Please enter a valid email address." }),
   });
 
   const validData = validateSchema.safeParse({ email });
@@ -464,7 +652,7 @@ export const forgotPassword = async (email: string) => {
       text: `Assalamu alikum,\n\nClick the link below to reset your password:\n\n${resetUrl}\n\nIf you didn't request this, please ignore this email. This token will expire in 30 minutes.\n\nJazakallah!`,
     };
 
-    await transporter.sendMail(mailOptions);
+    // await transporter.sendMail(mailOptions);
 
     return {
       success: {
@@ -491,38 +679,17 @@ export const resetPassword = async ({
   password: string;
   resetToken: string;
 }) => {
-  const bodySchema = z.object({
-    password: z.string().min(8).max(20),
-  });
-  const tokenSchema = z.object({
-    resetToken: z.string().length(64, "Invalid reset token format"),
-  });
-
-  const validData = bodySchema.safeParse({ password });
-  const tokenValidation = tokenSchema.safeParse({ resetToken });
-
-  if (!validData.success) {
-    return {
-      error: schemaValidationError(validData.error, "Invalid request body"),
-    };
-  }
-
-  if (!tokenValidation.success) {
-    return {
-      error: {
-        msg: "Token Validation error",
-        fields: tokenValidation.error.issues.map((issue) => ({
-          name: String(issue.path[0]),
-          message: issue.message,
-        })),
-      },
-    };
-  }
-
   try {
+    // 1. Hash incoming reset token
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    // 2. Find user with valid token + not expired
     const user = await User.findOne({
-      resetPasswordToken: resetToken,
-      resetPasswordExpireDate: { $gt: Date.now() },
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
     });
 
     if (!user) {
@@ -533,9 +700,12 @@ export const resetPassword = async ({
       };
     }
 
+    // 3. Set new password
     user.password = password;
-    user.resetPasswordToken = null;
-    user.resetPasswordExpireDate = null;
+
+    // 4. Invalidate reset token
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
 
     await user.save();
 
@@ -593,14 +763,9 @@ export const login = async (body: {
       };
     }
 
-    // Check if user is active
-    if (!user.isActive) {
-      throw new Error("Account is inactive. Please contact admin.");
-    }
-
     // Check if user is blockd
     if (user.isBlocked) {
-      throw new Error("Account is blocked. Please contact admin.");
+      throw new Error("Account is BLOCKED. Please contact admin.");
     }
 
     // Validate password
@@ -633,6 +798,9 @@ export const login = async (body: {
     if (user.refreshTokens.length > 2) {
       user.refreshTokens = user.refreshTokens.slice(-2); // last 2 tokens
     }
+
+    // ✅ last login update
+    user.lastLogin = new Date();
 
     await user.save();
 

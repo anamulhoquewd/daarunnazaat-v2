@@ -94,7 +94,7 @@ export const checkOwnership = (
 ) => {
   return async (c: Context, next: Next) => {
     const user = c.get("user");
-    const resourceId = c.req.param("id");
+    const resourceId = c.req.param("_id");
 
     // Super admin and admin can access everything
     if ([UserRole.SUPER_ADMIN, UserRole.ADMIN].includes(user.role)) {

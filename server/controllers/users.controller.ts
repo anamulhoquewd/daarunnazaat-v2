@@ -3,6 +3,7 @@ import {
   authenticationError,
   authorizationError,
   badRequestError,
+  schemaValidationError,
   serverError,
 } from "../error";
 import { userServices } from "../services";
@@ -11,6 +12,7 @@ import { decode, verify } from "hono/jwt";
 import { User } from "../models/users.model";
 import { generateAccessToken } from "../utils";
 import axios from "axios";
+import { mongoIdZ } from "@/validations";
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
@@ -127,7 +129,7 @@ export const updateUser = async (c: Context) => {
   const body = await c.req.json();
   const _id = c.req.param("_id");
 
-  const response = await userServices.updateProfile({ body, _id });
+  const response = await userServices.updateUser({ body, _id });
 
   if (response.error) {
     return badRequestError(c, response.error);
@@ -233,10 +235,10 @@ export const signOut = async (c: Context) => {
       return authenticationError(c, "Invalid refresh token");
     }
 
-    const userId = decoded.payload._id;
+    const _id = decoded.payload._id;
 
     // 3. Remove refresh token from DB (array হলে)
-    await User.updateOne({ _id: userId }, { $pull: { refreshTokens: rToken } });
+    await User.updateOne({ _id: _id }, { $pull: { refreshTokens: rToken } });
 
     // 4. Clear cookies
     deleteCookie(c, "accessToken", {
@@ -367,6 +369,40 @@ export const refreshToken = async (c: Context) => {
       500
     );
   }
+};
+
+// block
+export const blockUser = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await userServices.blockUser(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// unblock
+export const unblockUser = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await userServices.unblockUser(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
 };
 
 // Change Password
