@@ -8,7 +8,6 @@ import {
   IStudent,
 } from "@/validations";
 
-// TODO guardian er relation koi?
 // Student Model
 const StudentSchema = new Schema<IStudent & Document>(
   {
@@ -34,7 +33,7 @@ const StudentSchema = new Schema<IStudent & Document>(
     dateOfBirth: { type: Date, required: true },
     gender: { type: String, enum: Object.values(Gender), required: true },
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },
-    nidNumber: { type: String },
+    nid: { type: String, unique: true, required: false, sparse: true },
     birthCertificateNumber: { type: String },
     presentAddress: {
       village: { type: String, required: true },
@@ -50,6 +49,25 @@ const StudentSchema = new Schema<IStudent & Document>(
       district: { type: String },
       division: { type: String },
     },
+    currentSessionId: {
+      type: Schema.Types.ObjectId,
+      ref: "Session",
+      required: true,
+    },
+    // Session history
+    sessionHistory: [
+      {
+        sessionId: { type: Schema.Types.ObjectId, ref: "Session" },
+        classId: { type: Schema.Types.ObjectId, ref: "Class" },
+        enrollmentDate: { type: Date },
+        completionDate: { type: Date },
+        status: {
+          type: String,
+          enum: ["ongoing", "completed", "dropped"],
+          default: "ongoing",
+        },
+      },
+    ],
     avatar: { type: String },
     admissionDate: { type: Date, required: true },
     isResidential: { type: Boolean, default: false },
@@ -60,7 +78,6 @@ const StudentSchema = new Schema<IStudent & Document>(
     monthlyDiscount: { type: Number, default: 0, min: 0 },
     residentialFee: { type: Number, min: 0 },
     mealFee: { type: Number, min: 0 },
-    isActive: { type: Boolean, default: true },
     passoutDate: { type: Date },
   },
   { timestamps: true }

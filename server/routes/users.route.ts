@@ -20,6 +20,11 @@ userRoutes.get("/me", authenticate, (c) => usersController.getMe(c));
 
 userRoutes.patch("/me", authenticate, (c) => usersController.updateMe(c));
 
-// userRoutes.get("/:_id", (c) => usersController.get(c));
+userRoutes.get(
+  "/:_id",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => usersController.get(c)
+);
 
 export default userRoutes;

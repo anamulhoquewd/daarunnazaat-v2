@@ -1,12 +1,12 @@
+import { BloodGroup, Branch, Gender } from "@/validations";
 import type { Context } from "hono";
-import { studentService } from "../services";
 import { badRequestError, serverError } from "../error";
-import { BatchType, Branch, Gender } from "@/validations";
+import { staffService } from "../services";
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
 
-  const response = await studentService.createStudent(body);
+  const response = await staffService.createStaff(body);
 
   if (response.error) {
     return badRequestError(c, response.error);
@@ -25,38 +25,29 @@ export const gets = async (c: Context) => {
   const sortBy = c.req.query("sortBy") || "name";
   const sortType = c.req.query("sortType") || "desc";
   const search = c.req.query("search") as string;
-  const classId = c.req.query("classId") as string;
   const branch = c.req.query("branch") as Branch;
   const gender = c.req.query("gender") as Gender;
-  const isResidentialRaw = c.req.query("isResidential") as string;
-  const guardianId = c.req.query("guardianId") as string;
-  const batchType = c.req.query("batchType") as BatchType;
-  const currentSessionId = c.req.query("currentSessionId") as string;
-  const admissionDateFrom = c.req.query("admissionDateFrom") as string;
-  const admissionDateTo = c.req.query("admissionDateTo") as string;
+  const bloodGroup = c.req.query("bloodGroup") as BloodGroup;
 
-  const admissionDateRange = { from: admissionDateFrom, to: admissionDateTo };
+  const minSalary = parseInt(c.req.query("minSalary") as string, 10) || 0;
+  const maxSalary = parseInt(c.req.query("maxSalary") as string, 10) || 100000;
 
-  let isResidential: boolean | undefined = undefined;
+  const joinDateFrom = c.req.query("joinDateFrom") as string;
+  const joinDateTo = c.req.query("joinDateTo") as string;
 
-  if (isResidentialRaw === "true") isResidential = true;
-  if (isResidentialRaw === "false") isResidential = false;
+  const joinDateRange = { from: joinDateFrom, to: joinDateTo };
 
-  const response = await studentService.gets({
+  const response = await staffService.gets({
     page,
     limit,
     sortBy,
     sortType,
-    search,
-    classId,
-    branch,
     gender,
-    isResidential,
-    guardianId,
-    sessionId: currentSessionId,
-    currentSessionId,
-    batchType,
-    admissionDateRange,
+    bloodGroup,
+    search,
+    joinDateRange,
+    basicSalaryRange: { min: minSalary, max: maxSalary },
+    branch,
   });
 
   if (response.serverError) {
@@ -69,7 +60,7 @@ export const gets = async (c: Context) => {
 export const get = async (c: Context) => {
   const _id = c.req.param("_id");
 
-  const response = await studentService.get(_id);
+  const response = await staffService.get(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);
@@ -87,25 +78,7 @@ export const updates = async (c: Context) => {
 
   const body = await c.req.json();
 
-  const response = await studentService.updates({ _id, body });
-
-  if (response.error) {
-    return badRequestError(c, response.error);
-  }
-
-  if (response.serverError) {
-    return serverError(c, response.serverError);
-  }
-
-  return c.json(response.success, 200);
-};
-
-export const promote = async (c: Context) => {
-  const _id = c.req.param("_id");
-
-  const body = await c.req.json();
-
-  const response = await studentService.promote({ _id, body });
+  const response = await staffService.updates({ _id, body });
 
   if (response.error) {
     return badRequestError(c, response.error);
@@ -121,7 +94,7 @@ export const promote = async (c: Context) => {
 export const deletes = async (c: Context) => {
   const _id = c.req.param("_id");
 
-  const response = await studentService.deletes(_id);
+  const response = await staffService.deletes(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);
@@ -137,7 +110,7 @@ export const deletes = async (c: Context) => {
 export const deactivate = async (c: Context) => {
   const _id = c.req.param("_id");
 
-  const response = await studentService.deactivate(_id);
+  const response = await staffService.deactivate(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);
@@ -153,7 +126,7 @@ export const deactivate = async (c: Context) => {
 export const activate = async (c: Context) => {
   const _id = c.req.param("_id");
 
-  const response = await studentService.activate(_id);
+  const response = await staffService.activate(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);

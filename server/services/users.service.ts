@@ -31,7 +31,7 @@ export const register = async (body: IUser) => {
     // Check if user already exists
     const isUserExist = await User.findOne({
       $or: [{ email: validData.data.email }, { phone: validData.data.phone }],
-    }).select("-password");
+    });
 
     if (isUserExist) {
       return {
@@ -98,7 +98,6 @@ export const registerSuperAdmin = async () => {
   const validData = userZ.omit({ role: true }).safeParse({
     email: process.env.ADMIN_EMAIL,
     phone: process.env.ADMIN_PHONE,
-    nid: process.env.ADMIN_NID,
   });
 
   if (!validData.success) {
@@ -154,32 +153,39 @@ export const gets = async (queryParams: {
   sortType: string;
 
   search: string;
+  isActive?: boolean;
+  isBlocked?: boolean;
 }) => {
   try {
     // Build query
     const query: any = {};
-    if (queryParams.search) {
+    if (typeof queryParams.isActive === "boolean") {
+      query.isActive = queryParams.isActive;
+    }
+    if (typeof queryParams.isBlocked === "boolean") {
+      query.isBlocked = queryParams.isBlocked;
+    }
+    if (queryParams?.search) {
       query.$or = [
         { name: { $regex: queryParams.search, $options: "i" } },
         { email: { $regex: queryParams.search, $options: "i" } },
         { phone: { $regex: queryParams.search, $options: "i" } },
-        { nid: { $regex: queryParams.search, $options: "i" } },
       ];
 
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
+      if (mongoose.Types.ObjectId.isValid(queryParams?.search)) {
         query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
+          _id: new mongoose.Types.ObjectId(queryParams?.search),
         });
       }
     }
     // Allowable sort fields
-    const sortField = ["createdAt", "updatedAt", "name", "email"].includes(
-      queryParams.sortBy
+    const sortField = ["createdAt", "updatedAt", "email"].includes(
+      queryParams?.sortBy
     )
-      ? queryParams.sortBy
+      ? queryParams?.sortBy
       : "createdAt";
     const sortDirection =
-      queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortType?.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch users
     const [users, total] = await Promise.all([
@@ -217,10 +223,7 @@ export const gets = async (queryParams: {
   }
 };
 
-export const get = async (
-  _id: string,
-  { userType }: { userType: "user" | "admin" }
-) => {
+export const get = async (_id: string) => {
   // Validate ID
   const idValidation = mongoIdZ.safeParse({ _id });
   if (!idValidation.success) {
@@ -231,18 +234,12 @@ export const get = async (
 
   try {
     // Check if admin exists
-    let data;
+    let user = await User.findById(idValidation.data._id);
 
-    if (userType === "admin") {
-      data = await User.findById(idValidation.data._id);
-    } else if (userType === "user") {
-      data = await User.findById(idValidation.data._id);
-    }
-
-    if (!data) {
+    if (!user) {
       return {
         error: {
-          message: `${userType} not found with provided ID!`,
+          message: `User not found with provided ID!`,
         },
       };
     }
@@ -250,8 +247,8 @@ export const get = async (
     return {
       success: {
         success: true,
-        message: `${userType} fetched successfully!`,
-        data: data,
+        message: `User fetched successfully!`,
+        data: user,
       },
     };
   } catch (error: any) {
@@ -274,7 +271,6 @@ export const updateUser = async ({
     isActive: boolean;
     email: string;
     phone: string;
-    nid: string;
     role: UserRole;
   };
 }) => {
@@ -289,8 +285,6 @@ export const updateUser = async ({
     .omit({ alternativePhone: true, whatsApp: true, isBlocked: true })
     .safeParse(body);
 
-  console.log("Valid Data: ", validData);
-
   if (!validData.success) {
     return {
       error: schemaValidationError(idValidation.error, "Invalid request body"),
@@ -299,7 +293,7 @@ export const updateUser = async ({
 
   try {
     // Check if user exists
-    const user = await User.findById(idValidation.data._id).select("-password");
+    const user = await User.findById(idValidation.data._id);
 
     if (!user) {
       return {
@@ -436,8 +430,8 @@ export const updateProfile = async ({
   user: any;
   body: IUpdateUser;
 }) => {
-  // Validation without NID for update
-  const validData = userUpdateZ.omit({ nid: true, role: true }).safeParse(body);
+  // Validation without role for update
+  const validData = userUpdateZ.omit({ role: true }).safeParse(body);
 
   if (!validData.success) {
     return {

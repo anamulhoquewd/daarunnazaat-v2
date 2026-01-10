@@ -1,18 +1,16 @@
+import axios from "axios";
 import { Context } from "hono";
+import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
+import { decode, verify } from "hono/jwt";
 import {
   authenticationError,
   authorizationError,
   badRequestError,
-  schemaValidationError,
   serverError,
 } from "../error";
-import { userServices } from "../services";
-import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
-import { decode, verify } from "hono/jwt";
 import { User } from "../models/users.model";
+import { userServices } from "../services";
 import { generateAccessToken } from "../utils";
-import axios from "axios";
-import { mongoIdZ } from "@/validations";
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
@@ -46,6 +44,23 @@ export const getUsers = async (c: Context) => {
 
     search,
   });
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// get user
+export const get = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await userServices.get(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
 
   if (response.serverError) {
     return serverError(c, response.serverError);

@@ -137,9 +137,18 @@ export const imageZ = z.object({
   publicId: z.string().optional(),
 });
 
+export const mongoZ = z
+  .any()
+  .transform((val) =>
+    val instanceof mongoose.Types.ObjectId ? val.toString() : val
+  )
+  .refine((val) => mongoose.Types.ObjectId.isValid(val), {
+    message: "Invalid MongoDB User ID format",
+  });
+
 // User Schema
 export const userZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   email: z.string().email(),
   phone: z
     .string()
@@ -156,12 +165,6 @@ export const userZ = z.object({
     .trim()
     .optional(),
   role: z.nativeEnum(UserRole),
-  nid: z
-    .string()
-    .refine((val) => /^\d{10}$|^\d{17}$/.test(val), {
-      message: "NID must be either 10 or 17 digits",
-    })
-    .trim(),
   isActive: z.boolean().optional(),
   lastLogin: z.coerce.date().optional(),
   refreshTokens: z.array(z.string()).optional(),
@@ -202,10 +205,16 @@ const personBaseZ = z.object({
   lastName: z.string().optional(),
   fatherName: z.string().optional(),
   motherName: z.string().optional(),
-  dateOfBirth: z.coerce.date(),
+  dateOfBirth: z.coerce.date().optional(),
   gender: z.nativeEnum(Gender),
   bloodGroup: z.nativeEnum(BloodGroup).optional(),
-  nidNumber: z.string().optional(),
+  nid: z
+    .string()
+    .refine((val) => /^\d{10}$|^\d{17}$/.test(val), {
+      message: "NID must be either 10 or 17 digits",
+    })
+    .trim()
+    .optional(),
   birthCertificateNumber: z.string().optional(),
   presentAddress: z.object({
     village: z.string(),
@@ -223,17 +232,46 @@ const personBaseZ = z.object({
       division: z.string().optional(),
     })
     .optional(),
-  avatar: z.string().optional(),
+  avatar: imageZ.optional(),
 });
 
 // Student Schema
 export const studentZ = personBaseZ.extend({
-  _id: z.instanceof(Types.ObjectId).optional(),
-  userId: z.instanceof(Types.ObjectId),
-  studentId: z.string(),
-  guardianId: z.instanceof(Types.ObjectId),
-  guardianRelation: z.nativeEnum(BatchType),
-  classId: z.instanceof(Types.ObjectId),
+  _id: mongoZ.optional(),
+  userId: mongoZ,
+  studentId: z.string().optional(),
+  guardianId: mongoZ,
+  currentSessionId: mongoZ,
+  sessionHistory: z
+    .array(
+      z.object({
+        sessionId: mongoZ,
+        classId: mongoZ,
+        enrollmentDate: z.coerce.date(),
+        completionDate: z.coerce.date().nullable(),
+        status: z.enum(["ongoing", "completed", "dropped"]).default("ongoing"),
+      })
+    )
+    .optional(),
+  guardianRelation: z
+    .string()
+    .transform((val) => val.trim().toLowerCase())
+    .refine(
+      (val) =>
+        Object.values(GuardianRelation)
+          .map((v) => v.toLowerCase())
+          .includes(val),
+      {
+        message: "Invalid guardian relation",
+      }
+    )
+    .transform((val) => {
+      const entry = Object.values(GuardianRelation).find(
+        (v) => v.toLowerCase() === val
+      );
+      return entry as GuardianRelation;
+    }),
+  classId: mongoZ,
   branch: z.nativeEnum(Branch),
   batchType: z.nativeEnum(BatchType),
   admissionDate: z.coerce.date(),
@@ -245,57 +283,84 @@ export const studentZ = personBaseZ.extend({
   monthlyDiscount: z.number().min(0).default(0),
   residentialFee: z.number().min(0).optional(),
   mealFee: z.number().min(0).optional(),
-  isActive: z.boolean().default(true),
   passoutDate: z.coerce.date().optional(), // fareg
   createdAt: z.coerce.date().default(() => new Date()),
   updatedAt: z.coerce.date().default(() => new Date()),
 });
 
+// If you want a separate update  where fields can be optional:
+export const studentUpdateZ = studentZ.partial().refine(
+  (data) => {
+    // ensure at least one field present on update
+    return Object.keys(data).length > 0;
+  },
+  { message: "At least one field must be provided for update" }
+);
+
 // Guardian Schema
 export const guardianZ = personBaseZ.omit({ dateOfBirth: true }).extend({
-  _id: z.instanceof(Types.ObjectId).optional(),
-  userId: z.instanceof(Types.ObjectId),
-  guardianId: z.string(),
+  _id: mongoZ.optional(),
+  userId: mongoZ,
+  guardianId: z.string().optional(),
   occupation: z.string().optional(),
   monthlyIncome: z.number().optional(),
   createdAt: z.coerce.date().default(() => new Date()),
   updatedAt: z.coerce.date().default(() => new Date()),
 });
 
+// If you want a separate update  where fields can be optional:
+export const guardianUpdateZ = guardianZ.partial().refine(
+  (data) => {
+    // ensure at least one field present on update
+    return Object.keys(data).length > 0;
+  },
+  { message: "At least one field must be provided for update" }
+);
+
 // Staff Schema
 export const staffZ = personBaseZ.extend({
-  _id: z.instanceof(Types.ObjectId).optional(),
-  userId: z.instanceof(Types.ObjectId),
-  staffId: z.string(),
+  _id: mongoZ.optional(),
+  userId: mongoZ,
+  staffId: z.string().optional(),
   designation: z.string(),
   department: z.string().optional(),
   joinDate: z.coerce.date(),
   basicSalary: z.number().min(0),
-  allowances: z.number().min(0).default(0),
   branch: z.nativeEnum(Branch),
-  isActive: z.boolean().default(true),
   resignationDate: z.coerce.date().optional(),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
+
+// If you want a separate update  where fields can be optional:
+export const staffUpdateZ = staffZ.partial().refine(
+  (data) => {
+    // ensure at least one field present on update
+    return Object.keys(data).length > 0;
+  },
+  { message: "At least one field must be provided for update" }
+);
 
 // Class Schema
 export const classZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   className: z.string(),
   description: z.string().optional(),
-  branch: z.nativeEnum(Branch),
-  batchType: z.nativeEnum(BatchType),
   monthlyFee: z.number().min(0),
   capacity: z.number().min(1).optional(),
-  isActive: z.boolean().default(true),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
+  isActive: z.boolean().optional(),
 });
+
+// If you want a separate update  where fields can be optional:
+export const classUpdateZ = classZ.partial().refine(
+  (data) => {
+    // ensure at least one field present on update
+    return Object.keys(data).length > 0;
+  },
+  { message: "At least one field must be provided for update" }
+);
 
 // Session Schema
 export const sessionZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   sessionName: z.string(),
   batchType: z.nativeEnum(BatchType),
   startDate: z.coerce.date(),
@@ -305,12 +370,21 @@ export const sessionZ = z.object({
   updatedAt: z.coerce.date().default(() => new Date()),
 });
 
+// If you want a separate update  where fields can be optional:
+export const sessionUpdateZ = sessionZ.partial().refine(
+  (data) => {
+    // ensure at least one field present on update
+    return Object.keys(data).length > 0;
+  },
+  { message: "At least one field must be provided for update" }
+);
+
 // Fee Collection Schema
 export const feeCollectionZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   receiptNumber: z.string(),
-  studentId: z.instanceof(Types.ObjectId),
-  sessionId: z.instanceof(Types.ObjectId),
+  studentId: mongoZ,
+  sessionId: mongoZ,
   month: z.number().min(1).max(12).optional(),
   year: z.number().min(2000),
   feeType: z.nativeEnum(FeeType),
@@ -321,9 +395,9 @@ export const feeCollectionZ = z.object({
   paymentStatus: z.nativeEnum(PaymentStatus),
   paymentMethod: z.nativeEnum(PaymentMethod),
   paymentDate: z.coerce.date().default(() => new Date()),
-  paidBy: z.instanceof(Types.ObjectId), // Who paid: student or guardian userId
+  paidBy: mongoZ, // Who paid: student or guardian userId
   paidByRole: z.nativeEnum(UserRole), // Role of payer: student or guardian
-  collectedBy: z.instanceof(Types.ObjectId), // Staff who collected
+  collectedBy: mongoZ, // Staff who collected
   remarks: z.string().optional(),
   createdAt: z.coerce.date().default(() => new Date()),
   updatedAt: z.coerce.date().default(() => new Date()),
@@ -331,37 +405,17 @@ export const feeCollectionZ = z.object({
 
 // Salary Payment Schema
 export const salaryPaymentZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   receiptNumber: z.string(),
-  staffId: z.instanceof(Types.ObjectId),
+  staffId: mongoZ,
   month: z.number().min(1).max(12),
   year: z.number().min(2000),
   basicSalary: z.number().min(0),
-  allowances: z.number().min(0).default(0),
   bonus: z.number().min(0).default(0),
-  deductions: z.number().min(0).default(0),
-  advanceAdjustment: z.number().min(0).default(0),
   netSalary: z.number().min(0),
   paymentDate: z.coerce.date().default(() => new Date()),
   paymentMethod: z.nativeEnum(PaymentMethod),
-  paidBy: z.instanceof(Types.ObjectId),
-  remarks: z.string().optional(),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
-});
-
-// Advance Salary Schema
-export const advanceSalaryZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
-  staffId: z.instanceof(Types.ObjectId),
-  amount: z.number().min(0),
-  requestDate: z.coerce.date().default(() => new Date()),
-  approvalDate: z.coerce.date().optional(),
-  approvedBy: z.instanceof(Types.ObjectId).optional(),
-  paymentDate: z.coerce.date().optional(),
-  paymentMethod: z.nativeEnum(PaymentMethod).optional(),
-  status: z.enum(["pending", "approved", "rejected", "paid"]),
-  adjustmentPlan: z.string().optional(),
+  paidBy: mongoZ,
   remarks: z.string().optional(),
   createdAt: z.coerce.date().default(() => new Date()),
   updatedAt: z.coerce.date().default(() => new Date()),
@@ -369,7 +423,7 @@ export const advanceSalaryZ = z.object({
 
 // Expense Schema
 export const expenseZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   voucherNumber: z.string(),
   category: z.nativeEnum(ExpenseCategory),
   description: z.string(),
@@ -378,66 +432,61 @@ export const expenseZ = z.object({
   paymentMethod: z.nativeEnum(PaymentMethod),
   branch: z.nativeEnum(Branch),
   paidTo: z.string().optional(),
-  approvedBy: z.instanceof(Types.ObjectId).optional(),
+  approvedBy: mongoZ.optional(),
   remarks: z.string().optional(),
   attachments: z.array(imageZ).optional(),
   createdAt: z.coerce.date().default(() => new Date()),
   updatedAt: z.coerce.date().default(() => new Date()),
 });
 
-// TODO referenceId ki? and performedBy ki?
 // Transaction Log Schema
 export const transactionLogZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   transactionType: z.nativeEnum(TransactionType),
-  referenceId: z.instanceof(Types.ObjectId),
-  referenceModel: z.enum([
-    "FeeCollection",
-    "SalaryPayment",
-    "Expense",
-    "AdvanceSalary",
-  ]),
+  referenceId: mongoZ,
+  referenceModel: z.enum(["FeeCollection", "SalaryPayment", "Expense"]),
   amount: z.number(),
   description: z.string(),
-  performedBy: z.instanceof(Types.ObjectId),
+  performedBy: mongoZ,
   branch: z.nativeEnum(Branch),
   createdAt: z.coerce.date().default(() => new Date()),
 });
 
 // Attendance Schema
 export const attendanceZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
-  studentId: z.instanceof(Types.ObjectId),
-  classId: z.instanceof(Types.ObjectId),
+  _id: mongoZ.optional(),
+  studentId: mongoZ,
+  classId: mongoZ,
   date: z.coerce.date(),
   status: z.nativeEnum(AttendanceStatus),
   remarks: z.string().optional(),
-  markedBy: z.instanceof(Types.ObjectId),
+  sessionId: mongoZ,
+  markedBy: mongoZ,
   createdAt: z.coerce.date().default(() => new Date()),
   updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // Staff Attendance Schema
 export const staffAttendanceZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
-  staffId: z.instanceof(Types.ObjectId),
+  _id: mongoZ.optional(),
+  staffId: mongoZ,
   date: z.coerce.date(),
   status: z.nativeEnum(AttendanceStatus),
   checkInTime: z.coerce.date().optional(),
   checkOutTime: z.coerce.date().optional(),
   remarks: z.string().optional(),
-  markedBy: z.instanceof(Types.ObjectId),
+  markedBy: mongoZ,
   createdAt: z.coerce.date().default(() => new Date()),
   updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // Exam Schema
 export const examZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   examName: z.string(),
   examType: z.nativeEnum(ExamType),
-  classId: z.instanceof(Types.ObjectId),
-  sessionId: z.instanceof(Types.ObjectId),
+  classId: mongoZ,
+  sessionId: mongoZ,
   examDate: z.coerce.date(),
   totalMarks: z.number().min(0),
   passingMarks: z.number().min(0),
@@ -451,12 +500,12 @@ export const examZ = z.object({
   updatedAt: z.coerce.date().default(() => new Date()),
 });
 
-// TODO. ekhane position keno dorkar?
 // Result Schema
 export const resultZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
-  examId: z.instanceof(Types.ObjectId),
-  studentId: z.instanceof(Types.ObjectId),
+  _id: mongoZ.optional(),
+  examId: mongoZ,
+  studentId: mongoZ,
+  sessionId: mongoZ,
   marks: z.array(
     z.object({
       subjectName: z.string(),
@@ -477,7 +526,7 @@ export const resultZ = z.object({
 // TODO. amra book resale kori.
 // Book Schema
 export const bookZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   bookCode: z.string(),
   title: z.string(),
   author: z.string().optional(),
@@ -491,17 +540,18 @@ export const bookZ = z.object({
   createdAt: z.coerce.date().default(() => new Date()),
   updatedAt: z.coerce.date().default(() => new Date()),
 });
+
 // Book Issue Schema
 export const bookIssueZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
-  bookId: z.instanceof(Types.ObjectId),
-  studentId: z.instanceof(Types.ObjectId),
+  _id: mongoZ.optional(),
+  bookId: mongoZ,
+  studentId: mongoZ,
   issueDate: z.coerce.date().default(() => new Date()),
   expectedReturnDate: z.coerce.date(),
   actualReturnDate: z.coerce.date().optional(),
   status: z.enum(["issued", "returned", "lost"]),
-  issuedBy: z.instanceof(Types.ObjectId),
-  returnedTo: z.instanceof(Types.ObjectId).optional(),
+  issuedBy: mongoZ,
+  returnedTo: mongoZ.optional(),
   fineAmount: z.number().min(0).default(0),
   remarks: z.string().optional(),
   createdAt: z.coerce.date().default(() => new Date()),
@@ -510,7 +560,7 @@ export const bookIssueZ = z.object({
 
 // Notice Schema
 export const noticeZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   title: z.string(),
   content: z.string(),
   noticeType: z.nativeEnum(NoticeType),
@@ -521,20 +571,20 @@ export const noticeZ = z.object({
   expiryDate: z.coerce.date().optional(),
   attachments: z.array(imageZ).optional(),
   isActive: z.boolean().default(true),
-  createdBy: z.instanceof(Types.ObjectId),
+  createdBy: mongoZ,
   createdAt: z.coerce.date().default(() => new Date()),
   updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // Blog Schema
 export const blogZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
+  _id: mongoZ.optional(),
   title: z.string(),
   slug: z.string(),
   content: z.string(),
   excerpt: z.string().optional(),
   featuredImage: imageZ.optional(),
-  authorId: z.instanceof(Types.ObjectId),
+  authorId: mongoZ,
   authorRole: z.nativeEnum(UserRole),
   status: z.nativeEnum(BlogStatus),
   tags: z.array(z.string()).optional(),
@@ -546,8 +596,8 @@ export const blogZ = z.object({
 
 // SMS Log Schema
 export const smsLogZ = z.object({
-  _id: z.instanceof(Types.ObjectId).optional(),
-  recipientId: z.instanceof(Types.ObjectId),
+  _id: mongoZ.optional(),
+  recipientId: mongoZ,
   recipientRole: z.nativeEnum(UserRole),
   phoneNumber: z
     .string()
@@ -589,19 +639,12 @@ export const loginZ = z
 
 //  Validate the ID (MongoDB ObjectId format)
 export const mongoIdZ = z.object({
-  _id: z
-    .any()
-    .transform((val) =>
-      val instanceof mongoose.Types.ObjectId ? val.toString() : val
-    )
-    .refine((val) => mongoose.Types.ObjectId.isValid(val), {
-      message: "Invalid MongoDB User ID format",
-    }),
+  _id: mongoZ,
 });
 
 // ==================== TYPESCRIPT TYPES/INTERFACES ====================
 
-export type TMongoId = z.infer<typeof mongoIdZ>;
+export type TMongoId = z.infer<typeof mongoZ>;
 export type TLogin = z.infer<typeof loginZ>;
 export type TChangePassword = z.infer<typeof changePasswordZ>;
 export type IUser = z.infer<typeof userZ> & {
@@ -614,13 +657,17 @@ export type IUser = z.infer<typeof userZ> & {
 };
 export type IUpdateUser = z.infer<typeof userUpdateZ>;
 export type IStudent = z.infer<typeof studentZ>;
+export type IUpdateStudent = z.infer<typeof studentUpdateZ>;
 export type IGuardian = z.infer<typeof guardianZ>;
+export type IUpdateGuardian = z.infer<typeof guardianUpdateZ>;
 export type IStaff = z.infer<typeof staffZ>;
+export type IUpdateStaff = z.infer<typeof staffUpdateZ>;
 export type IClass = z.infer<typeof classZ>;
+export type IUpdateClass = z.infer<typeof classUpdateZ>;
 export type ISession = z.infer<typeof sessionZ>;
+export type IUpdateSession = z.infer<typeof sessionUpdateZ>;
 export type IFeeCollection = z.infer<typeof feeCollectionZ>;
 export type ISalaryPayment = z.infer<typeof salaryPaymentZ>;
-export type IAdvanceSalary = z.infer<typeof advanceSalaryZ>;
 export type IExpense = z.infer<typeof expenseZ>;
 export type ITransactionLog = z.infer<typeof transactionLogZ>;
 export type IAttendance = z.infer<typeof attendanceZ>;

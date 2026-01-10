@@ -10,10 +10,10 @@ const StaffSchema = new Schema<IStaff & Document>(
     lastName: { type: String, required: true },
     fatherName: { type: String },
     motherName: { type: String },
-    dateOfBirth: { type: Date, required: true },
+    dateOfBirth: { type: Date },
     gender: { type: String, enum: Object.values(Gender), required: true },
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },
-    nidNumber: { type: String },
+    nid: { type: String, unique: true, required: false, sparse: true },
     birthCertificateNumber: { type: String },
     presentAddress: {
       village: { type: String, required: true },
@@ -34,9 +34,7 @@ const StaffSchema = new Schema<IStaff & Document>(
     department: { type: String },
     joinDate: { type: Date, required: true },
     basicSalary: { type: Number, required: true, min: 0 },
-    allowances: { type: Number, default: 0, min: 0 },
     branch: { type: String, enum: Object.values(Branch), required: true },
-    isActive: { type: Boolean, default: true },
     resignationDate: { type: Date },
   },
   { timestamps: true }

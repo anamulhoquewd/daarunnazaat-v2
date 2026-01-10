@@ -1,6 +1,11 @@
 import connectDB from "@/server/config/db";
 import { notFoundError } from "@/server/error";
 import authRoutes from "@/server/routes/auth.route";
+import classRoutes from "@/server/routes/classes.route";
+import guardianRoutes from "@/server/routes/guardian.route";
+import sessionRoute from "@/server/routes/session.route";
+import staffRoutes from "@/server/routes/staff.route";
+import studentRoutes from "@/server/routes/students.route";
 import userRoutes from "@/server/routes/users.route";
 import { userServices } from "@/server/services";
 import { Hono } from "hono";
@@ -47,20 +52,26 @@ app.use(
 // Health check
 app.get("/health", (c) => c.json({ message: "API is healthy!" }));
 
-// Admin routes
+// User routes
 app.route("/users", userRoutes);
 
-// Admin routes
+// Auth routes
 app.route("/auth", authRoutes);
 
-// // Class routes
-// app.route("/classes", classRoutes);
+// Studetns routes
+app.route("/students", studentRoutes);
 
-// // Students routes
-// app.route("/students", studentsRoutes);
+// Guardian routes
+app.route("/guardians", guardianRoutes);
 
-// // Payments routes
-// app.route("/payments", paymentRoutes);
+// Class routes
+app.route("/classes", classRoutes);
+
+// Session routes
+app.route("/sessions", sessionRoute);
+
+// Staff routes
+app.route("/staffs", staffRoutes);
 
 // Global Error Handler
 app.onError((error: any, c) => {

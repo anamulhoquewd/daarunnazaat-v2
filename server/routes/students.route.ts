@@ -1,23 +1,47 @@
 import { Hono } from "hono";
-import { authenticated, authorized } from "../middlewares/auth.middleware";
+import { authenticate, authorize } from "../middlewares/auth.middleware";
+import { UserRole } from "@/validations";
 import { studentController } from "../controllers";
 
-const studentsRoutes = new Hono();
+const studentRoutes = new Hono();
 
-studentsRoutes.get("/", authenticated, (c) => studentController.gets(c));
-
-studentsRoutes.post("/register", authenticated, (c) =>
-  studentController.register(c)
+studentRoutes.get(
+  "/",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.gets(c)
 );
 
-studentsRoutes.patch("/:_id", authenticated, (c) =>
-  studentController.updates(c)
+studentRoutes.post(
+  "/register",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.register(c)
 );
 
-studentsRoutes.get("/:_id", authenticated, (c) => studentController.get(c));
+studentRoutes.patch("/:_id", authenticate, (c) => studentController.updates(c));
 
-studentsRoutes.delete("/:_id", authenticated, authorized, (c) =>
-  studentController.deletes(c)
+studentRoutes.get("/:_id", authenticate, (c) => studentController.get(c));
+
+studentRoutes.delete(
+  "/:_id",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.deletes(c)
 );
 
-export default studentsRoutes;
+studentRoutes.patch(
+  "/activate/:_id",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.activate(c)
+);
+
+studentRoutes.patch(
+  "/deactivate/:_id",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.deactivate(c)
+);
+
+export default studentRoutes;

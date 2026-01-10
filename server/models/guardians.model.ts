@@ -1,7 +1,6 @@
 import { BloodGroup, Gender, IGuardian } from "@/validations";
 import { model, Model, models, Schema } from "mongoose";
 
-// TODO relation ta kar sathe? student guardian er odhine naki guardian student er odhine?
 // Guardian Model
 const GuardianSchema = new Schema<IGuardian & Document>(
   {
@@ -9,11 +8,9 @@ const GuardianSchema = new Schema<IGuardian & Document>(
     guardianId: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    fatherName: { type: String },
-    motherName: { type: String },
     gender: { type: String, enum: Object.values(Gender), required: true },
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },
-    nidNumber: { type: String },
+    nid: { type: String, unique: true, required: false, sparse: true },
     birthCertificateNumber: { type: String },
     presentAddress: {
       village: { type: String, required: true },

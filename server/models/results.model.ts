@@ -13,6 +13,12 @@ const ResultSchema = new Schema<IResult & Document>(
         totalMarks: { type: Number, required: true, min: 0 },
       },
     ],
+    sessionId: {
+      type: Schema.Types.ObjectId,
+      ref: "Session",
+      required: true,
+    },
+
     totalMarks: { type: Number, required: true, min: 0 },
     obtainedMarks: { type: Number, required: true, min: 0 },
     percentage: { type: Number, required: true, min: 0, max: 100 },

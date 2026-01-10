@@ -9,10 +9,7 @@ const SalaryPaymentSchema = new Schema<ISalaryPayment & Document>(
     month: { type: Number, required: true, min: 1, max: 12 },
     year: { type: Number, required: true, min: 2000 },
     basicSalary: { type: Number, required: true, min: 0 },
-    allowances: { type: Number, default: 0, min: 0 },
     bonus: { type: Number, default: 0, min: 0 },
-    deductions: { type: Number, default: 0, min: 0 },
-    advanceAdjustment: { type: Number, default: 0, min: 0 },
     netSalary: { type: Number, required: true, min: 0 },
     paymentDate: { type: Date, default: Date.now },
     paymentMethod: {

@@ -1,43 +1,43 @@
 import { Hono } from "hono";
-import { classController } from "../controllers";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
 import { UserRole } from "@/validations";
+import { sessionController } from "../controllers";
 
-const classRoutes = new Hono();
+const sessionRoute = new Hono();
 
-classRoutes.get(
+sessionRoute.get(
   "/",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => classController.gets(c)
+  (c) => sessionController.gets(c)
 );
 
-classRoutes.post(
+sessionRoute.post(
   "/register",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => classController.register(c)
+  (c) => sessionController.register(c)
 );
 
-classRoutes.get(
+sessionRoute.get(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => classController.get(c)
+  (c) => sessionController.get(c)
 );
 
-classRoutes.patch(
+sessionRoute.patch(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => classController.updates(c)
+  (c) => sessionController.updates(c)
 );
 
-classRoutes.delete(
+sessionRoute.delete(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => classController.deletes(c)
+  (c) => sessionController.deletes(c)
 );
 
-export default classRoutes;
+export default sessionRoute;

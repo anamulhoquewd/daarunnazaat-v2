@@ -1,18 +1,20 @@
 import {
-  classUpdateZ,
-  classZ,
-  IClass,
-  IUpdateClass,
+  BatchType,
+  Branch,
+  ISession,
+  IUpdateSession,
   mongoIdZ,
+  sessionUpdateZ,
+  sessionZ,
 } from "@/validations";
-import mongoose from "mongoose";
 import { schemaValidationError } from "../error";
-import { Class } from "../models/classes.model";
+import { Session } from "../models/sessions.model";
 import pagination from "../utils/pagination";
+import mongoose from "mongoose";
 
-export const register = async (body: IClass) => {
+export const register = async (body: ISession) => {
   // Safe Parse for better error handling
-  const validData = classZ.safeParse(body);
+  const validData = sessionZ.safeParse(body);
 
   if (!validData.success) {
     return {
@@ -22,8 +24,8 @@ export const register = async (body: IClass) => {
 
   try {
     // Check if class is already exists
-    const isExistClass = await Class.findOne({
-      className: validData.data.className,
+    const isExistClass = await Session.findOne({
+      sessionName: validData.data.sessionName,
     });
 
     if (isExistClass) {
@@ -32,24 +34,24 @@ export const register = async (body: IClass) => {
           message: "Sorry! This class already exists.",
           fields: [
             {
-              name: "className",
-              message: "class name must be unique",
+              name: "name",
+              message: "session name must be unique",
             },
           ],
         },
       };
     }
 
-    // Create class
-    const newClass = new Class(validData.data);
+    // Create session
+    const session = new Session(validData.data);
 
-    // Save class
-    const docs = await newClass.save();
+    // Save session
+    const docs = await session.save();
 
     return {
       success: {
         success: true,
-        message: "Class created successfully",
+        message: "Session created successfully",
         data: docs,
       },
     };
@@ -71,19 +73,20 @@ export const gets = async (queryParams: {
   sortType: string;
 
   isActive?: boolean;
+  batchType: BatchType;
   search: string;
 }) => {
   try {
     // Build query
     const query: any = {};
-
+    if (queryParams.batchType) query.batchType = queryParams.batchType;
     if (typeof queryParams.isActive === "boolean") {
       query.isActive = queryParams.isActive;
     }
 
     if (queryParams.search) {
       query.$or = [
-        { className: { $regex: queryParams.search, $options: "i" } },
+        { sessionName: { $regex: queryParams.search, $options: "i" } },
       ];
 
       if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
@@ -93,25 +96,23 @@ export const gets = async (queryParams: {
       }
     }
     // Allowable sort fields
-    const sortField = ["createdAt", "updatedAt", "className"].includes(
+    const sortField = ["createdAt", "updatedAt", "name"].includes(
       queryParams.sortBy
     )
       ? queryParams.sortBy
-      : "createdAt";
+      : "name";
     const sortDirection =
       queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
 
-    // Fetch classes
-    const [classes, total] = await Promise.all([
-      Class.find(query)
+    // Fetch sessions
+    const [sessions, total] = await Promise.all([
+      Session.find(query)
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
         .limit(queryParams.limit)
         .exec(),
-      Class.countDocuments(query),
+      Session.countDocuments(query),
     ]);
-
-    console.log("Query: ", query);
 
     // Pagination
     const createPagination = pagination({
@@ -123,8 +124,8 @@ export const gets = async (queryParams: {
     return {
       success: {
         success: true,
-        message: "Classes fetched successfully!",
-        data: classes,
+        message: "sessions fetched successfully!",
+        data: sessions,
         pagination: createPagination,
       },
     };
@@ -148,9 +149,9 @@ export const get = async (_id: string) => {
 
   try {
     // Check if Class exists
-    const classData = await Class.findById(idValidation.data._id);
+    const session = await Session.findById(idValidation.data._id);
 
-    if (!classData) {
+    if (!session) {
       return {
         error: {
           message: `Class not found with provided ID!`,
@@ -162,7 +163,7 @@ export const get = async (_id: string) => {
       success: {
         success: true,
         message: `Class fetched successfully!`,
-        data: classData,
+        data: session,
       },
     };
   } catch (error: any) {
@@ -181,7 +182,7 @@ export const updates = async ({
   body,
 }: {
   _id: string;
-  body: IUpdateClass;
+  body: IUpdateSession;
 }) => {
   // Validate ID
   const idValidation = mongoIdZ.safeParse({ _id });
@@ -190,7 +191,7 @@ export const updates = async ({
   }
 
   // Validate Body
-  const bodyValidation = classUpdateZ.safeParse(body);
+  const bodyValidation = sessionUpdateZ.safeParse(body);
   if (!bodyValidation.success) {
     return {
       error: schemaValidationError(
@@ -202,9 +203,9 @@ export const updates = async ({
 
   try {
     // Check if Class exists
-    const classData = await Class.findById(idValidation.data._id);
+    const session = await Session.findById(idValidation.data._id);
 
-    if (!classData) {
+    if (!session) {
       return {
         error: {
           message: "Class not fount with the provided ID",
@@ -219,14 +220,14 @@ export const updates = async ({
           success: true,
           message: "No updates provided, returning existing user",
 
-          data: classData,
+          data: session,
         },
       };
     }
 
     // Update only provided fields
-    Object.assign(classData, bodyValidation.data);
-    const docs = await classData.save();
+    Object.assign(session, bodyValidation.data);
+    const docs = await session.save();
 
     return {
       success: {
@@ -254,24 +255,24 @@ export const deletes = async (_id: string) => {
   }
 
   try {
-    const classData = await Class.findById(idValidation.data._id);
+    const session = await Session.findById(idValidation.data._id);
 
-    if (!classData) {
+    if (!session) {
       return {
         error: {
-          message: `Class not found with provided ID!`,
+          message: `Session not found with provided ID!`,
         },
       };
     }
 
-    // Delete Class
-    await classData.deleteOne();
+    // Delete Session
+    await session.deleteOne();
 
     // Response
     return {
       success: {
         success: true,
-        message: `Class deleted successfully!`,
+        message: `Session deleted successfully!`,
       },
     };
   } catch (error: any) {

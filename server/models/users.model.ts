@@ -12,7 +12,6 @@ const UserSchema = new Schema<IUser & Document>(
     alternativePhone: { type: String },
     whatsApp: { type: String },
     role: { type: String, enum: Object.values(UserRole), required: true },
-    nid: { type: String, unique: true },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
     isBlocked: {

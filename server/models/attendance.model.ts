@@ -12,6 +12,12 @@ const AttendanceSchema = new Schema<IAttendance & Document>(
       enum: Object.values(AttendanceStatus),
       required: true,
     },
+    sessionId: {
+      type: Schema.Types.ObjectId,
+      ref: "Session",
+      required: true,
+    },
+
     remarks: { type: String },
     markedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },

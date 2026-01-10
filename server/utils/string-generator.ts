@@ -5,6 +5,11 @@ import { SalaryPayment } from "../models/salaryPayments.model";
 import { Staff } from "../models/staffs.model";
 import { Student } from "../models/students.model";
 
+/**
+ * Generate String for user password
+ * Format: asS4LseI
+ * Example: asS4LseI
+ */
 export function stringGenerator(strLength: number) {
   // Ensure the length is a valid number
   const length = typeof strLength === "number" && strLength > 0 ? strLength : 0;
@@ -27,8 +32,6 @@ export function stringGenerator(strLength: number) {
     );
   }
 }
-
-// utils/numberGenerator.ts
 
 /**
  * Generate Receipt Number for Fee Collection
@@ -123,7 +126,7 @@ export async function generateStudentId(): Promise<string> {
 
   let nextNumber = 1;
 
-  if (lastStudent) {
+  if (lastStudent && lastStudent.studentId) {
     const lastNumber = parseInt(lastStudent.studentId.split("-")[2]);
     nextNumber = lastNumber + 1;
   }
@@ -148,7 +151,7 @@ export async function generateGuardianId(): Promise<string> {
 
   let nextNumber = 1;
 
-  if (lastGuardian) {
+  if (lastGuardian && lastGuardian.guardianId) {
     const lastNumber = parseInt(lastGuardian.guardianId.split("-")[2]);
     nextNumber = lastNumber + 1;
   }
@@ -173,7 +176,7 @@ export async function generateStaffId(): Promise<string> {
 
   let nextNumber = 1;
 
-  if (lastStaff) {
+  if (lastStaff && lastStaff.staffId) {
     const lastNumber = parseInt(lastStaff.staffId.split("-")[2]);
     nextNumber = lastNumber + 1;
   }
