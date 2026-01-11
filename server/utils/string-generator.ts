@@ -38,7 +38,7 @@ export function stringGenerator(strLength: number) {
  * Format: FEE-YYYY-NNNNNN
  * Example: FEE-2024-000001, FEE-2024-000002
  */
-export async function generateReceiptNumber(): Promise<string> {
+export async function generateFeeReceiptNumber(): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `FEE-${year}-`;
 
@@ -101,7 +101,7 @@ export async function generateSalaryReceiptNumber(): Promise<string> {
 
   let nextNumber = 1;
 
-  if (lastReceipt) {
+  if (lastReceipt && lastReceipt.receiptNumber) {
     const lastNumber = parseInt(lastReceipt.receiptNumber.split("-")[2]);
     nextNumber = lastNumber + 1;
   }

@@ -59,6 +59,11 @@ export enum FeeType {
   OTHER = "other",
 }
 
+export enum PaymentSource {
+  SELF = "self",
+  OFFICE = "office",
+}
+
 export enum PaymentStatus {
   PAID = "paid",
   PARTIAL = "partial",
@@ -76,6 +81,8 @@ export enum PaymentMethod {
 export enum TransactionType {
   INCOME = "income",
   EXPENSE = "expense",
+  REVERSAL = "reversal",
+  ADJUSTMENT = "adjustment",
 }
 
 export enum ExpenseCategory {
@@ -382,44 +389,60 @@ export const sessionUpdateZ = sessionZ.partial().refine(
 // Fee Collection Schema
 export const feeCollectionZ = z.object({
   _id: mongoZ.optional(),
-  receiptNumber: z.string(),
+  receiptNumber: z.string().optional(),
   studentId: mongoZ,
   sessionId: mongoZ,
-  month: z.number().min(1).max(12).optional(),
+  month: z.number().min(1).max(12),
   year: z.number().min(2000),
   feeType: z.nativeEnum(FeeType),
-  totalAmount: z.number().min(0),
+  branch: z.nativeEnum(Branch),
+  amount: z.number().min(0),
   discount: z.number().min(0).default(0),
   paidAmount: z.number().min(0),
   dueAmount: z.number().min(0).default(0),
-  paymentStatus: z.nativeEnum(PaymentStatus),
+  paymentStatus: z.nativeEnum(PaymentStatus).optional(),
+  paymentSource: z.nativeEnum(PaymentSource),
   paymentMethod: z.nativeEnum(PaymentMethod),
   paymentDate: z.coerce.date().default(() => new Date()),
-  paidBy: mongoZ, // Who paid: student or guardian userId
-  paidByRole: z.nativeEnum(UserRole), // Role of payer: student or guardian
-  collectedBy: mongoZ, // Staff who collected
+  collectedBy: mongoZ.optional(), // Staff who collected
   remarks: z.string().optional(),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
+
+// If you want a separate update  where fields can be optional:
+export const feeCollectionsUpdateZ = feeCollectionZ.partial().refine(
+  (data) => {
+    // ensure at least one field present on update
+    return Object.keys(data).length > 0;
+  },
+  { message: "At least one field must be provided for update" }
+);
 
 // Salary Payment Schema
 export const salaryPaymentZ = z.object({
   _id: mongoZ.optional(),
-  receiptNumber: z.string(),
+  receiptNumber: z.string().optional(),
   staffId: mongoZ,
   month: z.number().min(1).max(12),
   year: z.number().min(2000),
   basicSalary: z.number().min(0),
   bonus: z.number().min(0).default(0),
-  netSalary: z.number().min(0),
+  netSalary: z.number().optional(),
   paymentDate: z.coerce.date().default(() => new Date()),
   paymentMethod: z.nativeEnum(PaymentMethod),
-  paidBy: mongoZ,
+  branch: z.nativeEnum(Branch),
+  paidBy: mongoZ.optional(),
   remarks: z.string().optional(),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
+  status: z.enum(["paid", "reversed", "adjusted"]).optional(),
 });
+
+// If you want a separate update  where fields can be optional:
+export const salaryPaymentUpdateZ = salaryPaymentZ.partial().refine(
+  (data) => {
+    // ensure at least one field present on update
+    return Object.keys(data).length > 0;
+  },
+  { message: "At least one field must be provided for update" }
+);
 
 // Expense Schema
 export const expenseZ = z.object({
@@ -439,17 +462,24 @@ export const expenseZ = z.object({
   updatedAt: z.coerce.date().default(() => new Date()),
 });
 
+// If you want a separate update  where fields can be optional:
+export const expenseUpdateZ = expenseZ.partial().refine(
+  (data) => {
+    // ensure at least one field present on update
+    return Object.keys(data).length > 0;
+  },
+  { message: "At least one field must be provided for update" }
+);
+
 // Transaction Log Schema
 export const transactionLogZ = z.object({
-  _id: mongoZ.optional(),
   transactionType: z.nativeEnum(TransactionType),
   referenceId: mongoZ,
   referenceModel: z.enum(["FeeCollection", "SalaryPayment", "Expense"]),
   amount: z.number(),
   description: z.string(),
-  performedBy: mongoZ,
+  performedBy: mongoZ.optional(),
   branch: z.nativeEnum(Branch),
-  createdAt: z.coerce.date().default(() => new Date()),
 });
 
 // Attendance Schema
@@ -667,8 +697,11 @@ export type IUpdateClass = z.infer<typeof classUpdateZ>;
 export type ISession = z.infer<typeof sessionZ>;
 export type IUpdateSession = z.infer<typeof sessionUpdateZ>;
 export type IFeeCollection = z.infer<typeof feeCollectionZ>;
+export type IFeeCollectionUpdate = z.infer<typeof feeCollectionsUpdateZ>;
 export type ISalaryPayment = z.infer<typeof salaryPaymentZ>;
+export type ISalaryPaymentUpdate = z.infer<typeof salaryPaymentUpdateZ>;
 export type IExpense = z.infer<typeof expenseZ>;
+export type IExpenseUpdate = z.infer<typeof expenseUpdateZ>;
 export type ITransactionLog = z.infer<typeof transactionLogZ>;
 export type IAttendance = z.infer<typeof attendanceZ>;
 export type IStaffAttendance = z.infer<typeof staffAttendanceZ>;

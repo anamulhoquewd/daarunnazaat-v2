@@ -4,6 +4,8 @@ import * as guardianController from "./guardians.controller";
 import * as classController from "./classes.controller";
 import * as sessionController from "./session.controller";
 import * as staffController from "./staffs.controller";
+import * as salaryController from "./salaryPayment.controller";
+import * as feeCollectionController from "./feeCollection.controller";
 
 export {
   usersController,
@@ -12,4 +14,6 @@ export {
   classController,
   sessionController,
   staffController,
+  salaryController,
+  feeCollectionController,
 };

@@ -4,6 +4,8 @@ import * as guardanService from "./guardian.service";
 import * as classService from "./class.service";
 import * as sessionService from "./session.service";
 import * as staffService from "./staff.service";
+import * as salaryService from "./salaryPayments.service";
+import * as feeCollectionsService from "./feeCollection.service";
 
 export {
   userServices,
@@ -12,4 +14,6 @@ export {
   classService,
   sessionService,
   staffService,
+  salaryService,
+  feeCollectionsService,
 };

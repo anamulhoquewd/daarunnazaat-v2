@@ -2,7 +2,9 @@ import connectDB from "@/server/config/db";
 import { notFoundError } from "@/server/error";
 import authRoutes from "@/server/routes/auth.route";
 import classRoutes from "@/server/routes/classes.route";
+import feeCollectionRoutes from "@/server/routes/feeCollection.route";
 import guardianRoutes from "@/server/routes/guardian.route";
+import salaryPaymentRoutes from "@/server/routes/salary.route";
 import sessionRoute from "@/server/routes/session.route";
 import staffRoutes from "@/server/routes/staff.route";
 import studentRoutes from "@/server/routes/students.route";
@@ -70,8 +72,14 @@ app.route("/classes", classRoutes);
 // Session routes
 app.route("/sessions", sessionRoute);
 
+// Salary routes
+app.route("/salary-payments", salaryPaymentRoutes);
+
 // Staff routes
 app.route("/staffs", staffRoutes);
+
+// Staff routes
+app.route("/fees", feeCollectionRoutes);
 
 // Global Error Handler
 app.onError((error: any, c) => {
