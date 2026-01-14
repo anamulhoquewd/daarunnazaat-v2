@@ -1,4 +1,4 @@
-import { ResetPasswordForm } from "@/components/auth/reset-form";
+import { ResetPasswordForm } from "@/components/auth/resetForm";
 import SuspenseFallback from "@/components/auth/suspense";
 import { Suspense } from "react";
 

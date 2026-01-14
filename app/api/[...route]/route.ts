@@ -1,6 +1,7 @@
 import connectDB from "@/server/config/db";
 import { notFoundError } from "@/server/error";
 import authRoutes from "@/server/routes/auth.route";
+import blogRoutes from "@/server/routes/blog.route";
 import classRoutes from "@/server/routes/classes.route";
 import feeCollectionRoutes from "@/server/routes/feeCollection.route";
 import guardianRoutes from "@/server/routes/guardian.route";
@@ -80,6 +81,9 @@ app.route("/staffs", staffRoutes);
 
 // Staff routes
 app.route("/fees", feeCollectionRoutes);
+
+// Staff routes
+app.route("/blogs", blogRoutes);
 
 // Global Error Handler
 app.onError((error: any, c) => {

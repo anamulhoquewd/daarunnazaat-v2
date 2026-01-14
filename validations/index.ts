@@ -1,4 +1,4 @@
-import mongoose, { Schema, Model, Document, Types } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 import z from "zod";
 
 // ==================== ENUMS ====================
@@ -121,10 +121,29 @@ export enum BookStatus {
 
 export enum NoticeType {
   GENERAL = "general",
+  ACADEMIC = "academic",
   URGENT = "urgent",
   EVENT = "event",
   HOLIDAY = "holiday",
   EXAM = "exam",
+  ADMISSION = "admission",
+  RESULT = "result",
+}
+
+export enum NoticePriority {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+  URGENT = "urgent",
+}
+
+export enum NoticeAudience {
+  ALL = "all",
+  STUDENTS = "student",
+  STAFF = "staff",
+  GUARDIANS = "guardians",
+  SPECIFIC_CLASS = "specific_class",
+  SPECIFIC_BRANCH = "specific_branch",
 }
 
 export enum BlogStatus {
@@ -172,6 +191,8 @@ export const userZ = z.object({
     .trim()
     .optional(),
   role: z.nativeEnum(UserRole),
+  profile: mongoZ.optional(),
+  profileModel: z.enum(["Student", "Staff", "Guardian"]).optional(),
   isActive: z.boolean().optional(),
   lastLogin: z.coerce.date().optional(),
   refreshTokens: z.array(z.string()).optional(),
@@ -240,6 +261,16 @@ const personBaseZ = z.object({
     })
     .optional(),
   avatar: imageZ.optional(),
+  alternativePhone: z
+    .string()
+    .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
+    .trim()
+    .optional(),
+  whatsApp: z
+    .string()
+    .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
+    .trim()
+    .optional(),
 });
 
 // Student Schema
@@ -291,8 +322,6 @@ export const studentZ = personBaseZ.extend({
   residentialFee: z.number().min(0).optional(),
   mealFee: z.number().min(0).optional(),
   passoutDate: z.coerce.date().optional(), // fareg
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -311,8 +340,6 @@ export const guardianZ = personBaseZ.omit({ dateOfBirth: true }).extend({
   guardianId: z.string().optional(),
   occupation: z.string().optional(),
   monthlyIncome: z.number().optional(),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -373,8 +400,6 @@ export const sessionZ = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   isActive: z.boolean().default(true),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -458,8 +483,6 @@ export const expenseZ = z.object({
   approvedBy: mongoZ.optional(),
   remarks: z.string().optional(),
   attachments: z.array(imageZ).optional(),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -492,8 +515,6 @@ export const attendanceZ = z.object({
   remarks: z.string().optional(),
   sessionId: mongoZ,
   markedBy: mongoZ,
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // Staff Attendance Schema
@@ -506,8 +527,6 @@ export const staffAttendanceZ = z.object({
   checkOutTime: z.coerce.date().optional(),
   remarks: z.string().optional(),
   markedBy: mongoZ,
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // Exam Schema
@@ -526,8 +545,6 @@ export const examZ = z.object({
       marks: z.number().min(0),
     })
   ),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // Result Schema
@@ -549,8 +566,6 @@ export const resultZ = z.object({
   grade: z.string().optional(),
   position: z.number().optional(),
   remarks: z.string().optional(),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // TODO. amra book resale kori.
@@ -567,8 +582,6 @@ export const bookZ = z.object({
   availableQuantity: z.number().min(0),
   status: z.nativeEnum(BookStatus),
   branch: z.nativeEnum(Branch),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // Book Issue Schema
@@ -584,26 +597,38 @@ export const bookIssueZ = z.object({
   returnedTo: mongoZ.optional(),
   fineAmount: z.number().min(0).default(0),
   remarks: z.string().optional(),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
 });
 
 // Notice Schema
 export const noticeZ = z.object({
-  _id: mongoZ.optional(),
   title: z.string(),
   content: z.string(),
-  noticeType: z.nativeEnum(NoticeType),
-  priority: z.enum(["low", "medium", "high", "urgent"]),
-  targetAudience: z.array(z.nativeEnum(UserRole)),
-  branch: z.array(z.nativeEnum(Branch)).optional(),
-  publishDate: z.coerce.date().default(() => new Date()),
+  publisherName: z.string().optional(),
+  publisherRole: z.string().optional(),
+  publisherAvatar: imageZ.optional(),
+  attachments: z
+    .array(
+      z.object({
+        name: z.string(),
+        url: z.string(),
+        type: z.string(),
+      })
+    )
+    .optional(),
+  type: z.nativeEnum(NoticeType),
+  audience: z.nativeEnum(NoticeAudience).optional(),
+  priority: z.nativeEnum(NoticePriority).optional(),
+  targetClasses: z.array(z.string()).optional(),
+  targetBranches: z.array(z.string()).optional(),
+  publishedBy: mongoZ.optional(),
   expiryDate: z.coerce.date().optional(),
-  attachments: z.array(imageZ).optional(),
-  isActive: z.boolean().default(true),
-  createdBy: mongoZ,
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
+  images: z.array(imageZ).optional(),
+  isActive: z.boolean().optional(),
+  isPinned: z.boolean().optional(),
+  isArchived: z.boolean().optional(),
+  isPublished: z.boolean().optional(),
+  publishedAt: z.coerce.date().optional(),
+  expiresAt: z.coerce.date().optional(),
 });
 
 // Blog Schema
@@ -614,15 +639,23 @@ export const blogZ = z.object({
   content: z.string(),
   excerpt: z.string().optional(),
   featuredImage: imageZ.optional(),
-  authorId: mongoZ,
-  authorRole: z.nativeEnum(UserRole),
-  status: z.nativeEnum(BlogStatus),
+  authorId: mongoZ.optional(),
+  publishedBy: mongoZ.optional(),
+  status: z.nativeEnum(BlogStatus).optional(),
   tags: z.array(z.string()).optional(),
   views: z.number().default(0),
   publishedAt: z.coerce.date().optional(),
-  createdAt: z.coerce.date().default(() => new Date()),
-  updatedAt: z.coerce.date().default(() => new Date()),
+  expiresAt: z.coerce.date().optional(),
 });
+
+// If you want a separate update  where fields can be optional:
+export const blogUpdateZ = blogZ.partial().refine(
+  (data) => {
+    // ensure at least one field present on update
+    return Object.keys(data).length > 0;
+  },
+  { message: "At least one field must be provided for update" }
+);
 
 // SMS Log Schema
 export const smsLogZ = z.object({
@@ -672,6 +705,14 @@ export const mongoIdZ = z.object({
   _id: mongoZ,
 });
 
+export const passwordResetZ = z.object({
+  password: z.string().min(8).max(20),
+});
+
+export const resetTokenZ = z.object({
+  resetToken: z.string().length(64, "Invalid reset token format"),
+});
+
 // ==================== TYPESCRIPT TYPES/INTERFACES ====================
 
 export type TMongoId = z.infer<typeof mongoZ>;
@@ -711,6 +752,7 @@ export type IBook = z.infer<typeof bookZ>;
 export type IBookIssue = z.infer<typeof bookIssueZ>;
 export type INotice = z.infer<typeof noticeZ>;
 export type IBlog = z.infer<typeof blogZ>;
+export type IBlogUpdate = z.infer<typeof blogUpdateZ>;
 export type IImage = z.infer<typeof imageZ>;
 export type ISMSLog = z.infer<typeof smsLogZ>;
 
@@ -726,91 +768,135 @@ export interface IPagination {
 // ==================== MONGODB SCHEMAS & MODELS ====================
 
 // Book Model
-const BookSchema = new Schema<IBook & Document>(
-  {
-    bookCode: { type: String, required: true, unique: true },
-    title: { type: String, required: true },
-    author: { type: String },
-    publisher: { type: String },
-    edition: { type: String },
-    category: { type: String, required: true },
-    quantity: { type: Number, required: true, min: 0 },
-    availableQuantity: { type: Number, required: true, min: 0 },
-    status: {
-      type: String,
-      enum: Object.values(BookStatus),
-      default: BookStatus.AVAILABLE,
-    },
-    branch: { type: String, enum: Object.values(Branch), required: true },
-  },
-  { timestamps: true }
-);
+// const BookSchema = new Schema<IBook & Document>(
+//   {
+//     bookCode: { type: String, required: true, unique: true },
+//     title: { type: String, required: true },
+//     author: { type: String },
+//     publisher: { type: String },
+//     edition: { type: String },
+//     category: { type: String, required: true },
+//     quantity: { type: Number, required: true, min: 0 },
+//     availableQuantity: { type: Number, required: true, min: 0 },
+//     status: {
+//       type: String,
+//       enum: Object.values(BookStatus),
+//       default: BookStatus.AVAILABLE,
+//     },
+//     branch: { type: String, enum: Object.values(Branch), required: true },
+//   },
+//   { timestamps: true }
+// );
 
 // BookSchema.index({ bookCode: 1 });
 // BookSchema.index({ branch: 1, status: 1 });
 
-export const Book: Model<IBook & Document> =
-  mongoose.models.Book || mongoose.model<IBook & Document>("Book", BookSchema);
+// export const Book: Model<IBook & Document> =
+//   mongoose.models.Book || mongoose.model<IBook & Document>("Book", BookSchema);
 
 // Book Issue Model
-const BookIssueSchema = new Schema<IBookIssue & Document>(
-  {
-    bookId: { type: Schema.Types.ObjectId, ref: "Book", required: true },
-    studentId: { type: Schema.Types.ObjectId, ref: "Student", required: true },
-    issueDate: { type: Date, default: Date.now },
-    expectedReturnDate: { type: Date, required: true },
-    actualReturnDate: { type: Date },
-    status: {
-      type: String,
-      enum: ["issued", "returned", "lost"],
-      default: "issued",
-    },
-    issuedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    returnedTo: { type: Schema.Types.ObjectId, ref: "User" },
-    fineAmount: { type: Number, default: 0, min: 0 },
-    remarks: { type: String },
-  },
-  { timestamps: true }
-);
+// const BookIssueSchema = new Schema<IBookIssue & Document>(
+//   {
+//     bookId: { type: Schema.Types.ObjectId, ref: "Book", required: true },
+//     studentId: { type: Schema.Types.ObjectId, ref: "Student", required: true },
+//     issueDate: { type: Date, default: Date.now },
+//     expectedReturnDate: { type: Date, required: true },
+//     actualReturnDate: { type: Date },
+//     status: {
+//       type: String,
+//       enum: ["issued", "returned", "lost"],
+//       default: "issued",
+//     },
+//     issuedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+//     returnedTo: { type: Schema.Types.ObjectId, ref: "User" },
+//     fineAmount: { type: Number, default: 0, min: 0 },
+//     remarks: { type: String },
+//   },
+//   { timestamps: true }
+// );
 
-BookIssueSchema.index({ bookId: 1, status: 1 });
-BookIssueSchema.index({ studentId: 1, status: 1 });
+// BookIssueSchema.index({ bookId: 1, status: 1 });
+// BookIssueSchema.index({ studentId: 1, status: 1 });
 
-export const BookIssue: Model<IBookIssue & Document> =
-  mongoose.models.BookIssue ||
-  mongoose.model<IBookIssue & Document>("BookIssue", BookIssueSchema);
+// export const BookIssue: Model<IBookIssue & Document> =
+//   mongoose.models.BookIssue ||
+//   mongoose.model<IBookIssue & Document>("BookIssue", BookIssueSchema);
 
 // TODO explore kora hoy ni.
 // SMS Log Model
-const SMSLogSchema = new Schema<ISMSLog & Document>(
-  {
-    recipientId: { type: Schema.Types.ObjectId, required: true },
-    recipientRole: {
-      type: String,
-      enum: Object.values(UserRole),
-      required: true,
-    },
-    phoneNumber: { type: String, required: true },
-    message: { type: String, required: true },
-    purpose: {
-      type: String,
-      enum: ["fee_due", "fee_paid", "attendance", "notice", "exam", "other"],
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ["pending", "sent", "failed"],
-      default: "pending",
-    },
-    sentAt: { type: Date },
-    errorMessage: { type: String },
-  },
-  { timestamps: true }
-);
+// const SMSLogSchema = new Schema<ISMSLog & Document>(
+//   {
+//     recipientId: { type: Schema.Types.ObjectId, required: true },
+//     recipientRole: {
+//       type: String,
+//       enum: Object.values(UserRole),
+//       required: true,
+//     },
+//     phoneNumber: { type: String, required: true },
+//     message: { type: String, required: true },
+//     purpose: {
+//       type: String,
+//       enum: ["fee_due", "fee_paid", "attendance", "notice", "exam", "other"],
+//       required: true,
+//     },
+//     status: {
+//       type: String,
+//       enum: ["pending", "sent", "failed"],
+//       default: "pending",
+//     },
+//     sentAt: { type: Date },
+//     errorMessage: { type: String },
+//   },
+//   { timestamps: true }
+// );
 
-SMSLogSchema.index({ recipientId: 1, createdAt: -1 });
-SMSLogSchema.index({ status: 1 });
+// SMSLogSchema.index({ recipientId: 1, createdAt: -1 });
+// SMSLogSchema.index({ status: 1 });
 
-export const SMSLog: Model<ISMSLog & Document> =
-  mongoose.models.SMSLog ||
-  mongoose.model<ISMSLog & Document>("SMSLog", SMSLogSchema);
+// export const SMSLog: Model<ISMSLog & Document> =
+//   mongoose.models.SMSLog ||
+//   mongoose.model<ISMSLog & Document>("SMSLog", SMSLogSchema);
+
+// ==================== ZOD SCHEMAS FOR FRONTEND ====================
+
+export const signInZ = z.object({
+  email: z
+    .string()
+    .refine(
+      (value) =>
+        BDPhoneRegex.test(value) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+      {
+        message: "Must be a valid email or 11-digit phone number",
+      }
+    ),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(20, "Password cannot exceed 20 characters"),
+});
+
+export type ISignIn = z.infer<typeof signInZ>;
+
+export const resetPasswordZ = z
+  .object({
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(20, "Password cannot exceed 20 characters"),
+    confirmPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(20, "Password cannot exceed 20 characters"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type IResetPassword = z.infer<typeof resetPasswordZ>;
+
+export const forgotPasswordZ = z.object({
+  email: z.string().email(),
+});
+
+export type IForgotPassowrd = z.infer<typeof forgotPasswordZ>;

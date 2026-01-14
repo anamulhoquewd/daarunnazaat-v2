@@ -26,6 +26,10 @@ staffRoutes.get(
   (c) => staffController.get(c)
 );
 
+staffRoutes.patch("/me", authenticate, authorize(UserRole.STAFF), (c) =>
+  staffController.updateMe(c)
+);
+
 staffRoutes.patch(
   "/:_id",
   authenticate,

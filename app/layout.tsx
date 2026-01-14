@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
+import { Suspense } from "react";
+import LoadingPage from "@/components/common/loading";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Darunnazat",
-  description: "Personal Darunnazat Management System",
+  description: "Darunnazat madrasa management system",
 };
 
 export default function RootLayout({
@@ -34,7 +36,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <Suspense fallback={<LoadingPage />}>{children}</Suspense>
         </ThemeProvider>
       </body>
     </html>

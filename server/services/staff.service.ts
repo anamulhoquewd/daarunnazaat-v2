@@ -17,7 +17,6 @@ import pagination from "../utils/pagination";
 import { generateStaffId } from "../utils/string-generator";
 
 export const createStaff = async (body: IStaff) => {
-  // Safe Parse for better error handling
   const validData = staffZ.safeParse(body);
 
   if (!validData.success) {
@@ -25,6 +24,11 @@ export const createStaff = async (body: IStaff) => {
       error: schemaValidationError(validData.error, "Invalid request body"),
     };
   }
+
+  // ✅ Transaction use করো - atomicity নিশ্চিত করতে
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     // Check user exists
     const user = await User.findById(validData.data.userId);
@@ -37,10 +41,14 @@ export const createStaff = async (body: IStaff) => {
     }
 
     // Ensure role is staff
-    if (user.role !== UserRole.STAFF) {
+    if (
+      user.role !== UserRole.STAFF &&
+      user.role !== UserRole.ADMIN &&
+      user.role !== UserRole.SUPER_ADMIN
+    ) {
       return {
         error: {
-          message: "User role is not STAFF",
+          message: "User role is not STAFF/SUPER_ADMIN/ADMIN",
         },
       };
     }
@@ -67,16 +75,32 @@ export const createStaff = async (body: IStaff) => {
     });
 
     // Save staff
-    const docs = await staff.save();
+    const newStaff = await staff.save();
+
+    // 6️⃣ ✅ Update User profile field
+    await User.findByIdAndUpdate(
+      validData.data.userId,
+      {
+        profile: newStaff._id,
+        profileModel: "Staff", // Dynamic ref এর জন্য
+      },
+      { session }
+    );
+
+    // ✅ Transaction commit
+    await session.commitTransaction();
 
     return {
       success: {
         success: true,
         message: "Staff created successfully",
-        data: docs,
+        data: newStaff,
       },
     };
   } catch (error: any) {
+    // Error হলে rollback
+    await session.abortTransaction();
+
     return {
       serverError: {
         success: false,
@@ -84,6 +108,9 @@ export const createStaff = async (body: IStaff) => {
         stack: process.env.NODE_ENV === "production" ? null : error.stack,
       },
     };
+  } finally {
+    // Session end করো
+    session.endSession();
   }
 };
 
@@ -256,6 +283,90 @@ export const updates = async ({
 
   // Validate Body
   const bodyValidation = staffUpdateZ.safeParse(body);
+  if (!bodyValidation.success) {
+    return {
+      error: schemaValidationError(
+        bodyValidation.error,
+        "Invalid request body"
+      ),
+    };
+  }
+
+  try {
+    // Check if Staff exists
+    const staff = await Staff.findById(idValidation.data._id);
+
+    if (!staff) {
+      return {
+        error: {
+          message: "Staff not fount with the provided ID",
+        },
+      };
+    }
+
+    // Check if all fields are empty
+    if (Object.keys(bodyValidation.data).length === 0) {
+      return {
+        success: {
+          success: true,
+          message: "No updates provided, returning existing user",
+
+          data: staff,
+        },
+      };
+    }
+
+    // Update only provided fields
+    Object.assign(staff, bodyValidation.data);
+
+    const docs = await staff.save();
+
+    return {
+      success: {
+        success: true,
+        message: "Staff updated successfully",
+        data: docs,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const updateMe = async ({
+  userId,
+  body,
+}: {
+  userId: string;
+  body: IUpdateStaff;
+}) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id: userId });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  // Validate Body
+  const bodyValidation = staffUpdateZ
+    .omit({
+      basicSalary: true,
+      birthCertificateNumber: true,
+      branch: true,
+      department: true,
+      designation: true,
+      joinDate: true,
+      nid: true,
+      staffId: true,
+      userId: true,
+      resignationDate: true,
+    })
+    .safeParse(body);
   if (!bodyValidation.success) {
     return {
       error: schemaValidationError(

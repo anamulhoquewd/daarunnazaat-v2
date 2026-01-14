@@ -56,3 +56,15 @@ export const defaultPagination: IPagination = {
   prevPage: null,
   limit: 10,
 };
+
+export const buildQuery = (filters: any) => {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") {
+      params.append(key, String(value));
+    }
+  });
+
+  return params.toString();
+};

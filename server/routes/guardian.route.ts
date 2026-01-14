@@ -26,6 +26,10 @@ guardianRoutes.get(
   (c) => guardianController.get(c)
 );
 
+guardianRoutes.patch("/me", authenticate, authorize(UserRole.GUARDIAN), (c) =>
+  guardianController.updateMe(c)
+);
+
 guardianRoutes.patch(
   "/:_id",
   authenticate,

@@ -1,19 +1,21 @@
-import * as usersController from "./users.controller";
-import * as studentController from "./students.controller";
-import * as guardianController from "./guardians.controller";
 import * as classController from "./classes.controller";
+import * as blogController from "./blog.controller";
+import * as feeCollectionController from "./feeCollection.controller";
+import * as guardianController from "./guardians.controller";
+import * as salaryController from "./salaryPayment.controller";
 import * as sessionController from "./session.controller";
 import * as staffController from "./staffs.controller";
-import * as salaryController from "./salaryPayment.controller";
-import * as feeCollectionController from "./feeCollection.controller";
+import * as studentController from "./students.controller";
+import * as usersController from "./users.controller";
 
 export {
-  usersController,
-  studentController,
-  guardianController,
+  blogController,
   classController,
+  feeCollectionController,
+  guardianController,
+  salaryController,
   sessionController,
   staffController,
-  salaryController,
-  feeCollectionController,
+  studentController,
+  usersController,
 };

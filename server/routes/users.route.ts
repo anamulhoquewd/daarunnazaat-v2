@@ -18,8 +18,6 @@ userRoutes.get(
 
 userRoutes.get("/me", authenticate, (c) => usersController.getMe(c));
 
-userRoutes.patch("/me", authenticate, (c) => usersController.updateMe(c));
-
 userRoutes.get(
   "/:_id",
   authenticate,

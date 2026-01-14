@@ -24,6 +24,10 @@ export const createGuardian = async (body: IGuardian) => {
       error: schemaValidationError(validData.error, "Invalid request body"),
     };
   }
+  // ✅ Transaction use করো - atomicity নিশ্চিত করতে
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     // Check user exists
     const user = await User.findById(validData.data.userId);
@@ -66,16 +70,32 @@ export const createGuardian = async (body: IGuardian) => {
     });
 
     // Save guardian
-    const docs = await guardian.save();
+    const newGuardian = await guardian.save();
+
+    // 6️⃣ ✅ Update User profile field
+    await User.findByIdAndUpdate(
+      validData.data.userId,
+      {
+        profile: newGuardian._id,
+        profileModel: "Guardian", // Dynamic ref এর জন্য
+      },
+      { session }
+    );
+
+    // ✅ Transaction commit
+    await session.commitTransaction();
 
     return {
       success: {
         success: true,
         message: "Guardian created successfully",
-        data: docs,
+        data: newGuardian,
       },
     };
   } catch (error: any) {
+    // Error হলে rollback
+    await session.abortTransaction();
+
     return {
       serverError: {
         success: false,
@@ -83,6 +103,9 @@ export const createGuardian = async (body: IGuardian) => {
         stack: process.env.NODE_ENV === "production" ? null : error.stack,
       },
     };
+  } finally {
+    // Session end করো
+    session.endSession();
   }
 };
 
@@ -216,6 +239,81 @@ export const updates = async ({
 
   // Validate Body
   const bodyValidation = guardianUpdateZ.safeParse(body);
+  if (!bodyValidation.success) {
+    return {
+      error: schemaValidationError(
+        bodyValidation.error,
+        "Invalid request body"
+      ),
+    };
+  }
+
+  try {
+    // Check if Guardian exists
+    const guardian = await Guardian.findById(idValidation.data._id);
+
+    if (!guardian) {
+      return {
+        error: {
+          message: "Guardian not fount with the provided ID",
+        },
+      };
+    }
+
+    // Check if all fields are empty
+    if (Object.keys(bodyValidation.data).length === 0) {
+      return {
+        success: {
+          success: true,
+          message: "No updates provided, returning existing user",
+
+          data: guardian,
+        },
+      };
+    }
+
+    // Update only provided fields
+    Object.assign(guardian, bodyValidation.data);
+
+    const docs = await guardian.save();
+
+    return {
+      success: {
+        success: true,
+        message: "Guardian updated successfully",
+        data: docs,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const updateMe = async ({
+  userId,
+  body,
+}: {
+  userId: string;
+  body: IUpdateGuardian;
+}) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id: userId });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  // Validate Body
+  const bodyValidation = guardianUpdateZ
+    .omit({
+      userId: true,
+    })
+    .safeParse(body);
   if (!bodyValidation.success) {
     return {
       error: schemaValidationError(

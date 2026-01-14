@@ -49,7 +49,7 @@ export async function generateFeeReceiptNumber(): Promise<string> {
 
   let nextNumber = 1;
 
-  if (lastReceipt) {
+  if (lastReceipt && lastReceipt.receiptNumber) {
     // Extract number from last receipt (FEE-2024-000001 -> 000001)
     const lastNumber = parseInt(lastReceipt.receiptNumber.split("-")[2]);
     nextNumber = lastNumber + 1;

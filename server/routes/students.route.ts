@@ -1,7 +1,7 @@
-import { Hono } from "hono";
-import { authenticate, authorize } from "../middlewares/auth.middleware";
 import { UserRole } from "@/validations";
+import { Hono } from "hono";
 import { studentController } from "../controllers";
+import { authenticate, authorize } from "../middlewares/auth.middleware";
 
 const studentRoutes = new Hono();
 
@@ -19,7 +19,16 @@ studentRoutes.post(
   (c) => studentController.register(c)
 );
 
-studentRoutes.patch("/:_id", authenticate, (c) => studentController.updates(c));
+studentRoutes.patch("/me", authenticate, authorize(UserRole.STUDENT), (c) =>
+  studentController.updateMe(c)
+);
+
+studentRoutes.patch(
+  "/:_id",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.updates(c)
+);
 
 studentRoutes.get("/:_id", authenticate, (c) => studentController.get(c));
 

@@ -1,4 +1,4 @@
-import { BlogStatus, IBlog, UserRole } from "@/validations";
+import { BlogStatus, IBlog } from "@/validations";
 import { Model, model, models, Schema } from "mongoose";
 
 // Image Model (shearable)
@@ -19,7 +19,7 @@ const BlogSchema = new Schema<IBlog & Document>(
     excerpt: { type: String },
     featuredImage: { type: ImageSchema },
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    authorRole: { type: String, enum: Object.values(UserRole), required: true },
+    publishedBy: { type: Schema.Types.ObjectId, ref: "User" },
     status: {
       type: String,
       enum: Object.values(BlogStatus),

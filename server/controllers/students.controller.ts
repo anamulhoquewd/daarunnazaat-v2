@@ -32,10 +32,10 @@ export const gets = async (c: Context) => {
   const guardianId = c.req.query("guardianId") as string;
   const batchType = c.req.query("batchType") as BatchType;
   const currentSessionId = c.req.query("currentSessionId") as string;
-  const admissionDateFrom = c.req.query("admissionDateFrom") as string;
-  const admissionDateTo = c.req.query("admissionDateTo") as string;
+  const fromDate = c.req.query("fromDate") as string;
+  const toDate = c.req.query("toDate") as string;
 
-  const admissionDateRange = { from: admissionDateFrom, to: admissionDateTo };
+  const admissionDateRange = { from: fromDate, to: toDate };
 
   let isResidential: boolean | undefined = undefined;
 
@@ -70,6 +70,27 @@ export const get = async (c: Context) => {
   const _id = c.req.param("_id");
 
   const response = await studentService.get(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+export const updateMe = async (c: Context) => {
+  const user = await c.get("user");
+
+  const body = await c.req.json();
+
+  const response = await studentService.updateMe({
+    userId: user.profile,
+    body,
+  });
 
   if (response.error) {
     return badRequestError(c, response.error);

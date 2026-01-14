@@ -9,9 +9,17 @@ const UserSchema = new Schema<IUser & Document>(
     email: { type: String, required: true, unique: true, lowercase: true },
     phone: { type: String, required: true },
     password: { type: String, required: true, select: false },
-    alternativePhone: { type: String },
-    whatsApp: { type: String },
     role: { type: String, enum: Object.values(UserRole), required: true },
+    profile: {
+      type: Schema.Types.ObjectId,
+      refPath: "profileModel",
+      default: null,
+    },
+    profileModel: {
+      type: String,
+      enum: ["Student", "Staff", "Guardian"],
+      default: null,
+    },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
     isBlocked: {

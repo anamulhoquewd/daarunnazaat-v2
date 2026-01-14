@@ -4,6 +4,8 @@ import {
   IUser,
   loginZ,
   mongoIdZ,
+  passwordResetZ,
+  resetTokenZ,
   UserRole,
   userUpdateZ,
   userZ,
@@ -423,58 +425,6 @@ export const unblockUser = async (_id: string) => {
   }
 };
 
-export const updateProfile = async ({
-  user,
-  body,
-}: {
-  user: any;
-  body: IUpdateUser;
-}) => {
-  // Validation without role for update
-  const validData = userUpdateZ.omit({ role: true }).safeParse(body);
-
-  if (!validData.success) {
-    return {
-      error: schemaValidationError(validData.error, "Invalid request body"),
-    };
-  }
-
-  try {
-    // Check if all fields are empty
-    if (Object.keys(validData.data).length === 0) {
-      return {
-        success: {
-          success: true,
-          message: "No updates provided, returning existing user",
-
-          data: user,
-        },
-      };
-    }
-
-    // Merge only allowed fields into user
-    Object.assign(user, validData.data);
-
-    const docs = await user.save();
-
-    return {
-      success: {
-        success: true,
-        message: "User profile updated successfully!",
-        data: docs,
-      },
-    };
-  } catch (error: any) {
-    return {
-      serverError: {
-        success: false,
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? null : error.stack,
-      },
-    };
-  }
-};
-
 export const deleteUser = async (_id: string) => {
   // Validate ID
   const idValidation = mongoIdZ.safeParse({ _id: _id });
@@ -673,35 +623,54 @@ export const resetPassword = async ({
   password: string;
   resetToken: string;
 }) => {
-  try {
-    // 1. Hash incoming reset token
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
+  const validData = passwordResetZ.safeParse({ password });
+  const tokenValidation = resetTokenZ.safeParse({ resetToken });
 
-    // 2. Find user with valid token + not expired
-    const user = await User.findOne({
-      passwordResetToken: hashedToken,
-      passwordResetExpires: { $gt: Date.now() },
+  if (!validData.success) {
+    return {
+      error: schemaValidationError(validData.error, "Invalid request body"),
+    };
+  }
+
+  if (!tokenValidation.success) {
+    return {
+      error: {
+        message: "Token Validation error",
+        fields: tokenValidation.error.issues.map((issue) => ({
+          name: String(issue.path[0]),
+          message: issue.message,
+        })),
+      },
+    };
+  }
+
+  try {
+    const data = await User.findOne({
+      resetPasswordToken: resetToken,
+      resetPasswordExpireDate: { $gt: Date.now() },
     });
 
-    if (!user) {
+    console.log("Data: ", data);
+
+    if (!data) {
       return {
         error: {
           message: "Invalid or expired reset token",
+          fields: [
+            {
+              name: "resetToken",
+              message: "Invalid or expired reset token",
+            },
+          ],
         },
       };
     }
 
-    // 3. Set new password
-    user.password = password;
+    data.password = password;
+    data.passwordResetToken = null;
+    data.passwordResetExpires = null;
 
-    // 4. Invalidate reset token
-    user.passwordResetToken = null;
-    user.passwordResetExpires = null;
-
-    await user.save();
+    await data.save();
 
     return {
       success: {

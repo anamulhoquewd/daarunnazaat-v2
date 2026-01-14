@@ -12,7 +12,9 @@ authRoutes.post(
   (c) => usersController.register(c)
 );
 
-authRoutes.patch("/change-password", (c) => usersController.changePassword(c));
+authRoutes.patch("/change-password", authenticate, (c) =>
+  usersController.changePassword(c)
+);
 
 authRoutes.post("/forgot-password", (c) => usersController.forgotPassword(c));
 

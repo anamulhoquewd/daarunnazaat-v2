@@ -1,20 +1,10 @@
 "use client";
 
-import useMe from "@/hooks/auth/use-me";
-import { useSidebar } from "../ui/sidebar";
-import Link from "next/link";
-import { ModeToggle } from "../mode-toggle";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import useLogout from "@/hooks/auth/useSignOut";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { CircleUser, LogOut, MenuIcon } from "lucide-react";
+import Link from "next/link";
+import { ModeToggle } from "../common/modeToggle";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,11 +16,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { useSidebar } from "../ui/sidebar";
 
 function Header() {
   const { isMobile, setOpenMobile } = useSidebar();
-  const { user, handleLogout } = useMe();
+  const { me } = useAuthStore();
+  const { handleLogout } = useLogout();
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 md:px-6">
@@ -64,9 +66,9 @@ function Header() {
           <DropdownMenuTrigger className="h-9 w-9 rounded-full cursor-pointer">
             <Avatar className="h-9 w-9">
               <AvatarFallback>
-                {user?.name
+                {me?.profile.firstName
                   .split(" ")
-                  .map((ch) => ch[0])
+                  .map((ch: string) => ch[0])
                   .join("")
                   .toUpperCase() || "DARUNNAZAT"}
               </AvatarFallback>
@@ -76,10 +78,10 @@ function Header() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {user?.name || "Shuddhoghor"}
+                  {me?.profile.firstName || "Darunnazat"}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  {user?.email || "info@shuddhoghor.com"}
+                  {me?.email || "info@darunnazat.com"}
                 </p>
               </div>
             </DropdownMenuLabel>

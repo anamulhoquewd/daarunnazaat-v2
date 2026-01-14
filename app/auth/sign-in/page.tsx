@@ -1,4 +1,4 @@
-import { LoginForm } from "@/components/auth/login-form";
+import { LoginForm } from "@/components/auth/loginForm";
 import SuspenseFallback from "@/components/auth/suspense";
 import { Suspense } from "react";
 

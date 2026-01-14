@@ -4,7 +4,14 @@ import { model, Model, models, Schema } from "mongoose";
 // Guardian Model
 const GuardianSchema = new Schema<IGuardian & Document>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      unique: true,
+      required: true,
+    },
+    alternativePhone: { type: String },
+    whatsApp: { type: String },
     guardianId: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },

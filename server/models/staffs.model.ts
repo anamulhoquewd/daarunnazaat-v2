@@ -4,12 +4,17 @@ import { model, Model, models, Schema } from "mongoose";
 // Staff Model
 const StaffSchema = new Schema<IStaff & Document>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      unique: true,
+      required: true,
+    },
+    alternativePhone: { type: String },
+    whatsApp: { type: String },
     staffId: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    fatherName: { type: String },
-    motherName: { type: String },
     dateOfBirth: { type: Date },
     gender: { type: String, enum: Object.values(Gender), required: true },
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },

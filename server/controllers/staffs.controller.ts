@@ -91,6 +91,24 @@ export const updates = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
+export const updateMe = async (c: Context) => {
+  const user = await c.get("user");
+
+  const body = await c.req.json();
+
+  const response = await staffService.updateMe({ userId: user.profile, body });
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
 export const deletes = async (c: Context) => {
   const _id = c.req.param("_id");
 

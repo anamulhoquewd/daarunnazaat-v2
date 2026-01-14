@@ -1,0 +1,86 @@
+"use client";
+
+import {
+  AudioWaveform,
+  BookOpen,
+  Bot,
+  Command,
+  Frame,
+  GalleryVerticalEnd,
+  Map,
+  PieChart,
+  Settings2,
+  SquareTerminal,
+} from "lucide-react";
+import * as React from "react";
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarRail,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { NavMain } from "./navMenu";
+import { TeamSwitcher } from "./branchSwitcher";
+
+// This is sample data.
+const data = {
+  teams: [
+    {
+      name: "Main",
+      logo: GalleryVerticalEnd,
+      plan: "Enterprise",
+    },
+    {
+      name: "Gulshan.",
+      logo: AudioWaveform,
+      plan: "Startup",
+    },
+  ],
+  navMain: [
+    {
+      title: "Students",
+      url: "/students",
+      icon: SquareTerminal,
+      isActive: true,
+      items: [
+        {
+          title: "Registration",
+          url: "/students/new",
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+  ],
+};
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { isMobile } = useSidebar();
+
+  return (
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <TeamSwitcher teams={data.teams} />
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={data.navMain} />
+      </SidebarContent>
+      {!isMobile && (
+        <SidebarFooter>
+          <SidebarTrigger className="ml-auto cursor-pointer" />
+        </SidebarFooter>
+      )}
+      <SidebarRail />
+    </Sidebar>
+  );
+}

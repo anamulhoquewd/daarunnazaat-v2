@@ -30,7 +30,7 @@ export const authenticate = async (c: Context, next: Next) => {
       return authenticationError(c);
     }
 
-    const user = await User.findById(payload._id);
+    const user = await User.findById(payload._id).populate("profile");
 
     if (!user) {
       // Clear cookie using Hono's deleteCookie

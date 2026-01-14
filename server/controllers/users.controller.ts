@@ -73,7 +73,7 @@ export const get = async (c: Context) => {
 export const getMe = async (c: Context) => {
   try {
     // Get user from auth token
-    const me = c.get("user");
+    const me = await c.get("user");
 
     // Check if user is authenticated
     if (!me) {
@@ -113,30 +113,6 @@ export const getMe = async (c: Context) => {
       500
     );
   }
-};
-
-// Update profile
-export const updateMe = async (c: Context) => {
-  // Get user from auth token
-  const user = c.get("user");
-
-  if (!user) {
-    return authenticationError(c);
-  }
-
-  const body = await c.req.json();
-
-  const response = await userServices.updateProfile({ user, body });
-
-  if (response.error) {
-    return badRequestError(c, response.error);
-  }
-
-  if (response.serverError) {
-    return serverError(c, response.serverError);
-  }
-
-  return c.json(response.success, 200);
 };
 
 // Update user
@@ -216,7 +192,7 @@ export const signIn = async (c: Context) => {
       {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "Lax" : "None",
+        sameSite: "Lax",
         domain:
           process.env.NODE_ENV === "production"
             ? process.env.DOMAIN_NAME
@@ -325,7 +301,7 @@ export const refreshToken = async (c: Context) => {
     });
 
     if (!user) {
-      return authorizationError(c, "Forbidden");
+      return authenticationError(c);
     }
 
     // Generate new access token
@@ -425,7 +401,7 @@ export const changePassword = async (c: Context) => {
   const body = await c.req.json();
 
   // Check if user exists. and get email from token
-  const { email } = c.get("user");
+  const { email } = await c.get("user");
 
   const user = await User.findOne({ email }).select("password");
 

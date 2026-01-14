@@ -10,15 +10,15 @@ import {
   studentZ,
   UserRole,
 } from "@/validations";
-import { User } from "../models/users.model";
-import { generateStudentId, stringGenerator } from "../utils/string-generator";
-import { Guardian } from "../models/guardians.model";
-import { Types } from "mongoose";
-import { Student } from "../models/students.model";
-import { schemaValidationError } from "../error";
-import pagination from "../utils/pagination";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import z from "zod";
+import { schemaValidationError } from "../error";
+import { Guardian } from "../models/guardians.model";
+import { Student } from "../models/students.model";
+import { User } from "../models/users.model";
+import pagination from "../utils/pagination";
+import { generateStudentId } from "../utils/string-generator";
+import { Session } from "../models/sessions.model";
 
 export const createStudent = async (body: IStudent) => {
   // Safe Parse for better error handling
@@ -29,19 +29,26 @@ export const createStudent = async (body: IStudent) => {
       error: schemaValidationError(validData.error, "Invalid request body"),
     };
   }
+
+  // ✅ Transaction use করো - atomicity নিশ্চিত করতে
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     // 1️⃣ Check user exists
-    const user = await User.findById(validData.data.userId);
+    const user = await User.findById(validData.data.userId).session(session);
     if (!user) {
+      await session.abortTransaction();
       return {
         error: {
-          message: "User not fount with the provided User ID",
+          message: "User not found with the provided User ID",
         },
       };
     }
 
     // 2️⃣ Ensure role is student
     if (user.role !== UserRole.STUDENT) {
+      await session.abortTransaction();
       return {
         error: {
           message: "User role is not student",
@@ -52,9 +59,10 @@ export const createStudent = async (body: IStudent) => {
     // 3️⃣ Check student already exists
     const existingStudent = await Student.findOne({
       userId: validData.data.userId,
-    });
+    }).session(session);
 
     if (existingStudent) {
+      await session.abortTransaction();
       return {
         error: {
           message: "Student profile already exists for this user.",
@@ -63,11 +71,30 @@ export const createStudent = async (body: IStudent) => {
     }
 
     // 4️⃣ Validate guardian
-    const guardian = await Guardian.findById(validData.data.guardianId);
+    const guardian = await Guardian.findById(validData.data.guardianId).session(
+      session
+    );
     if (!guardian) {
+      await session.abortTransaction();
       return {
         error: {
-          message: "Guardian not found provided Guardian ID",
+          message: "Guardian not found with provided Guardian ID",
+        },
+      };
+    }
+
+    // 4️⃣ Validate currentSession
+    const currentSession = await Session.findOne({
+      _id: validData.data.currentSessionId,
+      isActive: true,
+      batchType: validData.data.batchType,
+    }).session(session);
+    if (!currentSession) {
+      await session.abortTransaction();
+      return {
+        error: {
+          message:
+            "Session not found,  inactive Session or do not match 'batchType'",
         },
       };
     }
@@ -94,17 +121,33 @@ export const createStudent = async (body: IStudent) => {
       status: "ongoing",
     });
 
-    // Save student
-    const docs = await student.save();
+    // Save new student with session
+    const newStudent = await student.save({ session });
+
+    // 6️⃣ ✅ Update User profile field
+    await User.findByIdAndUpdate(
+      validData.data.userId,
+      {
+        profile: newStudent._id,
+        profileModel: "Student", // Dynamic ref এর জন্য
+      },
+      { session }
+    );
+
+    // ✅ Transaction commit
+    await session.commitTransaction();
 
     return {
       success: {
         success: true,
         message: "Student created successfully",
-        data: docs,
+        data: newStudent,
       },
     };
   } catch (error: any) {
+    // Error হলে rollback
+    await session.abortTransaction();
+
     return {
       serverError: {
         success: false,
@@ -112,8 +155,13 @@ export const createStudent = async (body: IStudent) => {
         stack: process.env.NODE_ENV === "production" ? null : error.stack,
       },
     };
+  } finally {
+    // Session end
+    session.endSession();
   }
 };
+
+import { PipelineStage } from "mongoose";
 
 export const gets = async (queryParams: {
   page: number;
@@ -136,86 +184,145 @@ export const gets = async (queryParams: {
   };
 }) => {
   try {
-    // Build query
-    const query: any = {};
-    if (typeof queryParams.isResidential === "boolean") {
-      query.isResidential = queryParams.isResidential;
+    const {
+      page,
+      limit,
+      sortBy,
+      sortType,
+      search,
+      classId,
+      branch,
+      sessionId,
+      guardianId,
+      batchType,
+      gender,
+      isResidential,
+      admissionDateRange,
+    } = queryParams;
+
+    const pipeline: PipelineStage[] = [];
+
+    /* =========================
+       LOOKUPS
+    ========================= */
+
+    // user
+    pipeline.push({
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user",
+      },
+    });
+    pipeline.push({ $unwind: "$user" });
+
+    // class
+    pipeline.push({
+      $lookup: {
+        from: "classes",
+        localField: "classId",
+        foreignField: "_id",
+        as: "class",
+      },
+    });
+    pipeline.push({
+      $unwind: { path: "$class", preserveNullAndEmptyArrays: true },
+    });
+
+    // guardian
+    pipeline.push({
+      $lookup: {
+        from: "students",
+        localField: "guardianId",
+        foreignField: "_id",
+        as: "guardian",
+      },
+    });
+    pipeline.push({
+      $unwind: { path: "$guardian", preserveNullAndEmptyArrays: true },
+    });
+
+    /* =========================
+       MATCH (FILTERS)
+    ========================= */
+
+    const matchStage: any = {};
+
+    if (classId) matchStage.classId = classId;
+    if (branch) matchStage.branch = branch;
+    if (sessionId) matchStage.currentSessionId = sessionId;
+    if (guardianId) matchStage.guardianId = guardianId;
+    if (batchType) matchStage.batchType = batchType;
+    if (gender) matchStage.gender = gender;
+    if (typeof isResidential === "boolean")
+      matchStage.isResidential = isResidential;
+
+    // Admission date range
+    if (admissionDateRange?.from || admissionDateRange?.to) {
+      matchStage.admissionDate = {};
+      if (admissionDateRange.from)
+        matchStage.admissionDate.$gte = new Date(admissionDateRange.from);
+      if (admissionDateRange.to)
+        matchStage.admissionDate.$lte = new Date(admissionDateRange.to);
     }
 
-    if (queryParams.search) {
-      query.$or = [
-        { firstName: { $regex: queryParams.search, $options: "i" } },
-        { lastName: { $regex: queryParams.search, $options: "i" } },
-        { studentId: { $regex: queryParams.search, $options: "i" } },
+    // SEARCH (root + nested)
+    if (search) {
+      matchStage.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { studentId: { $regex: search, $options: "i" } },
+        { "user.email": { $regex: search, $options: "i" } },
+        { "user.phone": { $regex: search, $options: "i" } },
       ];
     }
 
-    if (queryParams.classId) query.classId = queryParams.classId;
-    if (queryParams.batchType) query.batchType = queryParams.batchType;
-    if (queryParams.branch) query.branch = queryParams.branch;
-    if (queryParams.sessionId) query.currentSessionId = queryParams.sessionId;
-    if (queryParams.guardianId) query.guardianId = queryParams.guardianId;
-    if (queryParams.gender) query.gender = queryParams.gender;
-    if (queryParams.isResidential !== undefined)
-      query.isResidential = queryParams.isResidential;
-
-    if (
-      queryParams.admissionDateRange &&
-      queryParams.admissionDateRange.from &&
-      queryParams.admissionDateRange.to
-    ) {
-      // Length should be 2
-      query.admissionDate = {};
-      if (queryParams.admissionDateRange.from)
-        query.admissionDate.$gte = new Date(
-          queryParams.admissionDateRange.from
-        );
-      if (queryParams.admissionDateRange.to)
-        query.admissionDate.$lte = new Date(queryParams.admissionDateRange.to);
-      if (Object.keys(query.admissionDate).length === 0)
-        delete query.admissionDate;
+    if (Object.keys(matchStage).length) {
+      pipeline.push({ $match: matchStage });
     }
 
-    // Allowable sort fields
-    const sortField = [
+    /* =========================
+       SORT
+    ========================= */
+
+    const allowedSortFields = [
       "createdAt",
       "updatedAt",
       "firstName",
       "studentId",
       "admissionDate",
-    ].includes(queryParams.sortBy)
-      ? queryParams.sortBy
+    ];
+
+    const finalSortField = allowedSortFields.includes(sortBy)
+      ? sortBy
       : "createdAt";
 
-    const sortDirection = queryParams.sortType.toLowerCase() === "asc" ? 1 : -1;
+    const sortDirection = sortType?.toLowerCase() === "asc" ? 1 : -1;
 
-    // Fetch students
-    const [students, total] = await Promise.all([
-      Student.find(query)
-        .sort({ [sortField]: sortDirection })
-        .skip((queryParams.page - 1) * queryParams.limit)
-        .limit(queryParams.limit)
-        .populate("classId", "className monthlyFee")
-        .populate("userId", "phone email alternativePhone whatsApp isBlocked")
-        .populate({
-          path: "guardianId",
-          select: "firstName lastName userId",
-          populate: {
-            path: "userId",
-            select: "phone",
-          },
-        })
-        .populate("currentSessionId", "sessionName")
-        .exec(),
-      Student.countDocuments(query),
-    ]);
+    pipeline.push({
+      $sort: { [finalSortField]: sortDirection },
+    });
 
-    console.log("Query: ", query);
+    /* =========================
+       PAGINATION + TOTAL
+    ========================= */
 
-    // Pagination
-    const createPagination = pagination({
-      page: queryParams.page,
-      limit: queryParams.limit,
+    pipeline.push({
+      $facet: {
+        data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+        total: [{ $count: "count" }],
+      },
+    });
+
+    const result = await Student.aggregate(pipeline);
+
+    const students = result[0]?.data || [];
+    const total = result[0]?.total[0]?.count || 0;
+
+    const paginationInfo = pagination({
+      page,
+      limit,
       total,
     });
 
@@ -224,7 +331,7 @@ export const gets = async (queryParams: {
         success: true,
         message: "Students fetched successfully!",
         data: students,
-        pagination: createPagination,
+        pagination: paginationInfo,
       },
     };
   } catch (error: any) {
@@ -299,8 +406,101 @@ export const updates = async ({
   }
 
   // Validate Body
+  const validData = studentUpdateZ.safeParse(body);
+  if (!validData.success) {
+    return {
+      error: schemaValidationError(validData.error, "Invalid request body"),
+    };
+  }
+
+  try {
+    // Check if student exists
+    const student = await Student.findById(idValidation.data._id);
+
+    if (!student) {
+      return {
+        error: {
+          message: "Student not found with the provided ID",
+        },
+      };
+    }
+
+    // Check if all fields are empty
+    if (Object.keys(validData.data).length === 0) {
+      return {
+        success: {
+          success: true,
+          message: "No updates provided, returning existing student",
+          data: student,
+        },
+      };
+    }
+
+    // Don't allow updating critical fields
+    const restrictedFields = ["userId", "studentId", "guardianId"];
+    restrictedFields.forEach((field) => delete (validData.data as any)[field]);
+
+    // Update only provided fields
+    Object.assign(student, validData.data);
+    const docs = await student.save();
+
+    return {
+      success: {
+        success: true,
+        message: "Student updated successfully",
+        data: docs,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const updateMe = async ({
+  userId,
+  body,
+}: {
+  userId: string;
+  body: IUpdateStudent;
+}) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id: userId });
+  if (!idValidation.success) {
+    return {
+      error: schemaValidationError(idValidation.error, "Invalid ID"),
+    };
+  }
+
+  // Validate Body
   const validData = studentUpdateZ
-    .omit({ userId: true, studentId: true, guardianId: true })
+    .omit({
+      classId: true,
+      admissionDate: true,
+      admissionDiscount: true,
+      admissionFee: true,
+      batchType: true,
+      branch: true,
+      currentSessionId: true,
+      guardianId: true,
+      isMealIncluded: true,
+      isResidential: true,
+      mealFee: true,
+      monthlyDiscount: true,
+      monthlyFee: true,
+      passoutDate: true,
+      residentialFee: true,
+      sessionHistory: true,
+      studentId: true,
+      userId: true,
+      nid: true,
+      birthCertificateNumber: true,
+    })
     .safeParse(body);
   if (!validData.success) {
     return {
@@ -481,6 +681,7 @@ export const activate = async (_id: string) => {
   }
 };
 
+// Promote to new class and new session
 export const promote = async ({
   _id,
   body,
@@ -533,7 +734,7 @@ export const promote = async ({
 
     // Complete current session
     const currentHistory = student.sessionHistory.find(
-      (h) => h.sessionId.toString() === student.currentSessionId.toString()
+      (h: any) => h.sessionId.toString() === student.currentSessionId.toString()
     );
 
     if (currentHistory) {

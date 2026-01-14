@@ -11,7 +11,14 @@ import {
 // Student Model
 const StudentSchema = new Schema<IStudent & Document>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
+    },
+    alternativePhone: { type: String },
+    whatsApp: { type: String },
     studentId: { type: String, required: true, unique: true },
     guardianId: {
       type: Schema.Types.ObjectId,
@@ -33,7 +40,7 @@ const StudentSchema = new Schema<IStudent & Document>(
     dateOfBirth: { type: Date, required: true },
     gender: { type: String, enum: Object.values(Gender), required: true },
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },
-    nid: { type: String, unique: true, required: false, sparse: true },
+    nid: { type: String, unique: true, sparse: true },
     birthCertificateNumber: { type: String },
     presentAddress: {
       village: { type: String, required: true },

@@ -7,7 +7,7 @@ export const register = async (c: Context) => {
   const body = await c.req.json();
 
   // logged in user
-  const authUser = c.get("user");
+  const authUser = await c.get("user");
 
   const response = await salaryService.register({
     ...body,
@@ -80,7 +80,7 @@ export const get = async (c: Context) => {
 
 export const updates = async (c: Context) => {
   const _id = c.req.param("_id");
-  const updatedByUserId = c.get("user");
+  const updatedByUserId = await c.get("user");
   const body = await c.req.json();
 
   const response = await salaryService.updates({ _id, body, updatedByUserId });
