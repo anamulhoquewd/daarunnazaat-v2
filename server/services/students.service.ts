@@ -168,7 +168,6 @@ export const gets = async (queryParams: {
   limit: number;
   sortBy: string;
   sortType: string;
-
   search: string;
   classId: string;
   branch: Branch;
@@ -233,14 +232,38 @@ export const gets = async (queryParams: {
     // guardian
     pipeline.push({
       $lookup: {
-        from: "students",
-        localField: "guardianId",
-        foreignField: "_id",
+        from: "guardians",
+        let: { guardianId: "$guardianId" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$_id", "$$guardianId"] },
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "userId",
+              foreignField: "_id",
+              as: "user",
+            },
+          },
+          {
+            $unwind: {
+              path: "$user",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ],
         as: "guardian",
       },
     });
+
     pipeline.push({
-      $unwind: { path: "$guardian", preserveNullAndEmptyArrays: true },
+      $unwind: {
+        path: "$guardian",
+        preserveNullAndEmptyArrays: true,
+      },
     });
 
     /* =========================

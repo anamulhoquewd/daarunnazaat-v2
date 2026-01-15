@@ -33,6 +33,7 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDown, Filter, X } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 function StudentPage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -42,9 +43,14 @@ function StudentPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    _id: false,
-    address: false,
     nid: false,
+    branch: false,
+    batch: false,
+    email: false,
+    guardianEmail: false,
+    status: false,
+    residential: false,
+    gender: false,
   });
 
   const {
@@ -105,6 +111,7 @@ function StudentPage() {
               Manage and view all students
             </CardDescription>
           </div>
+
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {activeFilterCount() > 0 && (
               <span className="inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full">
@@ -113,6 +120,9 @@ function StudentPage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
+            <Link href={"/students/new"}>
+              <Button className="cursor-pointer">Add One</Button>
+            </Link>
           </div>
         </div>
       </CardHeader>

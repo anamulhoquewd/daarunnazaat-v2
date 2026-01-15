@@ -32,40 +32,60 @@ export const studentColumns = ({
   },
   {
     header: "Class",
-    cell: ({ row }) => row.original.classId?.className || "-",
+    cell: ({ row }) => row.original.class?.className || "-",
   },
   {
+    accessorKey: "branch",
     header: "Branch",
     cell: ({ row }) => row.original.branch || "-",
   },
   {
+    accessorKey: "batch",
     header: "Batch",
     cell: ({ row }) => row.original.batchType || "-",
   },
   {
+    accessorKey: "gender",
     header: "Gender",
     cell: ({ row }) => row.original.gender || "-",
   },
   {
     header: "Guardian",
     cell: ({ row }) =>
-      `${row.original.guardianId?.firstName || ""} ${
-        row.original.guardianId?.lastName || ""
+      `${row.original.guardian?.firstName || ""} ${
+        row.original.guardian?.lastName || ""
       }`,
   },
   {
+    accessorKey: "nid",
+    header: "NID",
+    cell: ({ row }) => row.original?.nid || "-",
+  },
+  {
     header: "Phone",
-    cell: ({ row }) => row.original.userId?.phone || "-",
+    cell: ({ row }) => row.original.user?.phone || "-",
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ row }) => row.original.user?.email || "-",
   },
   {
     header: "Guardian Phone",
-    cell: ({ row }) => row.original.guardianId?.userId?.phone || "-",
+    cell: ({ row }) => row.original.guardian?.user?.phone || "-",
   },
   {
+    accessorKey: "guardian_Email",
+    header: "Guardian Email",
+    cell: ({ row }) => row.original.guardian?.user?.email || "-",
+  },
+  {
+    accessorKey: "residential",
     header: "Residential",
     cell: ({ row }) => (row.original.isResidential ? "Yes" : "No"),
   },
   {
+    accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (row.original.userId?.isActive ? "Active" : "Inactive"),
   },

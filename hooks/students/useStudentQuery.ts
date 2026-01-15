@@ -7,10 +7,10 @@ import {
   IPagination,
   IStudent,
 } from "@/validations";
-import { useEffect, useMemo, useState } from "react";
-import { useDebounce } from "../common/useDebounce";
-import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import { DateRange } from "react-day-picker";
+import { useDebounce } from "../common/useDebounce";
 
 interface IFilter {
   dateRange: DateRange | undefined;
@@ -18,14 +18,14 @@ interface IFilter {
   gender: "all" | Gender;
   branch: "all" | Branch;
   residential: "all" | boolean;
-  sortType: SortType;
-  sortBy:
+  sortType?: SortType;
+  sortBy?:
     | "createdAt"
     | "updatedAt"
     | "firstName"
     | "studentId"
     | "admissionDate";
-  limit: string;
+  limit?: string;
 }
 
 interface ISearch {
@@ -69,17 +69,17 @@ function useStudentQuery() {
   const getStudents = async ({
     search,
     filters,
-    page,
+    currentPage,
   }: {
     search: ISearch;
     filters: IFilter;
-    page: number;
+    currentPage: number;
   }) => {
     setIsLoading(true);
 
     try {
       const query = buildQuery({
-        page,
+        page: currentPage,
         search: search.global,
         classId: search.classId,
         sessionId: search.sessionId,
@@ -141,9 +141,6 @@ function useStudentQuery() {
       gender: "all",
       batchType: "all",
       branch: "all",
-      sortType: "asc",
-      sortBy: "createdAt",
-      limit: "10",
     });
     setSearch({
       classId: "",
@@ -171,6 +168,11 @@ function useStudentQuery() {
 
     // Handle other filter fields (branch, gender, batchType)
     setFilterBy((prev) => ({ ...prev, [key]: value }));
+
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+    }));
   };
 
   // 🔥 API call only when debounced search OR page/limit changes
@@ -183,7 +185,7 @@ function useStudentQuery() {
         classId: debouncedClassSearch,
       },
       filters: filterBy,
-      page: pagination.page,
+      currentPage: pagination.page,
     });
   }, [
     debouncedGlobalSearch,
@@ -191,6 +193,7 @@ function useStudentQuery() {
     debouncedSessionSearch,
     debouncedGuardianSearch,
     filterBy,
+    pagination.page,
   ]);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
@@ -204,8 +207,6 @@ function useStudentQuery() {
       guardianId: search.guardianId,
     };
   }, [filterBy, search.classId, search.guardianId]);
-
-  console.log("Filters: ", filterBy);
 
   return {
     students,
