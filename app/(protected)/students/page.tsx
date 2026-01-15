@@ -4,6 +4,7 @@ import { studentColumns } from "@/components/common/column";
 import { DateRangePicker } from "@/components/common/dateRange";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
+import { CommonFilter } from "@/components/common/commonFilter";
 import StudentFilters from "@/components/students/studentFilter";
 import { Button } from "@/components/ui/button";
 import {
@@ -217,8 +218,10 @@ function StudentPage() {
           </DropdownMenu>
         </div>
         <TableComponent table={table} columns={columns} />
+
         {pagination.total > 0 && (
-          <div className="pt-4">
+          <div className="pt-4 flex items-center justify-between">
+            <CommonFilter filters={combinedFilters} onChange={updateFilter} />
             <Paginations
               pagination={pagination}
               setPagination={setPagination}

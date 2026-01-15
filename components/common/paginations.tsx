@@ -12,7 +12,7 @@ function Paginations({
 }) {
   console.log(pagination);
   return (
-    <div className="flex items-center justify-center sm:justify-end space-x-2.5 py-4">
+    <div>
       <Button
         variant={"outline"}
         className="cursor-pointer text-xs sm:text-sm"

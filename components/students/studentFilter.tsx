@@ -48,7 +48,7 @@ export default function StudentFilters({
   return (
     <Card className="w-full">
       <div
-        className="flex items-center justify-between cursor-pointer p-4"
+        className="flex items-center justify-between cursor-pointer px-4"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-2">

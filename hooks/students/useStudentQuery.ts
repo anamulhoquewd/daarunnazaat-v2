@@ -18,6 +18,14 @@ interface IFilter {
   gender: "all" | Gender;
   branch: "all" | Branch;
   residential: "all" | boolean;
+  sortType: SortType;
+  sortBy:
+    | "createdAt"
+    | "updatedAt"
+    | "firstName"
+    | "studentId"
+    | "admissionDate";
+  limit: string;
 }
 
 interface ISearch {
@@ -26,6 +34,8 @@ interface ISearch {
   sessionId: string;
   guardianId: string;
 }
+
+type SortType = "asc" | "desc";
 
 function useStudentQuery() {
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +54,10 @@ function useStudentQuery() {
     residential: "all",
     branch: "all",
     gender: "all",
+
+    sortBy: "createdAt",
+    sortType: "desc" as SortType,
+    limit: "10",
   });
 
   // debounce only search
@@ -82,6 +96,9 @@ function useStudentQuery() {
           filters?.batchType === "all" ? undefined : filters?.batchType,
         branch: filters?.branch === "all" ? undefined : filters?.branch,
         gender: filters?.gender === "all" ? undefined : filters?.gender,
+        sortBy: filters?.sortBy,
+        sortType: filters?.sortType,
+        limit: filters?.limit,
       });
 
       const res = await api.get(`/students?${query}`);
@@ -124,6 +141,9 @@ function useStudentQuery() {
       gender: "all",
       batchType: "all",
       branch: "all",
+      sortType: "asc",
+      sortBy: "createdAt",
+      limit: "10",
     });
     setSearch({
       classId: "",
@@ -184,6 +204,8 @@ function useStudentQuery() {
       guardianId: search.guardianId,
     };
   }, [filterBy, search.classId, search.guardianId]);
+
+  console.log("Filters: ", filterBy);
 
   return {
     students,
