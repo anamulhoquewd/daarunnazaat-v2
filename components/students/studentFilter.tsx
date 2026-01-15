@@ -15,10 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BatchType, Branch, Gender } from "@/validations";
 import { ChevronDown, ChevronUp, Filter, RotateCcw } from "lucide-react";
 import { useState } from "react";
-import { DateRangePicker } from "../common/dateRange";
 
 export interface StudentFiltersType {
   page?: number;
@@ -30,76 +28,22 @@ export interface StudentFiltersType {
     | "studentId"
     | "admissionDate";
   sortType?: "asc" | "desc";
-  classId?: string;
-  branch?: Branch | "all";
-  gender?: Gender | "all";
-  isResidential?: boolean;
-  guardianId?: string;
-  batchType?: BatchType | "all";
-  currentSessionId?: string;
-  admissionDateFrom?: string;
-  admissionDateTo?: string;
 }
 
 interface StudentFiltersProps {
-  onFiltersChange: (filters: Partial<StudentFiltersType>) => void;
-  onReset: () => void;
+  filters: Record<string, string | boolean | undefined>;
+  onChange: (key: string, value: string) => void;
   isExpanded?: boolean;
+  activeFilterCount: number;
 }
 
 export default function StudentFilters({
-  onFiltersChange,
-  onReset,
+  filters,
+  onChange,
   isExpanded: initialExpanded = false,
+  activeFilterCount,
 }: StudentFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
-  const [filters, setFilters] = useState({
-    classId: "all",
-    branch: "all",
-    gender: "all",
-    batchType: "all",
-    isResidential: "all",
-    guardianId: "",
-    currentSessionId: "",
-    admissionDateFrom: "",
-    admissionDateTo: "",
-  });
-
-  const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-  };
-
-  const handleApply = () => {
-    const filtersToSend: Record<string, any> = {};
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== "" && value !== "all") {
-        filtersToSend[key] = value;
-      }
-    });
-
-    onFiltersChange?.(filtersToSend);
-  };
-
-  const handleReset = () => {
-    setFilters({
-      classId: "all",
-      branch: "all",
-      gender: "all",
-      batchType: "all",
-      isResidential: "all",
-      guardianId: "",
-      currentSessionId: "",
-      admissionDateFrom: "",
-      admissionDateTo: "",
-    });
-    onReset?.();
-  };
-
-  const activeFilterCount = Object.values(filters).filter(
-    (v) => v !== "" && v !== "all"
-  ).length;
 
   return (
     <Card className="w-full">
@@ -129,16 +73,16 @@ export default function StudentFilters({
             <div>
               <label className="text-sm font-medium mb-2 block">Branch</label>
               <Select
-                value={filters.branch}
-                onValueChange={(v) => handleFilterChange("branch", v)}
+                value={(filters.branch as string) || "all"}
+                onValueChange={(v) => onChange("branch", v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select branch" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Branches</SelectItem>
-                  <SelectItem value="Branch 1">Branch 1</SelectItem>
-                  <SelectItem value="Branch 2">Branch 2</SelectItem>
+                  <SelectItem value="branch_1">Branch 1</SelectItem>
+                  <SelectItem value="branch_2">Branch 2</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -146,16 +90,16 @@ export default function StudentFilters({
             <div>
               <label className="text-sm font-medium mb-2 block">Gender</label>
               <Select
-                value={filters.gender}
-                onValueChange={(v) => handleFilterChange("gender", v)}
+                value={(filters.gender as string) || "all"}
+                onValueChange={(v) => onChange("gender", v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Genders</SelectItem>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -165,18 +109,18 @@ export default function StudentFilters({
                 Batch Type
               </label>
               <Select
-                value={filters.batchType}
-                onValueChange={(v) => handleFilterChange("batchType", v)}
+                value={(filters.batchType as string) || "all"}
+                onValueChange={(v) => onChange("batchType", v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select batch type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Batches</SelectItem>
-                  <SelectItem value="January - December">
+                  <SelectItem value="january_december">
                     January - December
                   </SelectItem>
-                  <SelectItem value="Ramadan - Ramadan">
+                  <SelectItem value="ramadan-ramadan">
                     Ramadan - Ramadan
                   </SelectItem>
                 </SelectContent>
@@ -188,8 +132,16 @@ export default function StudentFilters({
                 Residential
               </label>
               <Select
-                value={filters.isResidential}
-                onValueChange={(v) => handleFilterChange("isResidential", v)}
+                value={
+                  filters.residential === "all"
+                    ? "all"
+                    : filters.residential === true
+                    ? "true"
+                    : filters.residential === false
+                    ? "false"
+                    : "all"
+                }
+                onValueChange={(v) => onChange("residential", v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -206,8 +158,8 @@ export default function StudentFilters({
               <label className="text-sm font-medium mb-2 block">Class</label>
               <Input
                 placeholder="Search class by id..."
-                value={filters.classId === "all" ? "" : filters.classId}
-                onChange={(e) => handleFilterChange("classId", e.target.value)}
+                value={(filters.classId as string) || ""}
+                onChange={(e) => onChange("classId", e.target.value)}
               />
             </div>
 
@@ -217,27 +169,10 @@ export default function StudentFilters({
               </label>
               <Input
                 placeholder="Search guardian by id..."
-                value={filters.guardianId}
-                onChange={(e) =>
-                  handleFilterChange("guardianId", e.target.value)
-                }
+                value={(filters.guardianId as string) || ""}
+                onChange={(e) => onChange("guardianId", e.target.value)}
               />
             </div>
-          </div>
-
-          <div className="flex gap-2 justify-end pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={handleReset}
-              className="gap-2 bg-transparent"
-              size="sm"
-            >
-              <RotateCcw size={16} />
-              Reset
-            </Button>
-            <Button onClick={handleApply} size="sm">
-              Apply Filters
-            </Button>
           </div>
         </CardContent>
       )}

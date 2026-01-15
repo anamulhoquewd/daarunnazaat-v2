@@ -1,13 +1,23 @@
 import api from "@/axios/intercepter";
 import { buildQuery, defaultPagination, handleAxiosError } from "@/lib/utils";
-import { IPagination, IStudent } from "@/validations";
-import { useEffect, useState } from "react";
+import {
+  BatchType,
+  Branch,
+  Gender,
+  IPagination,
+  IStudent,
+} from "@/validations";
+import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "../common/useDebounce";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 
 interface IFilter {
   dateRange: DateRange | undefined;
+  batchType: "all" | BatchType;
+  gender: "all" | Gender;
+  branch: "all" | Branch;
+  residential: "all" | boolean;
 }
 
 interface ISearch {
@@ -29,16 +39,28 @@ function useStudentQuery() {
   });
   const [values, setValues] = useState<IStudent | null>(null);
   const [filterBy, setFilterBy] = useState<IFilter>({
-    dateRange: undefined as DateRange | undefined,
+    dateRange: { from: undefined, to: undefined },
+    batchType: "all",
+    residential: "all",
+    branch: "all",
+    gender: "all",
   });
 
-  // ✅ debounce only search
+  // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
   const debouncedGuardianSearch = useDebounce(search.guardianId, 700);
   const debouncedClassSearch = useDebounce(search.classId, 700);
   const debouncedSessionSearch = useDebounce(search.sessionId, 700);
 
-  const getStudents = async ({ search, filters, page }) => {
+  const getStudents = async ({
+    search,
+    filters,
+    page,
+  }: {
+    search: ISearch;
+    filters: IFilter;
+    page: number;
+  }) => {
     setIsLoading(true);
 
     try {
@@ -54,6 +76,12 @@ function useStudentQuery() {
         toDate: filters?.dateRange?.to
           ? format(filters.dateRange.to, "yyyy-MM-dd")
           : undefined,
+        isResidential:
+          filters?.residential === "all" ? undefined : filters?.residential,
+        batchType:
+          filters?.batchType === "all" ? undefined : filters?.batchType,
+        branch: filters?.branch === "all" ? undefined : filters?.branch,
+        gender: filters?.gender === "all" ? undefined : filters?.gender,
       });
 
       const res = await api.get(`/students?${query}`);
@@ -73,13 +101,56 @@ function useStudentQuery() {
 
   const activeFilterCount = () => {
     let count = 0;
+    // Date range filter
     if (filterBy.dateRange?.from && filterBy.dateRange?.to) count++;
-    if (debouncedClassSearch) count++;
-    if (debouncedSessionSearch) count++;
-    if (debouncedGlobalSearch) count++;
-    if (debouncedGuardianSearch) count++;
+    // Select filters (only count if not "all")
+    if (filterBy.batchType && filterBy.batchType !== "all") count++;
+    if (filterBy.branch && filterBy.branch !== "all") count++;
+    if (filterBy.residential && filterBy.residential !== "all") count++;
+    if (filterBy.gender && filterBy.gender !== "all") count++;
+    // Search filters (only count if not empty)
+    if (debouncedClassSearch && debouncedClassSearch.trim()) count++;
+    if (debouncedSessionSearch && debouncedSessionSearch.trim()) count++;
+    if (debouncedGlobalSearch && debouncedGlobalSearch.trim()) count++;
+    if (debouncedGuardianSearch && debouncedGuardianSearch.trim()) count++;
 
     return count;
+  };
+
+  const handleClearFilters = () => {
+    setFilterBy({
+      dateRange: { from: undefined, to: undefined },
+      residential: "all",
+      gender: "all",
+      batchType: "all",
+      branch: "all",
+    });
+    setSearch({
+      classId: "",
+      sessionId: "",
+      guardianId: "",
+      global: "",
+    });
+  };
+
+  const updateFilter = (key: string, value: string) => {
+    // Handle search fields (classId, guardianId) - these go to search state
+    if (key === "classId" || key === "guardianId") {
+      setSearch((prev) => ({ ...prev, [key]: value }));
+      return;
+    }
+
+    // Handle filter fields
+    if (key === "residential") {
+      // Convert string to boolean or "all"
+      const boolValue =
+        value === "all" ? "all" : value === "true" ? true : false;
+      setFilterBy((prev) => ({ ...prev, [key]: boolValue }));
+      return;
+    }
+
+    // Handle other filter fields (branch, gender, batchType)
+    setFilterBy((prev) => ({ ...prev, [key]: value }));
   };
 
   // 🔥 API call only when debounced search OR page/limit changes
@@ -99,21 +170,20 @@ function useStudentQuery() {
     debouncedClassSearch,
     debouncedSessionSearch,
     debouncedGuardianSearch,
-
-    filterBy.dateRange,
+    filterBy,
   ]);
 
-  const handleClearFilters = () => {
-    setFilterBy({
-      dateRange: { from: undefined, to: undefined },
-    });
-    setSearch({
-      classId: "",
-      sessionId: "",
-      guardianId: "",
-      global: "",
-    });
-  };
+  // Combined filters for component usage (excluding dateRange as it's handled separately)
+  const combinedFilters = useMemo<
+    Record<string, string | boolean | undefined>
+  >(() => {
+    const { dateRange, ...restFilters } = filterBy;
+    return {
+      ...restFilters,
+      classId: search.classId,
+      guardianId: search.guardianId,
+    };
+  }, [filterBy, search.classId, search.guardianId]);
 
   return {
     students,
@@ -128,6 +198,8 @@ function useStudentQuery() {
     setFilterBy,
     activeFilterCount,
     handleClearFilters,
+    updateFilter,
+    combinedFilters,
   };
 }
 

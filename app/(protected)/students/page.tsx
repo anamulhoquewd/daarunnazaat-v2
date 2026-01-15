@@ -57,6 +57,8 @@ function StudentPage() {
     setFilterBy,
     activeFilterCount,
     handleClearFilters,
+    updateFilter,
+    combinedFilters,
   } = useStudentQuery();
 
   const columns = studentColumns({
@@ -117,26 +119,15 @@ function StudentPage() {
         {/* Filter Controls Row */}
         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
           <StudentFilters
-            // onFiltersChange={setFilters}
-            // onReset={() => setFilters({})}
+            filters={combinedFilters}
+            onChange={updateFilter}
             isExpanded={false}
+            activeFilterCount={activeFilterCount()}
           />
-
-          {activeFilterCount() > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClearFilters}
-              className="gap-2 bg-transparent"
-            >
-              <X size={16} />
-              Clear All
-            </Button>
-          )}
         </div>
 
-        <div className="flex flex-col sm:flex-row py-4 gap-2">
-          <div>
+        <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
+          <div className="flex-1">
             <label className="text-sm font-medium mb-2 block">
               Search by name, ID, phone, or email
             </label>
@@ -155,7 +146,7 @@ function StudentPage() {
           {/* Admission Date Range */}
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Admission Date To
+              Admission Date Range
             </label>
 
             <DateRangePicker
@@ -182,7 +173,7 @@ function StudentPage() {
           )}
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="w-fit m-auto md:m-0">
+            <DropdownMenuTrigger className="w-fit ml-auto">
               <Button
                 variant="outline"
                 className="cursor-pointer bg-transparent"
