@@ -11,7 +11,7 @@ interface Props {
   onChange: (key: string, value: string) => void;
 }
 
-export function CommonFilter({ filters, onChange }: Props) {
+export function UserBottomFilter({ filters, onChange }: Props) {
   return (
     <div className="flex items-center justify-center gap-4">
       {/* SORT BY */}
@@ -26,9 +26,7 @@ export function CommonFilter({ filters, onChange }: Props) {
           <SelectContent>
             <SelectItem value="createdAt">Created Date</SelectItem>
             <SelectItem value="updatedAt">Updated Date</SelectItem>
-            <SelectItem value="admissionDate">Admission Date</SelectItem>
-            <SelectItem value="firstName">First name</SelectItem>
-            <SelectItem value="studentId">Student Id</SelectItem>
+            <SelectItem value="email">Email</SelectItem>
           </SelectContent>
         </Select>
       </div>

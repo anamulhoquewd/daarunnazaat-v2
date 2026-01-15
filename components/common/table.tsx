@@ -25,7 +25,7 @@ function TableComponent({ table, columns }: TableComponentProps) {
             {table
               .getHeaderGroups()
               .map((headerGroup: { id: string; headers: any[] }) => (
-                <TableRow key={headerGroup.id} className="">
+                <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map(
                     (header: {
                       id: string;
@@ -125,7 +125,7 @@ function TableComponent({ table, columns }: TableComponentProps) {
                   colSpan={columns.length}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  No result found.
+                  No result found. Try adjusting your search or filters.
                 </TableCell>
               </TableRow>
             )}

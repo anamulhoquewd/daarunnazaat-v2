@@ -40,16 +40,37 @@ const data = {
       plan: "Startup",
     },
   ],
+
   navMain: [
     {
       title: "Students",
-      url: "/students",
+      url: "/dashboard/students",
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
           title: "Registration",
-          url: "/students/new",
+          url: null,
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+    {
+      title: "Users",
+      url: "/dashboard/users",
+      icon: SquareTerminal,
+      isActive: true,
+      items: [
+        {
+          title: "Registration",
+          url: null,
         },
         {
           title: "Starred",

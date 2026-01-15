@@ -18,6 +18,7 @@ import { User } from "../models/users.model";
 import { generateAccessToken, generateRefreshToken } from "../utils";
 import pagination from "../utils/pagination";
 import { stringGenerator } from "../utils/string-generator";
+import { DateRange } from "react-day-picker";
 
 export const register = async (body: IUser) => {
   // Safe Parse for better error handling
@@ -153,56 +154,78 @@ export const gets = async (queryParams: {
   limit: number;
   sortBy: string;
   sortType: string;
-
+  role: UserRole;
   search: string;
   isActive?: boolean;
   isBlocked?: boolean;
+  createdDateRange: {
+    from: string | Date | undefined;
+    to: string | Date | undefined;
+  };
 }) => {
   try {
+    const {
+      isActive,
+      isBlocked,
+      search,
+      page,
+      limit,
+      sortBy,
+      sortType,
+      createdDateRange,
+      role,
+    } = queryParams;
+
     // Build query
     const query: any = {};
-    if (typeof queryParams.isActive === "boolean") {
-      query.isActive = queryParams.isActive;
+    if (typeof isActive === "boolean") {
+      query.isActive = isActive;
     }
-    if (typeof queryParams.isBlocked === "boolean") {
-      query.isBlocked = queryParams.isBlocked;
+    if (typeof isBlocked === "boolean") {
+      query.isBlocked = isBlocked;
     }
-    if (queryParams?.search) {
+    if (role) query.role = role;
+    if (search) {
       query.$or = [
-        { name: { $regex: queryParams.search, $options: "i" } },
-        { email: { $regex: queryParams.search, $options: "i" } },
-        { phone: { $regex: queryParams.search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
       ];
 
-      if (mongoose.Types.ObjectId.isValid(queryParams?.search)) {
+      if (mongoose.Types.ObjectId.isValid(search)) {
         query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams?.search),
+          _id: new mongoose.Types.ObjectId(search),
         });
       }
     }
+    // Admission date range
+    if (createdDateRange?.from && createdDateRange?.to) {
+      query.createdAt = {};
+      if (createdDateRange.from)
+        query.createdAt.$gte = new Date(createdDateRange.from);
+      if (createdDateRange.to)
+        query.createdAt.$lte = new Date(createdDateRange.to);
+    }
+
+    const allowedSortFields = ["createdAt", "updatedAt", "email"];
+
     // Allowable sort fields
-    const sortField = ["createdAt", "updatedAt", "email"].includes(
-      queryParams?.sortBy
-    )
-      ? queryParams?.sortBy
-      : "createdAt";
-    const sortDirection =
-      queryParams.sortType?.toLocaleLowerCase() === "asc" ? 1 : -1;
+    const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
+    const sortDirection = sortType?.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch users
     const [users, total] = await Promise.all([
       User.find(query)
         .sort({ [sortField]: sortDirection })
-        .skip((queryParams.page - 1) * queryParams.limit)
-        .limit(queryParams.limit)
+        .skip((page - 1) * limit)
+        .limit(limit)
         .exec(),
       User.countDocuments(query),
     ]);
 
     // Pagination
     const createPagination = pagination({
-      page: queryParams.page,
-      limit: queryParams.limit,
+      page: page,
+      limit: limit,
       total,
     });
 

@@ -51,7 +51,7 @@ export default function StudentFilters({
         className="flex items-center justify-between cursor-pointer px-4"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <Filter size={18} />
           <div>
             <CardTitle className="text-base">Advanced Filters</CardTitle>

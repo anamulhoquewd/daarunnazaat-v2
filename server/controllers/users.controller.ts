@@ -11,6 +11,7 @@ import {
 import { User } from "../models/users.model";
 import { userServices } from "../services";
 import { generateAccessToken } from "../utils";
+import { UserRole } from "@/validations";
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
@@ -35,14 +36,33 @@ export const getUsers = async (c: Context) => {
   const sortBy = c.req.query("sortBy") as string;
   const sortType = c.req.query("sortType") as string;
   const search = c.req.query("search") as string;
+  const fromDate = c.req.query("fromDate") as string;
+  const toDate = c.req.query("toDate") as string;
+  const isActiveRaw = c.req.query("isActive") as string;
+  const isBlockedRaw = c.req.query("isBlocked") as string;
+  const role = c.req.query("role") as UserRole;
+
+  const createdDateRange = { from: fromDate, to: toDate };
+
+  let isActive: boolean | undefined = undefined;
+  let isBlocked: boolean | undefined = undefined;
+
+  if (isBlockedRaw === "true") isBlocked = true;
+  if (isBlockedRaw === "false") isBlocked = false;
+
+  if (isActiveRaw === "true") isActive = true;
+  if (isActiveRaw === "false") isActive = false;
 
   const response = await userServices.gets({
     page,
     limit,
     sortBy,
     sortType,
-
+    role,
     search,
+    createdDateRange,
+    isActive,
+    isBlocked,
   });
 
   if (response.serverError) {

@@ -282,7 +282,7 @@ export const gets = async (queryParams: {
       matchStage.isResidential = isResidential;
 
     // Admission date range
-    if (admissionDateRange?.from || admissionDateRange?.to) {
+    if (admissionDateRange?.from && admissionDateRange?.to) {
       matchStage.admissionDate = {};
       if (admissionDateRange.from)
         matchStage.admissionDate.$gte = new Date(admissionDateRange.from);

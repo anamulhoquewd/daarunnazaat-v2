@@ -1,11 +1,8 @@
 "use client";
 
-import { studentColumns } from "@/components/common/column";
 import { DateRangePicker } from "@/components/common/dateRange";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
-import { CommonFilter } from "@/components/common/commonFilter";
-import StudentFilters from "@/components/students/studentFilter";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,7 +18,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import useStudentQuery from "@/hooks/students/useStudentQuery";
+import UserFilters from "@/components/users/userFilter";
+import { userColumns } from "@/components/users/userColumns";
+import useUserQuery from "@/hooks/users/useUserQuery";
 import {
   ColumnFiltersState,
   SortingState,
@@ -32,10 +31,11 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown, Filter, X } from "lucide-react";
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
+import { UserBottomFilter } from "@/components/users/userBottomFilter";
 
-function StudentPage() {
+function UsersPage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [selectId, setSelectId] = useState<string | null>(null);
@@ -43,19 +43,13 @@ function StudentPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    nid: false,
-    branch: false,
-    batch: false,
-    email: false,
-    guardianEmail: false,
+    isBlocked: false,
     status: false,
-    residential: false,
-    gender: false,
   });
 
   const {
     pagination,
-    students,
+    users,
     setValues,
     setPagination,
     search,
@@ -66,9 +60,9 @@ function StudentPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
-  } = useStudentQuery();
+  } = useUserQuery();
 
-  const columns = studentColumns({
+  const columns = userColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,
@@ -77,7 +71,7 @@ function StudentPage() {
 
   const table = useReactTable({
     columns,
-    data: students,
+    data: users,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -106,13 +100,23 @@ function StudentPage() {
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl">Student Management</CardTitle>
+            <CardTitle className="text-2xl">Users Management</CardTitle>
             <CardDescription className="mt-1">
-              Manage and view all students
+              Manage and view all users
             </CardDescription>
           </div>
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {activeFilterCount() > 0 && (
+              <Button
+                variant="ghost"
+                onClick={handleClearFilters}
+                className="cursor-pointer"
+              >
+                <X className="mr-2" />
+                Clear Filters
+              </Button>
+            )}
             {activeFilterCount() > 0 && (
               <span className="inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full">
                 <Filter size={14} />
@@ -120,7 +124,7 @@ function StudentPage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
-            <Link href={"/students/new"}>
+            <Link href={"#"}>
               <Button className="cursor-pointer">Add One</Button>
             </Link>
           </div>
@@ -129,7 +133,7 @@ function StudentPage() {
       <CardContent className="flex-1 flex flex-col">
         {/* Filter Controls Row */}
         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <StudentFilters
+          <UserFilters
             filters={combinedFilters}
             onChange={updateFilter}
             isExpanded={false}
@@ -171,17 +175,6 @@ function StudentPage() {
               }
             />
           </div>
-
-          {activeFilterCount() > 0 && (
-            <Button
-              variant="ghost"
-              onClick={handleClearFilters}
-              className="cursor-pointer"
-            >
-              <X className="mr-2" />
-              Clear Filters
-            </Button>
-          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger className="w-fit ml-auto">
@@ -231,7 +224,10 @@ function StudentPage() {
 
         {pagination.total > 0 && (
           <div className="pt-4 flex items-center justify-between">
-            <CommonFilter filters={combinedFilters} onChange={updateFilter} />
+            <UserBottomFilter
+              filters={combinedFilters}
+              onChange={updateFilter}
+            />
             <Paginations
               pagination={pagination}
               setPagination={setPagination}
@@ -243,4 +239,4 @@ function StudentPage() {
   );
 }
 
-export default StudentPage;
+export default UsersPage;
