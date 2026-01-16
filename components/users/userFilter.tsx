@@ -20,7 +20,7 @@ import { useState } from "react";
 export interface UserFiltersType {
   page?: number;
   limit?: number;
-  sortBy?: "createdAt" | "updatedAt" | "email" | "userId";
+  sortBy?: "createdAt" | "updatedAt" | "email";
   sortType?: "asc" | "desc";
 }
 

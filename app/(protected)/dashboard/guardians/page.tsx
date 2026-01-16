@@ -1,8 +1,9 @@
 "use client";
 
-import { DateRangePicker } from "@/components/common/dateRange";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
+import { GuardianBottomFilter } from "@/components/guardians/guardianBottomFilter";
+import { guardianColumns } from "@/components/guardians/guardianColumns";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,10 +19,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { UserBottomFilter } from "@/components/users/userBottomFilter";
-import { userColumns } from "@/components/users/userColumns";
-import UserFilters from "@/components/users/userFilter";
-import useUserQuery from "@/hooks/users/useUserQuery";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import useGuardianQuery from "@/hooks/guardians/guardianStudentQuery";
 import {
   ColumnFiltersState,
   SortingState,
@@ -35,7 +40,7 @@ import { ChevronDown, Filter, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-function UsersPage() {
+function GuardianPage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [selectId, setSelectId] = useState<string | null>(null);
@@ -49,20 +54,18 @@ function UsersPage() {
 
   const {
     pagination,
-    users,
+    guardians,
     setValues,
     setPagination,
     search,
     setSearch,
-    filterBy,
-    setFilterBy,
     activeFilterCount,
     handleClearFilters,
     updateFilter,
     combinedFilters,
-  } = useUserQuery();
+  } = useGuardianQuery();
 
-  const columns = userColumns({
+  const columns = guardianColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,
@@ -71,7 +74,7 @@ function UsersPage() {
 
   const table = useReactTable({
     columns,
-    data: users,
+    data: guardians,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -100,9 +103,9 @@ function UsersPage() {
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl">Users Management</CardTitle>
+            <CardTitle className="text-2xl">Guardian Management</CardTitle>
             <CardDescription className="mt-1">
-              Manage and view all users
+              Manage and view all guardian
             </CardDescription>
           </div>
 
@@ -131,16 +134,6 @@ function UsersPage() {
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
-        {/* Filter Controls Row */}
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <UserFilters
-            filters={combinedFilters}
-            onChange={updateFilter}
-            isExpanded={false}
-            activeFilterCount={activeFilterCount()}
-          />
-        </div>
-
         <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
           <div className="flex-1">
             <label className="text-sm font-medium mb-2 block">
@@ -158,22 +151,21 @@ function UsersPage() {
             />
           </div>
 
-          {/* Joining Date Range */}
           <div>
-            <label className="text-sm font-medium mb-2 block">
-              Joining Date Range
-            </label>
-
-            <DateRangePicker
-              initialDateFrom={filterBy.dateRange?.from}
-              initialDateTo={filterBy.dateRange?.to}
-              onUpdate={(values) =>
-                setFilterBy((prev) => ({
-                  ...prev,
-                  dateRange: values.range,
-                }))
-              }
-            />
+            <label className="text-sm font-medium mb-2 block">Gender</label>
+            <Select
+              value={(combinedFilters.gender as string) || "all"}
+              onValueChange={(v) => updateFilter("gender", v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Genders</SelectItem>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <DropdownMenu>
@@ -224,7 +216,7 @@ function UsersPage() {
 
         {pagination.total > 0 && (
           <div className="pt-4 flex items-center justify-between">
-            <UserBottomFilter
+            <GuardianBottomFilter
               filters={combinedFilters}
               onChange={updateFilter}
             />
@@ -239,4 +231,4 @@ function UsersPage() {
   );
 }
 
-export default UsersPage;
+export default GuardianPage;

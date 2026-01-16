@@ -296,6 +296,7 @@ export const gets = async (queryParams: {
         { firstName: { $regex: search, $options: "i" } },
         { lastName: { $regex: search, $options: "i" } },
         { studentId: { $regex: search, $options: "i" } },
+        { nid: { $regex: search, $options: "i" } },
         { "user.email": { $regex: search, $options: "i" } },
         { "user.phone": { $regex: search, $options: "i" } },
       ];

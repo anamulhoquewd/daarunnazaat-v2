@@ -1,5 +1,4 @@
 import {
-  BloodGroup,
   Gender,
   guardianUpdateZ,
   guardianZ,
@@ -116,14 +115,12 @@ export const gets = async (queryParams: {
   sortType: string;
 
   gender: Gender;
-  bloodGroup: BloodGroup;
   search: string;
 }) => {
   try {
     // Build query
     const query: any = {};
     if (queryParams.gender) query.gender = queryParams.gender;
-    if (queryParams.bloodGroup) query.bloodGroup = queryParams.bloodGroup;
 
     if (queryParams.search) {
       query.$or = [
@@ -131,9 +128,8 @@ export const gets = async (queryParams: {
         { lastName: { $regex: queryParams.search, $options: "i" } },
         { nid: { $regex: queryParams.search, $options: "i" } },
         { guardianId: { $regex: queryParams.search, $options: "i" } },
-        {
-          birthCertificateNumber: { $regex: queryParams.search, $options: "i" },
-        },
+        { "userId.phone": { $regex: queryParams.search, $options: "i" } },
+        { "userId.email": { $regex: queryParams.search, $options: "i" } },
       ];
 
       if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
@@ -143,9 +139,12 @@ export const gets = async (queryParams: {
       }
     }
     // Allowable sort fields
-    const sortField = ["createdAt", "updatedAt", "firstName"].includes(
-      queryParams.sortBy
-    )
+    const sortField = [
+      "createdAt",
+      "updatedAt",
+      "firstName",
+      "guardianId",
+    ].includes(queryParams.sortBy)
       ? queryParams.sortBy
       : "firstName";
     const sortDirection =
@@ -157,6 +156,7 @@ export const gets = async (queryParams: {
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
         .limit(queryParams.limit)
+        .populate("userId")
         .exec(),
       Guardian.countDocuments(query),
     ]);
