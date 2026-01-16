@@ -139,7 +139,7 @@ function GuardianPage() {
               Search by name, ID, nid, phone or emai
             </label>
             <Input
-              placeholder="Search students..."
+              placeholder="Search guardians..."
               value={search.global}
               onChange={(e) =>
                 setSearch((prev) => ({

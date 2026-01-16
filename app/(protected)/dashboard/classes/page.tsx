@@ -1,6 +1,7 @@
 "use client";
 
-import { DateRangePicker } from "@/components/common/dateRange";
+import { ClassBottomFilter } from "@/components/clasess/classBottomFilter";
+import { classColumns } from "@/components/clasess/classColumns";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { UserBottomFilter } from "@/components/users/userBottomFilter";
-import { userColumns } from "@/components/users/userColumns";
-import UserFilters from "@/components/users/userFilter";
-import useUserQuery from "@/hooks/users/useUserQuery";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import useClassQuery from "@/hooks/classes/useCLassQuery";
 import {
   ColumnFiltersState,
   SortingState,
@@ -35,7 +40,7 @@ import { ChevronDown, Filter, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-function UsersPage() {
+function ClassesPage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [selectId, setSelectId] = useState<string | null>(null);
@@ -43,13 +48,13 @@ function UsersPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    isBlocked: false,
+    description: false,
     status: false,
   });
 
   const {
     pagination,
-    users,
+    classes,
     setValues,
     setPagination,
     search,
@@ -60,9 +65,9 @@ function UsersPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
-  } = useUserQuery();
+  } = useClassQuery();
 
-  const columns = userColumns({
+  const columns = classColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,
@@ -71,7 +76,7 @@ function UsersPage() {
 
   const table = useReactTable({
     columns,
-    data: users,
+    data: classes,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -100,9 +105,9 @@ function UsersPage() {
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl">Users Management</CardTitle>
+            <CardTitle className="text-2xl">Classes Management</CardTitle>
             <CardDescription className="mt-1">
-              Manage and view all users
+              Manage and view all classes
             </CardDescription>
           </div>
 
@@ -131,23 +136,13 @@ function UsersPage() {
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
-        {/* Filter Controls Row */}
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <UserFilters
-            filters={combinedFilters}
-            onChange={updateFilter}
-            isExpanded={false}
-            activeFilterCount={activeFilterCount()}
-          />
-        </div>
-
         <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
           <div className="flex-1">
             <label className="text-sm font-medium mb-2 block">
-              Search by phone or email
+              Search by Class name
             </label>
             <Input
-              placeholder="Search users..."
+              placeholder="Search class..."
               value={search.global}
               onChange={(e) =>
                 setSearch((prev) => ({
@@ -158,22 +153,29 @@ function UsersPage() {
             />
           </div>
 
-          {/* Joining Date Range */}
           <div>
-            <label className="text-sm font-medium mb-2 block">
-              Joining Date Range
-            </label>
-
-            <DateRangePicker
-              initialDateFrom={filterBy.dateRange?.from}
-              initialDateTo={filterBy.dateRange?.to}
-              onUpdate={(values) =>
-                setFilterBy((prev) => ({
-                  ...prev,
-                  dateRange: values.range,
-                }))
+            <label className="text-sm font-medium mb-2 block">Activity</label>
+            <Select
+              value={
+                combinedFilters.isActive === "all"
+                  ? "all"
+                  : combinedFilters.isActive === true
+                  ? "true"
+                  : combinedFilters.isActive === false
+                  ? "false"
+                  : "all"
               }
-            />
+              onValueChange={(v) => updateFilter("isActive", v)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="true">Active</SelectItem>
+                <SelectItem value="false">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <DropdownMenu>
@@ -224,7 +226,7 @@ function UsersPage() {
 
         {pagination.total > 0 && (
           <div className="pt-4 flex items-center justify-between">
-            <UserBottomFilter
+            <ClassBottomFilter
               filters={combinedFilters}
               onChange={updateFilter}
             />
@@ -239,4 +241,4 @@ function UsersPage() {
   );
 }
 
-export default UsersPage;
+export default ClassesPage;

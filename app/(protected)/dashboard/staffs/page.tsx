@@ -151,7 +151,7 @@ function StaffsPage() {
               Search by name, ID, nid, designation, phone or email
             </label>
             <Input
-              placeholder="Search students..."
+              placeholder="Search staffs..."
               value={search.global}
               onChange={(e) =>
                 setSearch((prev) => ({
