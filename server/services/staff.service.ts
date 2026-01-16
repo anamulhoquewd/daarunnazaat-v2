@@ -9,7 +9,7 @@ import {
   staffZ,
   UserRole,
 } from "@/validations";
-import mongoose from "mongoose";
+import mongoose, { PipelineStage } from "mongoose";
 import { schemaValidationError } from "../error";
 import { Staff } from "../models/staffs.model";
 import { User } from "../models/users.model";
@@ -119,93 +119,114 @@ export const gets = async (queryParams: {
   limit: number;
   sortBy: string;
   sortType: string;
-
-  gender: Gender;
-  bloodGroup: BloodGroup;
-  joinDateRange: {
-    from: string | Date | undefined;
-    to: string | Date | undefined;
+  gender?: Gender;
+  branch?: Branch;
+  search?: string;
+  joinDateRange?: {
+    from?: string | Date;
+    to?: string | Date;
   };
-  basicSalaryRange: {
-    min: number;
-    max: number;
+  basicSalaryRange?: {
+    min?: number;
+    max?: number;
   };
-  branch: Branch;
-  search: string;
 }) => {
   try {
-    // Build query
-    const query: any = {};
-    if (queryParams.gender) query.gender = queryParams.gender;
-    if (queryParams.bloodGroup) query.bloodGroup = queryParams.bloodGroup;
-    if (queryParams.branch) query.branch = queryParams.branch;
+    const matchStage: any = {};
 
-    if (queryParams.search) {
-      query.$or = [
-        { firstName: { $regex: queryParams.search, $options: "i" } },
-        { lastName: { $regex: queryParams.search, $options: "i" } },
-        { nid: { $regex: queryParams.search, $options: "i" } },
-        { staffId: { $regex: queryParams.search, $options: "i" } },
-        { designation: { $regex: queryParams.search, $options: "i" } },
-        {
-          birthCertificateNumber: { $regex: queryParams.search, $options: "i" },
-        },
-      ];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
+    /* ------------------ BASIC FILTERS ------------------ */
+    if (queryParams.gender) {
+      matchStage.gender = queryParams.gender;
     }
 
+    if (queryParams.branch) {
+      matchStage.branch = queryParams.branch;
+    }
+
+    /* ------------------ SALARY RANGE ------------------ */
     if (
-      queryParams.basicSalaryRange &&
-      queryParams.basicSalaryRange.min &&
-      queryParams.basicSalaryRange.max
+      queryParams.basicSalaryRange?.min !== undefined &&
+      queryParams.basicSalaryRange?.max !== undefined
     ) {
-      query.basicSalary = {
+      matchStage.basicSalary = {
         $gte: queryParams.basicSalaryRange.min,
         $lte: queryParams.basicSalaryRange.max,
       };
     }
 
-    if (
-      queryParams.joinDateRange &&
-      queryParams.joinDateRange.from &&
-      queryParams.joinDateRange.to
-    ) {
-      // Length should be 2
-      query.joinDate = {};
-      if (queryParams.joinDateRange.from)
-        query.joinDate.$gte = new Date(queryParams.joinDateRange.from);
-      if (queryParams.joinDateRange.to)
-        query.joinDate.$lte = new Date(queryParams.joinDateRange.to);
-      if (Object.keys(query.joinDate).length === 0) delete query.joinDate;
+    /* ------------------ JOIN DATE RANGE ------------------ */
+    if (queryParams.joinDateRange?.from || queryParams.joinDateRange?.to) {
+      matchStage.joinDate = {};
+
+      if (queryParams.joinDateRange.from) {
+        matchStage.joinDate.$gte = new Date(queryParams.joinDateRange.from);
+      }
+
+      if (queryParams.joinDateRange.to) {
+        matchStage.joinDate.$lte = new Date(queryParams.joinDateRange.to);
+      }
     }
 
-    // Allowable sort fields
-    const sortField = ["createdAt", "updatedAt", "firstName"].includes(
-      queryParams.sortBy
-    )
+    /* ------------------ SEARCH ------------------ */
+    if (queryParams.search) {
+      const search = queryParams.search;
+
+      matchStage.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { nid: { $regex: search, $options: "i" } },
+        { staffId: { $regex: search, $options: "i" } },
+        { designation: { $regex: search, $options: "i" } },
+        { "user.phone": { $regex: search, $options: "i" } },
+        { "user.email": { $regex: search, $options: "i" } },
+      ];
+
+      if (mongoose.Types.ObjectId.isValid(search)) {
+        matchStage.$or.push({
+          _id: new mongoose.Types.ObjectId(search),
+        });
+      }
+    }
+
+    /* ------------------ SORT ------------------ */
+    const allowedSortFields = ["createdAt", "updatedAt", "firstName"];
+    const sortField = allowedSortFields.includes(queryParams.sortBy)
       ? queryParams.sortBy
       : "createdAt";
+
     const sortDirection =
-      queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortType?.toLowerCase() === "asc" ? 1 : -1;
 
-    // Fetch staff
-    const [staffs, total] = await Promise.all([
-      Staff.find(query)
-        .sort({ [sortField]: sortDirection })
-        .skip((queryParams.page - 1) * queryParams.limit)
-        .limit(queryParams.limit)
-        .exec(),
-      Staff.countDocuments(query),
-    ]);
+    const skip = (queryParams.page - 1) * queryParams.limit;
+    const limit = queryParams.limit;
 
-    console.log("Query: ", query);
+    /* ------------------ AGGREGATION PIPELINE ------------------ */
+    const pipeline: PipelineStage[] = [
+      {
+        $lookup: {
+          from: "users", // collection name
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $match: matchStage },
+      { $sort: { [sortField]: sortDirection } },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          total: [{ $count: "count" }],
+        },
+      },
+    ];
 
-    // Pagination
+    const result = await Staff.aggregate(pipeline);
+
+    const staffs = result[0]?.data || [];
+    const total = result[0]?.total[0]?.count || 0;
+
+    /* ------------------ PAGINATION ------------------ */
     const createPagination = pagination({
       page: queryParams.page,
       limit: queryParams.limit,

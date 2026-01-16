@@ -17,19 +17,19 @@ import {
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
 
-interface StudentFiltersProps {
-  filters: Record<string, string | boolean | undefined>;
+interface StaffFiltersProps {
+  filters: Record<string, string | number | undefined>;
   onChange: (key: string, value: string) => void;
   isExpanded?: boolean;
   activeFilterCount: number;
 }
 
-export default function StudentFilters({
+export default function StaffFilters({
   filters,
   onChange,
   isExpanded: initialExpanded = false,
   activeFilterCount,
-}: StudentFiltersProps) {
+}: StaffFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
 
   return (
@@ -56,7 +56,7 @@ export default function StudentFilters({
 
       {isExpanded && (
         <CardContent className="space-y-6 border-t pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Branch</label>
               <Select
@@ -89,76 +89,6 @@ export default function StudentFilters({
                   <SelectItem value="female">Female</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Batch Type
-              </label>
-              <Select
-                value={(filters.batchType as string) || "all"}
-                onValueChange={(v) => onChange("batchType", v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select batch type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Batches</SelectItem>
-                  <SelectItem value="january_december">
-                    January - December
-                  </SelectItem>
-                  <SelectItem value="ramadan-ramadan">
-                    Ramadan - Ramadan
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Residential
-              </label>
-              <Select
-                value={
-                  filters.residential === "all"
-                    ? "all"
-                    : filters.residential === true
-                    ? "true"
-                    : filters.residential === false
-                    ? "false"
-                    : "all"
-                }
-                onValueChange={(v) => onChange("residential", v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="true">Yes</SelectItem>
-                  <SelectItem value="false">No</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Class</label>
-              <Input
-                placeholder="Search class by id..."
-                value={(filters.classId as string) || ""}
-                onChange={(e) => onChange("classId", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Guardian ID
-              </label>
-              <Input
-                placeholder="Search guardian by id..."
-                value={(filters.guardianId as string) || ""}
-                onChange={(e) => onChange("guardianId", e.target.value)}
-              />
             </div>
           </div>
         </CardContent>

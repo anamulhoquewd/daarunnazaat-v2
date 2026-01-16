@@ -83,6 +83,26 @@ const data = {
       ],
     },
     {
+      title: "Staffs",
+      url: "/dashboard/staffs",
+      icon: SquareTerminal,
+      isActive: true,
+      items: [
+        {
+          title: "Registration",
+          url: null,
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+    {
       title: "Guardians",
       url: "/dashboard/guardians",
       icon: SquareTerminal,

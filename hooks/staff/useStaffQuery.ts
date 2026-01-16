@@ -1,13 +1,18 @@
 import api from "@/axios/intercepter";
 import { buildQuery, defaultPagination, handleAxiosError } from "@/lib/utils";
-import { Gender, IGuardian, IPagination } from "@/validations";
+import { Branch, Gender, IPagination, IStaff } from "@/validations";
+import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
+import { DateRange } from "react-day-picker";
 import { useDebounce } from "../common/useDebounce";
 
 interface IFilter {
-  sortType?: SortType;
+  dateRange: DateRange | undefined;
+  salaryRange: { min: number | undefined; max: number | undefined };
   gender: "all" | Gender;
-  sortBy?: "createdAt" | "updatedAt" | "firstName" | "guardianId" | "email";
+  branch: "all" | Branch;
+  sortType?: SortType;
+  sortBy?: "createdAt" | "updatedAt" | "firstName" | "staffId" | "joinDate";
   limit?: string;
 }
 
@@ -17,16 +22,20 @@ interface ISearch {
 
 type SortType = "asc" | "desc";
 
-function useGuardianQuery() {
+function useStaffQuery() {
   const [isLoading, setIsLoading] = useState(false);
-  const [guardians, setGuardians] = useState<IGuardian[]>([]);
+  const [staffs, setStaffs] = useState<IStaff[]>([]);
   const [pagination, setPagination] = useState<IPagination>(defaultPagination);
   const [search, setSearch] = useState<ISearch>({
     global: "",
   });
-  const [values, setValues] = useState<IGuardian | null>(null);
+  const [values, setValues] = useState<IStaff | null>(null);
   const [filterBy, setFilterBy] = useState<IFilter>({
+    dateRange: { from: undefined, to: undefined },
+    salaryRange: { min: undefined, max: undefined },
+    branch: "all",
     gender: "all",
+
     sortBy: "createdAt",
     sortType: "desc" as SortType,
     limit: "10",
@@ -35,7 +44,10 @@ function useGuardianQuery() {
   // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
 
-  const getGuardian = async ({
+  const debouncedSalaryMin = useDebounce(filterBy.salaryRange.min, 700);
+  const debouncedSalaryMax = useDebounce(filterBy.salaryRange.max, 700);
+
+  const getStaffs = async ({
     search,
     filters,
     currentPage,
@@ -50,19 +62,36 @@ function useGuardianQuery() {
       const query = buildQuery({
         page: currentPage,
         search: search.global,
+        fromDate: filters?.dateRange?.from
+          ? format(filters.dateRange.from, "yyyy-MM-dd")
+          : undefined,
+        toDate: filters?.dateRange?.to
+          ? format(filters.dateRange.to, "yyyy-MM-dd")
+          : undefined,
+        minSalary:
+          filters.salaryRange.min !== undefined &&
+          filters.salaryRange.max !== undefined
+            ? filters.salaryRange.min
+            : undefined,
+        maxSalary:
+          filters.salaryRange.min !== undefined &&
+          filters.salaryRange.max !== undefined
+            ? filters.salaryRange.max
+            : undefined,
+        branch: filters?.branch === "all" ? undefined : filters?.branch,
         gender: filters?.gender === "all" ? undefined : filters?.gender,
         sortBy: filters?.sortBy,
         sortType: filters?.sortType,
         limit: filters?.limit,
       });
 
-      const res = await api.get(`/guardians?${query}`);
+      const res = await api.get(`/staffs?${query}`);
 
       if (!res.data.success) {
         throw new Error(res.data.error.message);
       }
 
-      setGuardians(res.data.data || []);
+      setStaffs(res.data.data || []);
       setPagination(res.data.pagination);
     } catch (err) {
       handleAxiosError(err);
@@ -73,8 +102,17 @@ function useGuardianQuery() {
 
   const activeFilterCount = () => {
     let count = 0;
-
+    // Range filter
+    if (filterBy.dateRange?.from && filterBy.dateRange?.to) count++;
+    if (
+      filterBy.salaryRange.min !== undefined &&
+      filterBy.salaryRange.max !== undefined
+    ) {
+      count++;
+    } // Select filters (only count if not "all")
+    if (filterBy.branch && filterBy.branch !== "all") count++;
     if (filterBy.gender && filterBy.gender !== "all") count++;
+    // Search filters (only count if not empty)
     if (debouncedGlobalSearch && debouncedGlobalSearch.trim()) count++;
 
     return count;
@@ -82,7 +120,10 @@ function useGuardianQuery() {
 
   const handleClearFilters = () => {
     setFilterBy({
+      dateRange: { from: undefined, to: undefined },
+      salaryRange: { max: undefined, min: undefined },
       gender: "all",
+      branch: "all",
     });
     setSearch({
       global: "",
@@ -116,31 +157,46 @@ function useGuardianQuery() {
 
   // 🔥 API call only when debounced search OR page/limit changes
   useEffect(() => {
-    getGuardian({
+    getStaffs({
       search: {
         global: debouncedGlobalSearch,
       },
-      filters: filterBy,
+      filters: {
+        ...filterBy,
+        salaryRange: {
+          min: debouncedSalaryMin,
+          max: debouncedSalaryMax,
+        },
+      },
       currentPage: pagination.page,
     });
-  }, [debouncedGlobalSearch, filterBy, pagination.page]);
+  }, [
+    pagination.page,
+    debouncedGlobalSearch,
+    debouncedSalaryMin,
+    debouncedSalaryMax,
+    filterBy.branch,
+    filterBy.dateRange,
+    filterBy.gender,
+    filterBy.limit,
+    filterBy.sortBy,
+    filterBy.sortType,
+  ]);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
-  const combinedFilters = useMemo<
-    Record<string, string | boolean | undefined>
-  >(() => {
-    const { ...restFilters } = filterBy;
+  const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
+    const { dateRange, salaryRange, ...restFilters } = filterBy;
     return {
       ...restFilters,
     };
   }, [filterBy]);
 
   return {
-    guardians,
+    staffs,
     isLoading,
     pagination,
     setPagination,
-    refetch: getGuardian,
+    refetch: getStaffs,
     setValues,
     setSearch,
     search,
@@ -153,4 +209,4 @@ function useGuardianQuery() {
   };
 }
 
-export default useGuardianQuery;
+export default useStaffQuery;

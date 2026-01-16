@@ -3,6 +3,9 @@
 import { DateRangePicker } from "@/components/common/dateRange";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
+import { staffColumns } from "@/components/staffs/staffColumns";
+import StaffFilters from "@/components/staffs/staffFilter";
+import { StudentBottomFilter } from "@/components/students/studentBottomFilter";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,10 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { UserBottomFilter } from "@/components/users/userBottomFilter";
-import { userColumns } from "@/components/users/userColumns";
-import UserFilters from "@/components/users/userFilter";
-import useUserQuery from "@/hooks/users/useUserQuery";
+import useStaffQuery from "@/hooks/staff/useStaffQuery";
 import {
   ColumnFiltersState,
   SortingState,
@@ -35,7 +35,7 @@ import { ChevronDown, Filter, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-function UsersPage() {
+function StaffsPage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [selectId, setSelectId] = useState<string | null>(null);
@@ -43,13 +43,17 @@ function UsersPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    isBlocked: false,
+    nid: false,
+    branch: false,
+    email: false,
     status: false,
+    gender: false,
+    joinDate: false,
   });
 
   const {
     pagination,
-    users,
+    staffs,
     setValues,
     setPagination,
     search,
@@ -60,9 +64,9 @@ function UsersPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
-  } = useUserQuery();
+  } = useStaffQuery();
 
-  const columns = userColumns({
+  const columns = staffColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,
@@ -71,7 +75,7 @@ function UsersPage() {
 
   const table = useReactTable({
     columns,
-    data: users,
+    data: staffs,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -100,9 +104,9 @@ function UsersPage() {
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl">Users Management</CardTitle>
+            <CardTitle className="text-2xl">Student Management</CardTitle>
             <CardDescription className="mt-1">
-              Manage and view all users
+              Manage and view all students
             </CardDescription>
           </div>
 
@@ -133,7 +137,7 @@ function UsersPage() {
       <CardContent className="flex-1 flex flex-col">
         {/* Filter Controls Row */}
         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <UserFilters
+          <StaffFilters
             filters={combinedFilters}
             onChange={updateFilter}
             isExpanded={false}
@@ -144,7 +148,7 @@ function UsersPage() {
         <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
           <div className="flex-1">
             <label className="text-sm font-medium mb-2 block">
-              Search by phone or email
+              Search by name, ID, nid, designation, phone or email
             </label>
             <Input
               placeholder="Search students..."
@@ -174,6 +178,48 @@ function UsersPage() {
                 }))
               }
             />
+          </div>
+
+          {/* Salary Range */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Salary Range
+            </label>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="Min"
+                value={filterBy.salaryRange?.min}
+                min={0}
+                onChange={(e) =>
+                  setFilterBy((values) => ({
+                    ...values,
+                    salaryRange: {
+                      ...values.salaryRange,
+                      min: e.target.value ? Number(e.target.value) : undefined,
+                    },
+                  }))
+                }
+                className="w-full"
+              />
+
+              <Input
+                min={0}
+                type="number"
+                placeholder="Max"
+                value={filterBy.salaryRange.max}
+                onChange={(e) =>
+                  setFilterBy((values) => ({
+                    ...values,
+                    salaryRange: {
+                      ...values.salaryRange,
+                      max: e.target.value ? Number(e.target.value) : undefined,
+                    },
+                  }))
+                }
+                className="w-full"
+              />
+            </div>
           </div>
 
           <DropdownMenu>
@@ -224,7 +270,7 @@ function UsersPage() {
 
         {pagination.total > 0 && (
           <div className="pt-4 flex items-center justify-between">
-            <UserBottomFilter
+            <StudentBottomFilter
               filters={combinedFilters}
               onChange={updateFilter}
             />
@@ -239,4 +285,4 @@ function UsersPage() {
   );
 }
 
-export default UsersPage;
+export default StaffsPage;

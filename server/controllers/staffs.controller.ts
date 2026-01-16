@@ -27,15 +27,12 @@ export const gets = async (c: Context) => {
   const search = c.req.query("search") as string;
   const branch = c.req.query("branch") as Branch;
   const gender = c.req.query("gender") as Gender;
-  const bloodGroup = c.req.query("bloodGroup") as BloodGroup;
-
   const minSalary = parseInt(c.req.query("minSalary") as string, 10) || 0;
   const maxSalary = parseInt(c.req.query("maxSalary") as string, 10) || 100000;
+  const fromDate = c.req.query("fromDate") as string;
+  const toDate = c.req.query("toDate") as string;
 
-  const joinDateFrom = c.req.query("joinDateFrom") as string;
-  const joinDateTo = c.req.query("joinDateTo") as string;
-
-  const joinDateRange = { from: joinDateFrom, to: joinDateTo };
+  const joinDateRange = { from: fromDate, to: toDate };
 
   const response = await staffService.gets({
     page,
@@ -43,7 +40,6 @@ export const gets = async (c: Context) => {
     sortBy,
     sortType,
     gender,
-    bloodGroup,
     search,
     joinDateRange,
     basicSalaryRange: { min: minSalary, max: maxSalary },

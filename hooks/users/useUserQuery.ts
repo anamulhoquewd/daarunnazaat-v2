@@ -1,6 +1,6 @@
 import api from "@/axios/intercepter";
 import { buildQuery, defaultPagination, handleAxiosError } from "@/lib/utils";
-import { IPagination, IStudent, UserRole } from "@/validations";
+import { IPagination, IUser, UserRole } from "@/validations";
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
@@ -24,12 +24,12 @@ type SortType = "asc" | "desc";
 
 function useUserQuery() {
   const [isLoading, setIsLoading] = useState(false);
-  const [users, setUsers] = useState<IStudent[]>([]);
+  const [users, setUsers] = useState<IUser[]>([]);
   const [pagination, setPagination] = useState<IPagination>(defaultPagination);
   const [search, setSearch] = useState<ISearch>({
     global: "",
   });
-  const [values, setValues] = useState<IStudent | null>(null);
+  const [values, setValues] = useState<IUser | null>(null);
   const [filterBy, setFilterBy] = useState<IFilter>({
     dateRange: { from: undefined, to: undefined },
     isActive: "all",

@@ -16,14 +16,6 @@ import {
 } from "@/components/ui/select";
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
-
-export interface UserFiltersType {
-  page?: number;
-  limit?: number;
-  sortBy?: "createdAt" | "updatedAt" | "email";
-  sortType?: "asc" | "desc";
-}
-
 interface UserFiltersProps {
   filters: Record<string, string | boolean | undefined>;
   onChange: (key: string, value: string) => void;

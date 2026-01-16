@@ -48,7 +48,6 @@ function GuardianPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    isBlocked: false,
     status: false,
   });
 
@@ -137,7 +136,7 @@ function GuardianPage() {
         <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
           <div className="flex-1">
             <label className="text-sm font-medium mb-2 block">
-              Search by name, ID, phone, or email
+              Search by name, ID, nid, phone or emai
             </label>
             <Input
               placeholder="Search students..."

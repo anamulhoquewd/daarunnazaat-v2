@@ -13,6 +13,7 @@ import { Guardian } from "../models/guardians.model";
 import { User } from "../models/users.model";
 import pagination from "../utils/pagination";
 import { generateGuardianId } from "../utils/string-generator";
+import { PipelineStage } from "mongoose";
 
 export const createGuardian = async (body: IGuardian) => {
   // Safe Parse for better error handling
@@ -113,55 +114,79 @@ export const gets = async (queryParams: {
   limit: number;
   sortBy: string;
   sortType: string;
-
-  gender: Gender;
-  search: string;
+  gender?: string;
+  search?: string;
 }) => {
   try {
-    // Build query
-    const query: any = {};
-    if (queryParams.gender) query.gender = queryParams.gender;
+    const matchStage: any = {};
 
+    /* ------------------ FILTERS ------------------ */
+    if (queryParams.gender) matchStage.gender = queryParams.gender;
+
+    /* ------------------ SEARCH ------------------ */
     if (queryParams.search) {
-      query.$or = [
-        { firstName: { $regex: queryParams.search, $options: "i" } },
-        { lastName: { $regex: queryParams.search, $options: "i" } },
-        { nid: { $regex: queryParams.search, $options: "i" } },
-        { guardianId: { $regex: queryParams.search, $options: "i" } },
-        { "userId.phone": { $regex: queryParams.search, $options: "i" } },
-        { "userId.email": { $regex: queryParams.search, $options: "i" } },
+      const search = queryParams.search;
+
+      matchStage.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { nid: { $regex: search, $options: "i" } },
+        { guardianId: { $regex: search, $options: "i" } },
+        { "user.phone": { $regex: search, $options: "i" } },
+        { "user.email": { $regex: search, $options: "i" } },
       ];
 
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
+      if (mongoose.Types.ObjectId.isValid(search)) {
+        matchStage.$or.push({
+          _id: new mongoose.Types.ObjectId(search),
         });
       }
     }
-    // Allowable sort fields
-    const sortField = [
+
+    /* ------------------ SORT ------------------ */
+    const allowedSortFields = [
       "createdAt",
       "updatedAt",
       "firstName",
       "guardianId",
-    ].includes(queryParams.sortBy)
+    ];
+    const sortField = allowedSortFields.includes(queryParams.sortBy)
       ? queryParams.sortBy
       : "firstName";
+
     const sortDirection =
-      queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortType?.toLowerCase() === "asc" ? 1 : -1;
 
-    // Fetch guardian
-    const [guardians, total] = await Promise.all([
-      Guardian.find(query)
-        .sort({ [sortField]: sortDirection })
-        .skip((queryParams.page - 1) * queryParams.limit)
-        .limit(queryParams.limit)
-        .populate("userId")
-        .exec(),
-      Guardian.countDocuments(query),
-    ]);
+    const skip = (queryParams.page - 1) * queryParams.limit;
+    const limit = queryParams.limit;
 
-    // Pagination
+    /* ------------------ AGGREGATION PIPELINE ------------------ */
+    const pipeline: PipelineStage[] = [
+      {
+        $lookup: {
+          from: "users", // User collection name
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $match: matchStage },
+      { $sort: { [sortField]: sortDirection } },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          total: [{ $count: "count" }],
+        },
+      },
+    ];
+
+    const result = await Guardian.aggregate(pipeline);
+
+    const guardians = result[0]?.data || [];
+    const total = result[0]?.total[0]?.count || 0;
+
+    /* ------------------ PAGINATION ------------------ */
     const createPagination = pagination({
       page: queryParams.page,
       limit: queryParams.limit,
