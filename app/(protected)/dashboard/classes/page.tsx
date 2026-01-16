@@ -1,7 +1,7 @@
 "use client";
 
 import { ClassBottomFilter } from "@/components/clasess/classBottomFilter";
-import { classColumns } from "@/components/clasess/classColumns";
+import { ClassColumns } from "@/components/clasess/classColumns";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
 import { Button } from "@/components/ui/button";
@@ -67,7 +67,7 @@ function ClassesPage() {
     combinedFilters,
   } = useClassQuery();
 
-  const columns = classColumns({
+  const columns = ClassColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,

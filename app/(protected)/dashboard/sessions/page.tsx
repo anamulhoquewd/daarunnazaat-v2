@@ -1,9 +1,9 @@
 "use client";
 
-import { DateRangePicker } from "@/components/common/dateRange";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
-import StudentFilters from "@/components/students/studentFilter";
+import { SessionBottomFilter } from "@/components/sessions/sessionBottomFilter";
+import { SessionColumns } from "@/components/sessions/sessionColumns";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,7 +19,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import useStudentQuery from "@/hooks/students/useStudentQuery";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import useSessionQuery from "@/hooks/sessions/useCLassQuery";
 import {
   ColumnFiltersState,
   SortingState,
@@ -30,12 +37,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown, Filter, X } from "lucide-react";
-import { useState } from "react";
 import Link from "next/link";
-import { StudentBottomFilter } from "@/components/students/studentBottomFilter";
-import { StudentColumns } from "@/components/students/studentColumns";
+import { useState } from "react";
 
-function StudentPage() {
+function SessionsPage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [selectId, setSelectId] = useState<string | null>(null);
@@ -43,19 +48,15 @@ function StudentPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    nid: false,
-    branch: false,
-    batch: false,
-    email: false,
-    guardian_Email: false,
+    batchType: false,
     status: false,
-    residential: false,
-    gender: false,
+    startDate: false,
+    endDate: false,
   });
 
   const {
     pagination,
-    students,
+    sessions,
     setValues,
     setPagination,
     search,
@@ -66,9 +67,9 @@ function StudentPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
-  } = useStudentQuery();
+  } = useSessionQuery();
 
-  const columns = StudentColumns({
+  const columns = SessionColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,
@@ -77,7 +78,7 @@ function StudentPage() {
 
   const table = useReactTable({
     columns,
-    data: students,
+    data: sessions,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -106,9 +107,9 @@ function StudentPage() {
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl">Student Management</CardTitle>
+            <CardTitle className="text-2xl">Sessions Management</CardTitle>
             <CardDescription className="mt-1">
-              Manage and view all students
+              Manage and view all sessions
             </CardDescription>
           </div>
 
@@ -137,23 +138,13 @@ function StudentPage() {
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
-        {/* Filter Controls Row */}
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <StudentFilters
-            filters={combinedFilters}
-            onChange={updateFilter}
-            isExpanded={false}
-            activeFilterCount={activeFilterCount()}
-          />
-        </div>
-
         <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
           <div className="flex-1">
             <label className="text-sm font-medium mb-2 block">
-              Search by name, ID, nid, phone or email
+              Search by Class name
             </label>
             <Input
-              placeholder="Search students..."
+              placeholder="Search class..."
               value={search.global}
               onChange={(e) =>
                 setSearch((prev) => ({
@@ -164,22 +155,50 @@ function StudentPage() {
             />
           </div>
 
-          {/* Admission Date Range */}
           <div>
-            <label className="text-sm font-medium mb-2 block">
-              Admission Date Range
-            </label>
-
-            <DateRangePicker
-              initialDateFrom={filterBy.dateRange?.from}
-              initialDateTo={filterBy.dateRange?.to}
-              onUpdate={(values) =>
-                setFilterBy((prev) => ({
-                  ...prev,
-                  dateRange: values.range,
-                }))
+            <label className="text-sm font-medium mb-2 block">Activity</label>
+            <Select
+              value={
+                combinedFilters.isActive === "all"
+                  ? "all"
+                  : combinedFilters.isActive === true
+                  ? "true"
+                  : combinedFilters.isActive === false
+                  ? "false"
+                  : "all"
               }
-            />
+              onValueChange={(v) => updateFilter("isActive", v)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="true">Active</SelectItem>
+                <SelectItem value="false">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Batch Type</label>
+            <Select
+              value={(filterBy.batchType as string) || "all"}
+              onValueChange={(v) => updateFilter("batchType", v)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select batch type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Batches</SelectItem>
+                <SelectItem value="january_december">
+                  January - December
+                </SelectItem>
+                <SelectItem value="ramadan-ramadan">
+                  Ramadan - Ramadan
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <DropdownMenu>
@@ -230,7 +249,7 @@ function StudentPage() {
 
         {pagination.total > 0 && (
           <div className="pt-4 flex items-center justify-between">
-            <StudentBottomFilter
+            <SessionBottomFilter
               filters={combinedFilters}
               onChange={updateFilter}
             />
@@ -245,4 +264,4 @@ function StudentPage() {
   );
 }
 
-export default StudentPage;
+export default SessionsPage;

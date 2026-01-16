@@ -73,8 +73,8 @@ app.route("/classes", classRoutes);
 // Session routes
 app.route("/sessions", sessionRoute);
 
-// Salary routes
-app.route("/salary-payments", salaryPaymentRoutes);
+// Salaries routes
+app.route("/salaries ", salaryPaymentRoutes);
 
 // Staff routes
 app.route("/staffs", staffRoutes);

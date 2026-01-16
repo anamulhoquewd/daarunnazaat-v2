@@ -96,11 +96,11 @@ export const gets = async (queryParams: {
       }
     }
     // Allowable sort fields
-    const sortField = ["createdAt", "updatedAt", "name"].includes(
+    const sortField = ["createdAt", "updatedAt", "sessionName"].includes(
       queryParams.sortBy
     )
       ? queryParams.sortBy
-      : "name";
+      : "sessionName";
     const sortDirection =
       queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
 

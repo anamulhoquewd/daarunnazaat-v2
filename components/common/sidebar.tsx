@@ -103,8 +103,68 @@ const data = {
       ],
     },
     {
+      title: "Classes",
+      url: "/dashboard/classes",
+      icon: SquareTerminal,
+      isActive: true,
+      items: [
+        {
+          title: "Registration",
+          url: null,
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+    {
+      title: "Sessions",
+      url: "/dashboard/sessions",
+      icon: SquareTerminal,
+      isActive: true,
+      items: [
+        {
+          title: "Registration",
+          url: null,
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+    {
       title: "Guardians",
       url: "/dashboard/guardians",
+      icon: SquareTerminal,
+      isActive: true,
+      items: [
+        {
+          title: "Registration",
+          url: null,
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+    {
+      title: "Salaries ",
+      url: "/dashboard/salaries ",
       icon: SquareTerminal,
       isActive: true,
       items: [

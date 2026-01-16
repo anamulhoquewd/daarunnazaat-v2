@@ -3,7 +3,7 @@
 import { DateRangePicker } from "@/components/common/dateRange";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
-import { staffColumns } from "@/components/staffs/staffColumns";
+import { StaffColumns } from "@/components/staffs/staffColumns";
 import StaffFilters from "@/components/staffs/staffFilter";
 import { StudentBottomFilter } from "@/components/students/studentBottomFilter";
 import { Button } from "@/components/ui/button";
@@ -66,7 +66,7 @@ function StaffsPage() {
     combinedFilters,
   } = useStaffQuery();
 
-  const columns = staffColumns({
+  const columns = StaffColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,
@@ -104,9 +104,9 @@ function StaffsPage() {
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl">Student Management</CardTitle>
+            <CardTitle className="text-2xl">Staffs Management</CardTitle>
             <CardDescription className="mt-1">
-              Manage and view all students
+              Manage and view all staffs
             </CardDescription>
           </div>
 

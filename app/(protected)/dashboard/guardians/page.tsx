@@ -3,7 +3,7 @@
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
 import { GuardianBottomFilter } from "@/components/guardians/guardianBottomFilter";
-import { guardianColumns } from "@/components/guardians/guardianColumns";
+import { GuardianColumns } from "@/components/guardians/guardianColumns";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -64,7 +64,7 @@ function GuardianPage() {
     combinedFilters,
   } = useGuardianQuery();
 
-  const columns = guardianColumns({
+  const columns = GuardianColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,

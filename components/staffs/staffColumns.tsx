@@ -15,7 +15,7 @@ interface ColumnsProps {
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
 }
-export const staffColumns = ({
+export const StaffColumns = ({
   setIsEditing,
   setIsDelOpen,
   setValues,

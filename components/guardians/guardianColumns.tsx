@@ -15,7 +15,7 @@ interface ColumnsProps {
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
 }
-export const guardianColumns = ({
+export const GuardianColumns = ({
   setIsEditing,
   setIsDelOpen,
   setValues,

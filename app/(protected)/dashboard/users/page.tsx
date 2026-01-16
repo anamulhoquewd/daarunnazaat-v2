@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { UserBottomFilter } from "@/components/users/userBottomFilter";
-import { userColumns } from "@/components/users/userColumns";
+import { UserColumns } from "@/components/users/userColumns";
 import UserFilters from "@/components/users/userFilter";
 import useUserQuery from "@/hooks/users/useUserQuery";
 import {
@@ -62,7 +62,7 @@ function UsersPage() {
     combinedFilters,
   } = useUserQuery();
 
-  const columns = userColumns({
+  const columns = UserColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,

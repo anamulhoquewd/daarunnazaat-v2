@@ -15,28 +15,34 @@ interface ColumnsProps {
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
 }
-export const ClassColumns = ({
+export const SessionColumns = ({
   setIsEditing,
   setIsDelOpen,
   setValues,
   setSelectId,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
-    header: "Class ID",
+    header: "Session ID",
     cell: ({ row }) => row.original._id || "-",
   },
   {
-    header: "Clss Name",
-    cell: ({ row }) => row.original.className || "-",
+    header: "Session Name",
+    cell: ({ row }) => row.original.sessionName || "-",
   },
   {
-    header: "Monthly Fee",
-    cell: ({ row }) => row.original.monthlyFee || "-",
+    accessorKey: "batchType",
+    header: "Batch Type",
+    cell: ({ row }) => row.original.batchType || "-",
   },
   {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }) => row.original.description || "-",
+    accessorKey: "startDate",
+    header: "Star tDate",
+    cell: ({ row }) => row.original.startDate || "-",
+  },
+  {
+    accessorKey: "endDate",
+    header: "End tDate",
+    cell: ({ row }) => row.original.endDate || "-",
   },
   {
     accessorKey: "status",
