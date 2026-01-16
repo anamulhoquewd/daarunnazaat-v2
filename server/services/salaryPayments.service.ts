@@ -10,8 +10,9 @@ import {
 import mongoose from "mongoose";
 import { schemaValidationError } from "../error";
 import { SalaryPayment } from "../models/salaryPayments.model";
-import { generateSalaryReceiptNumber } from "../utils/string-generator";
+import { Staff } from "../models/staffs.model";
 import pagination from "../utils/pagination";
+import { generateSalaryReceiptNumber } from "../utils/string-generator";
 import { createTransactionLog } from "./transactions.service";
 
 export const register = async (body: ISalaryPayment) => {
@@ -25,6 +26,12 @@ export const register = async (body: ISalaryPayment) => {
   }
 
   try {
+    const staff = await Staff.findById(validData.data.staffId);
+
+    if (!staff || staff.branch !== validData.data.branch) {
+      return { error: { message: "Invalid staff on this branch or ID" } };
+    }
+
     // Check if salry is already exists
     const isExistSalary = await SalaryPayment.findOne({
       staffId: validData.data.staffId,
@@ -241,6 +248,10 @@ export const gets = async (queryParams: {
   netSalaryRange?: { min?: number; max?: number };
   paidBy?: string;
   staffId?: string;
+  paymentDateRange?: {
+    from?: string | Date;
+    to?: string | Date;
+  };
 }) => {
   try {
     const query: any = {};
@@ -282,29 +293,43 @@ export const gets = async (queryParams: {
       query.year = parseInt(queryParams.year, 10);
     }
 
-    // Filter by paymentMethod
     if (queryParams.paymentMethod) {
       query.paymentMethod = queryParams.paymentMethod;
     }
 
     // Filter by netSalary range
-    if (queryParams.netSalaryRange) {
-      const salaryFilter: any = {};
-      if (queryParams.netSalaryRange.min != null) {
-        salaryFilter.$gte = queryParams.netSalaryRange.min;
+    if (
+      queryParams.netSalaryRange?.min !== undefined &&
+      queryParams.netSalaryRange?.max !== undefined
+    ) {
+      query.basicSalary = {
+        $gte: queryParams.netSalaryRange.min,
+        $lte: queryParams.netSalaryRange.max,
+      };
+    }
+
+    if (
+      queryParams.paymentDateRange?.from ||
+      queryParams.paymentDateRange?.to
+    ) {
+      query.paymentDate = {};
+
+      if (queryParams.paymentDateRange.from) {
+        query.paymentDate.$gte = new Date(queryParams.paymentDateRange.from);
       }
-      if (queryParams.netSalaryRange.max != null) {
-        salaryFilter.$lte = queryParams.netSalaryRange.max;
-      }
-      if (Object.keys(salaryFilter).length > 0) {
-        query.netSalary = salaryFilter;
+
+      if (queryParams.paymentDateRange.to) {
+        query.paymentDate.$lte = new Date(queryParams.paymentDateRange.to);
       }
     }
 
     // Allowable sort fields
-    const sortField = ["createdAt", "updatedAt", "netSalary"].includes(
-      queryParams.sortBy
-    )
+    const sortField = [
+      "createdAt",
+      "updatedAt",
+      "netSalary",
+      "paymentDate",
+    ].includes(queryParams.sortBy)
       ? queryParams.sortBy
       : "createdAt";
     const sortDirection =
@@ -316,11 +341,14 @@ export const gets = async (queryParams: {
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
         .limit(queryParams.limit)
+        .populate(
+          "staffId",
+          "firstName lastName gender designation basicSalary branch staffId whtasApp"
+        )
+        .populate("paidBy", "phone role")
         .exec(),
       SalaryPayment.countDocuments(query),
     ]);
-
-    console.log("Query: ", query);
 
     // Pagination helper
     const createPagination = pagination({

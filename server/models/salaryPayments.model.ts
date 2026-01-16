@@ -39,11 +39,16 @@ SalaryPaymentSchema.index({ staffId: 1, month: 1, year: 1 }, { unique: true });
 SalaryPaymentSchema.pre("validate", function (next) {
   const doc = this as any;
 
-  const basicSalary = doc.basicSalary || 0;
-  const bonus = doc.bonus || 0;
+  const basicSalary = Number(doc.basicSalary) || 0;
+  const bonus = Number(doc.bonus) || 0;
 
-  doc.netSalary = basicSalary + bonus;
+  const netSalary = basicSalary + bonus;
 
+  if (Number.isNaN(netSalary)) {
+    return next(new Error("Invalid salary calculation"));
+  }
+
+  doc.netSalary = netSalary;
   next();
 });
 

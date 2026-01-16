@@ -74,7 +74,7 @@ app.route("/classes", classRoutes);
 app.route("/sessions", sessionRoute);
 
 // Salaries routes
-app.route("/salaries ", salaryPaymentRoutes);
+app.route("/salaries", salaryPaymentRoutes);
 
 // Staff routes
 app.route("/staffs", staffRoutes);

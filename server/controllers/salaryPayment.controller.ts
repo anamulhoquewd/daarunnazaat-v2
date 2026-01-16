@@ -1,7 +1,7 @@
+import { PaymentMethod } from "@/validations";
 import { Context } from "hono";
 import { badRequestError, serverError } from "../error";
 import { salaryService } from "../services";
-import { PaymentMethod } from "@/validations";
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
@@ -36,9 +36,13 @@ export const gets = async (c: Context) => {
   const paymentMethod = c.req.query("paymentMethod") as PaymentMethod;
   const paidBy = c.req.query("paidBy") as string;
   const staffId = c.req.query("staffId") as string;
+  const fromDate = c.req.query("fromDate") as string;
+  const toDate = c.req.query("toDate") as string;
 
-  const minSalary = parseInt(c.req.query("minSalary") as string, 10);
-  const maxSalary = parseInt(c.req.query("maxSalary") as string, 10);
+  const paymentDateRange = { from: fromDate, to: toDate };
+
+  const minSalary = parseInt(c.req.query("minSalary") as string, 10) || 0;
+  const maxSalary = parseInt(c.req.query("maxSalary") as string, 10) || 100000;
 
   const response = await salaryService.gets({
     page,
@@ -53,6 +57,7 @@ export const gets = async (c: Context) => {
     netSalaryRange: { max: maxSalary, min: minSalary },
     paidBy,
     staffId,
+    paymentDateRange,
   });
 
   if (response.serverError) {
