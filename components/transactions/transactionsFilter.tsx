@@ -17,19 +17,19 @@ import {
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
 
-interface SalariesFiltersProps {
+interface TransactionsFiltersProps {
   filters: Record<string, string | boolean | undefined>;
   onChange: (key: string, value: string) => void;
   isExpanded?: boolean;
   activeFilterCount: number;
 }
 
-export default function SalariesFilters({
+export default function TransactionsFilters({
   filters,
   onChange,
   isExpanded: initialExpanded = false,
   activeFilterCount,
-}: SalariesFiltersProps) {
+}: TransactionsFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
 
   return (
@@ -56,24 +56,24 @@ export default function SalariesFilters({
 
       {isExpanded && (
         <CardContent className="space-y-6 border-t pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">
-                Payment Method
+                Transaction Type
               </label>
               <Select
-                value={(filters.paymentMethod as string) || "all"}
-                onValueChange={(v) => onChange("paymentMethod", v)}
+                value={(filters.transactionType as string) || "all"}
+                onValueChange={(v) => onChange("transactionType", v)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Payment method" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Methods</SelectItem>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="bank_transfer">Bank transfer</SelectItem>
-                  <SelectItem value="mobile_banking">Mobile banking</SelectItem>
-                  <SelectItem value="cheque">Cheque</SelectItem>
+                  <SelectItem value="all">All Type</SelectItem>
+                  <SelectItem value="income">Income</SelectItem>
+                  <SelectItem value="expense">Expense</SelectItem>
+                  <SelectItem value="reversal">Reversal</SelectItem>
+                  <SelectItem value="adjustment">Adjustment</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -96,22 +96,13 @@ export default function SalariesFilters({
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Staff ID</label>
-              <Input
-                placeholder="Search class by id..."
-                value={(filters.staffId as string) || ""}
-                onChange={(e) => onChange("staffId", e.target.value)}
-              />
-            </div>
-
-            <div>
               <label className="text-sm font-medium mb-2 block">
-                PaidBy ID
+                Reference Id
               </label>
               <Input
-                placeholder="Search guardian by id..."
-                value={(filters.paidBy as string) || ""}
-                onChange={(e) => onChange("paidBy", e.target.value)}
+                placeholder="Search reference by id..."
+                value={(filters.referenceId as string) || ""}
+                onChange={(e) => onChange("referenceId", e.target.value)}
               />
             </div>
           </div>

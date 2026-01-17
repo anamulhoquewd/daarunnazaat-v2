@@ -33,7 +33,6 @@ export interface Student {
   admissionFee: number;
   admissionDiscount: number;
   monthlyFee: number;
-  monthlyDiscount: number;
   mealFee: number;
   classId: ClassInfo;
   guardianId: Guardian;

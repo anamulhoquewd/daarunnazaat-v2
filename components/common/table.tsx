@@ -48,11 +48,11 @@ function TableComponent({ table, columns }: TableComponentProps) {
                                     column: any;
                                     getContext: () => any;
                                   }
-                                ).getContext()
+                                ).getContext(),
                               )}
                         </TableHead>
                       );
-                    }
+                    },
                   )}
                 </TableRow>
               ))}
@@ -73,51 +73,20 @@ function TableComponent({ table, columns }: TableComponentProps) {
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
                       >
-                        {row.getVisibleCells().map((cell) => {
-                          const cellValue =
-                            cell.column.id === "amount" &&
-                            cell.getValue() !== undefined ? (
-                              Number.parseFloat(cell.getValue()).toFixed(2)
-                            ) : cell.column.id === "isActive" &&
-                              cell.getValue() !== undefined ? (
-                              cell.getValue() ? (
-                                <Badge
-                                  variant="outline"
-                                  className={"border-green-500 text-green-500"}
-                                >
-                                  Active
-                                </Badge>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  className={"border-red-500 text-red-500"}
-                                >
-                                  Inactive
-                                </Badge>
-                              )
-                            ) : (cell.column.id === "createdAt" ||
-                                cell.column.id === "updatedAt") &&
-                              cell.getValue() !== undefined ? (
-                              format(new Date(cell.getValue()), "yyyy-MM-dd")
-                            ) : (
-                              flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )
-                            );
-
-                          return (
-                            <TableCell
-                              key={cell.id}
-                              className={`text-black-solid`}
-                            >
-                              {cellValue}
-                            </TableCell>
-                          );
-                        })}
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell
+                            key={cell.id}
+                            className={`text-black-solid`}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        ))}
                       </TableRow>
                     );
-                  }
+                  },
                 )
             ) : (
               <TableRow>

@@ -17,19 +17,19 @@ import {
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
 
-interface SalariesFiltersProps {
+interface FeesFiltersProps {
   filters: Record<string, string | boolean | undefined>;
   onChange: (key: string, value: string) => void;
   isExpanded?: boolean;
   activeFilterCount: number;
 }
 
-export default function SalariesFilters({
+export default function FeesFilters({
   filters,
   onChange,
   isExpanded: initialExpanded = false,
   activeFilterCount,
-}: SalariesFiltersProps) {
+}: FeesFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
 
   return (
@@ -56,7 +56,7 @@ export default function SalariesFilters({
 
       {isExpanded && (
         <CardContent className="space-y-6 border-t pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">
                 Payment Method
@@ -74,6 +74,31 @@ export default function SalariesFilters({
                   <SelectItem value="bank_transfer">Bank transfer</SelectItem>
                   <SelectItem value="mobile_banking">Mobile banking</SelectItem>
                   <SelectItem value="cheque">Cheque</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Fees type
+              </label>
+              <Select
+                value={(filters.branch as string) || "all"}
+                onValueChange={(v) => onChange("feeType", v)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select feeType" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Type of fees</SelectItem>
+                  <SelectItem value="admission">Admission</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="residential">Residential</SelectItem>
+                  <SelectItem value="coaching">Coaching</SelectItem>
+                  <SelectItem value="daycare">Daycare</SelectItem>
+                  <SelectItem value="utility">Utility</SelectItem>
+                  <SelectItem value="meal">Meal</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -99,19 +124,19 @@ export default function SalariesFilters({
               <label className="text-sm font-medium mb-2 block">Staff ID</label>
               <Input
                 placeholder="Search class by id..."
-                value={(filters.staffId as string) || ""}
-                onChange={(e) => onChange("staffId", e.target.value)}
+                value={(filters.collectedBy as string) || ""}
+                onChange={(e) => onChange("collectedBy", e.target.value)}
               />
             </div>
 
             <div>
               <label className="text-sm font-medium mb-2 block">
-                PaidBy ID
+                Student ID
               </label>
               <Input
                 placeholder="Search guardian by id..."
-                value={(filters.paidBy as string) || ""}
-                onChange={(e) => onChange("paidBy", e.target.value)}
+                value={(filters.studentId as string) || ""}
+                onChange={(e) => onChange("studentId", e.target.value)}
               />
             </div>
           </div>

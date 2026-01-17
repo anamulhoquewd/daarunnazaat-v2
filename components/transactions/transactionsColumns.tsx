@@ -7,54 +7,56 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Trash2 } from "lucide-react";
 
 // Define Props Interface
 interface ColumnsProps {
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setValues: (values: any) => void;
 }
-export const SessionColumns = ({
-  setIsEditing,
+export const TransactionsColumns = ({
   setIsDelOpen,
-  setValues,
   setSelectId,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
-    header: "Session ID",
-    cell: ({ row }) => row.original._id || "-",
+    header: "transactionType",
+    cell: ({ row }) => row.original?.transactionType || "-",
   },
   {
-    header: "Session Name",
-    cell: ({ row }) => row.original.sessionName || "-",
+    header: "Reff Receipt",
+    cell: ({ row }) => row.original?.referenceId?.receiptNumber || "-",
   },
   {
-    accessorKey: "batchType",
-    header: "Batch Type",
-    cell: ({ row }) => row.original.batchType || "-",
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => row.original?.description || "-",
   },
   {
-    accessorKey: "startDate",
-    header: "Start Date",
+    header: "amount",
+    cell: ({ row }) => row.original?.amount || "-",
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Created At",
     cell: ({ getValue }) => {
       const value = getValue<string>();
       return value ? format(new Date(value), "yyyy-MM-dd") : "-";
     },
   },
   {
-    accessorKey: "endDate",
-    header: "End Date",
-    cell: ({ getValue }) => {
-      const value = getValue<string>();
-      return value ? format(new Date(value), "yyyy-MM-dd") : "-";
-    },
+    accessorKey: "branch",
+    header: "Branch",
+    cell: ({ row }) => row.original?.branch || "-",
   },
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (row.original?.isActive ? "Active" : "Inactive"),
+    accessorKey: "performedByPhone",
+    header: "Performed by phone",
+    cell: ({ row }) => row.original?.performedBy?.phone,
+  },
+  {
+    accessorKey: "performedByRole",
+    header: "Performed role",
+    cell: ({ row }) => row.original?.performedBy?.role,
   },
   {
     id: "actions",
@@ -68,17 +70,6 @@ export const SessionColumns = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onClick={() => {
-              setValues(row.original);
-              setSelectId(row.original._id);
-              setIsEditing(true);
-            }}
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-
           <DropdownMenuItem
             className="text-destructive"
             onClick={() => {

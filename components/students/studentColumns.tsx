@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 // Define Props Interface
@@ -83,6 +84,14 @@ export const StudentColumns = ({
     accessorKey: "residential",
     header: "Residential",
     cell: ({ row }) => (row.original.isResidential ? "Yes" : "No"),
+  },
+  {
+    accessorKey: "admissionDate",
+    header: "Admission Date",
+    cell: ({ getValue }) => {
+      const value = getValue<string>();
+      return value ? format(new Date(value), "yyyy-MM-dd") : "-";
+    },
   },
   {
     accessorKey: "status",

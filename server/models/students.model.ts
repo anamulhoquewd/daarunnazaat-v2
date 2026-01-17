@@ -82,7 +82,6 @@ const StudentSchema = new Schema<IStudent & Document>(
     admissionFee: { type: Number, required: true, min: 0 },
     admissionDiscount: { type: Number, default: 0, min: 0 },
     monthlyFee: { type: Number, required: true, min: 0 },
-    monthlyDiscount: { type: Number, default: 0, min: 0 },
     residentialFee: { type: Number, min: 0 },
     mealFee: { type: Number, min: 0 },
     passoutDate: { type: Date },

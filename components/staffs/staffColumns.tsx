@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 // Define Props Interface
@@ -51,8 +52,11 @@ export const StaffColumns = ({
   },
   {
     accessorKey: "joinDate",
-    header: "JoinDate",
-    cell: ({ row }) => row.original?.joinDate || "-",
+    header: "Join Date",
+    cell: ({ getValue }) => {
+      const value = getValue<string>();
+      return value ? format(new Date(value), "yyyy-MM-dd") : "-";
+    },
   },
   {
     header: "Salary",

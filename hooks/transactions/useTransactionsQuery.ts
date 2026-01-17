@@ -2,9 +2,11 @@ import api from "@/axios/intercepter";
 import { buildQuery, defaultPagination, handleAxiosError } from "@/lib/utils";
 import {
   Branch,
+  FeeType,
   IPagination,
-  ISalaryPayment,
+  ITransactionLog,
   PaymentMethod,
+  TransactionType,
 } from "@/validations";
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
@@ -13,48 +15,43 @@ import { useDebounce } from "../common/useDebounce";
 
 interface IFilter {
   dateRange: DateRange | undefined;
-  netSalaryRange: { min: number | undefined; max: number | undefined };
+  amountRange: { min: number | undefined; max: number | undefined };
   sortType?: SortType;
-  sortBy?: "createdAt" | "updatedAt" | "netSalary" | "paymentDate";
+  sortBy?: "createdAt" | "updatedAt";
   limit?: string;
-  paymentMethod: "all" | PaymentMethod;
+  transactionType: "all" | TransactionType;
   branch: "all" | Branch;
 }
 
 interface ISearch {
   global: string;
-  paidBy: string;
-  staffId: string;
+  referenceId: string;
 }
-
 type SortType = "asc" | "desc";
 
-function useSalariesQuery() {
+function useTransactionsQuery() {
   const [isLoading, setIsLoading] = useState(false);
-  const [salaries, setSalaries] = useState<ISalaryPayment[]>([]);
+  const [transactions, setTransactions] = useState<ITransactionLog[]>([]);
   const [pagination, setPagination] = useState<IPagination>(defaultPagination);
   const [search, setSearch] = useState<ISearch>({
-    paidBy: "",
-    staffId: "",
+    referenceId: "",
     global: "",
   });
-  const [values, setValues] = useState<ISalaryPayment | null>(null);
   const [filterBy, setFilterBy] = useState<IFilter>({
     dateRange: { from: undefined, to: undefined },
-    netSalaryRange: { min: undefined, max: undefined },
-    paymentMethod: "all",
+    amountRange: { min: undefined, max: undefined },
+    transactionType: "all",
     sortBy: "createdAt",
     sortType: "desc" as SortType,
     limit: "10",
-    branch: "all",
+    branch: "all" as Branch,
   });
 
   // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
-  const debouncedStaffSearch = useDebounce(search.staffId, 700);
-  const debouncedPaidBySearch = useDebounce(search.paidBy, 700);
+  const debouncedreferenceIdSearch = useDebounce(search.referenceId, 700);
 
-  const getSalaries = async ({
+  const getTransactions = async ({
     search,
     filters,
     currentPage,
@@ -69,10 +66,11 @@ function useSalariesQuery() {
       const query = buildQuery({
         page: currentPage,
         search: search.global,
-        paidBy: search.paidBy,
-        staffId: search.staffId,
-        paymentMethod:
-          filters?.paymentMethod === "all" ? undefined : filters?.paymentMethod,
+        referenceId: search.referenceId,
+        transactionType:
+          filters?.transactionType === "all"
+            ? undefined
+            : filters?.transactionType,
         branch: filters?.branch === "all" ? undefined : filters?.branch,
         fromDate: filters?.dateRange?.from
           ? format(filters.dateRange.from, "yyyy-MM-dd")
@@ -80,28 +78,28 @@ function useSalariesQuery() {
         toDate: filters?.dateRange?.to
           ? format(filters.dateRange.to, "yyyy-MM-dd")
           : undefined,
-        minSalary:
-          filters.netSalaryRange.min !== undefined &&
-          filters.netSalaryRange.max !== undefined
-            ? filters.netSalaryRange.min
+        minAmount:
+          filters.amountRange.min !== undefined &&
+          filters.amountRange.max !== undefined
+            ? filters.amountRange.min
             : undefined,
-        maxSalary:
-          filters.netSalaryRange.min !== undefined &&
-          filters.netSalaryRange.max !== undefined
-            ? filters.netSalaryRange.max
+        maxAmount:
+          filters.amountRange.min !== undefined &&
+          filters.amountRange.max !== undefined
+            ? filters.amountRange.max
             : undefined,
         sortBy: filters?.sortBy,
         sortType: filters?.sortType,
         limit: filters?.limit,
       });
 
-      const res = await api.get(`/salaries?${query}`);
+      const res = await api.get(`/transactions?${query}`);
 
       if (!res.data.success) {
         throw new Error(res.data.error.message);
       }
 
-      setSalaries(res.data.data || []);
+      setTransactions(res.data.data || []);
       setPagination(res.data.pagination);
     } catch (err) {
       handleAxiosError(err);
@@ -115,18 +113,19 @@ function useSalariesQuery() {
     // Range filter
     if (filterBy.dateRange?.from && filterBy.dateRange?.to) count++;
     if (
-      filterBy.netSalaryRange.min !== undefined &&
-      filterBy.netSalaryRange.max !== undefined
+      filterBy.amountRange.min !== undefined &&
+      filterBy.amountRange.max !== undefined
     )
       count++;
 
     // Select filters (only count if not "all")
-    if (filterBy.paymentMethod && filterBy.paymentMethod !== "all") count++;
+    if (filterBy.transactionType && filterBy.transactionType !== "all") count++;
+    if (filterBy.branch && filterBy.branch !== "all") count++;
 
     // Search filters (only count if not empty)
-    if (debouncedPaidBySearch && debouncedPaidBySearch.trim()) count++;
     if (debouncedGlobalSearch && debouncedGlobalSearch.trim()) count++;
-    if (debouncedStaffSearch && debouncedStaffSearch.trim()) count++;
+    if (debouncedreferenceIdSearch && debouncedreferenceIdSearch.trim())
+      count++;
 
     return count;
   };
@@ -134,20 +133,19 @@ function useSalariesQuery() {
   const handleClearFilters = () => {
     setFilterBy({
       dateRange: { from: undefined, to: undefined },
-      netSalaryRange: { min: undefined, max: undefined },
-      paymentMethod: "all",
+      amountRange: { min: undefined, max: undefined },
+      transactionType: "all",
       branch: "all",
     });
     setSearch({
-      staffId: "",
-      paidBy: "",
+      referenceId: "",
       global: "",
     });
   };
 
   const updateFilter = (key: string, value: string) => {
-    // Handle search fields (staffId, paidBy) - these go to search state
-    if (key === "staffId" || key === "paidBy") {
+    // Handle search fields (referenceId) - these go to search state
+    if (key === "referenceId") {
       setSearch((prev) => ({ ...prev, [key]: value }));
       return;
     }
@@ -162,40 +160,36 @@ function useSalariesQuery() {
 
   // 🔥 API call only when debounced search OR page/limit changes
   useEffect(() => {
-    getSalaries({
+    getTransactions({
       search: {
         global: debouncedGlobalSearch,
-        staffId: debouncedStaffSearch,
-        paidBy: debouncedPaidBySearch,
+        referenceId: debouncedreferenceIdSearch,
       },
       filters: filterBy,
       currentPage: pagination.page,
     });
   }, [
     debouncedGlobalSearch,
-    debouncedPaidBySearch,
-    debouncedStaffSearch,
+    debouncedreferenceIdSearch,
     filterBy,
     pagination.page,
   ]);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
   const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
-    const { dateRange, netSalaryRange, ...restFilters } = filterBy;
+    const { dateRange, amountRange, ...restFilters } = filterBy;
     return {
       ...restFilters,
-      staffId: search.staffId,
-      paidBy: search.paidBy,
+      referenceId: search.referenceId,
     };
-  }, [filterBy, search.paidBy, search.staffId]);
+  }, [filterBy, search.referenceId]);
 
   return {
-    salaries,
+    transactions,
     isLoading,
     pagination,
     setPagination,
-    refetch: getSalaries,
-    setValues,
+    refetch: getTransactions,
     setSearch,
     search,
     filterBy,
@@ -207,4 +201,4 @@ function useSalariesQuery() {
   };
 }
 
-export default useSalariesQuery;
+export default useTransactionsQuery;

@@ -22,7 +22,6 @@ export const useStudentForm = (onSuccess?: () => void) => {
       currentSessionId: "",
       admissionFee: 0,
       monthlyFee: 0,
-      monthlyDiscount: 0,
       isResidential: true,
       isMealIncluded: true,
       mealFee: 0,

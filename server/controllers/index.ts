@@ -7,6 +7,7 @@ import * as sessionController from "./session.controller";
 import * as staffController from "./staffs.controller";
 import * as studentController from "./students.controller";
 import * as usersController from "./users.controller";
+import * as transactionController from "./transaction.controller";
 
 export {
   blogController,
@@ -17,5 +18,6 @@ export {
   sessionController,
   staffController,
   studentController,
+  transactionController,
   usersController,
 };

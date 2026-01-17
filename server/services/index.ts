@@ -7,6 +7,7 @@ import * as sessionService from "./session.service";
 import * as staffService from "./staff.service";
 import * as studentService from "./students.service";
 import * as userServices from "./users.service";
+import * as transactionService from "./transactions.service";
 
 export {
   blogService,
@@ -18,4 +19,5 @@ export {
   staffService,
   studentService,
   userServices,
+  transactionService,
 };

@@ -82,6 +82,10 @@ export const register = async ({
       return { error: { message: "Student not found" } };
     }
 
+    if (!student || student.branch !== validData.data.branch) {
+      return { error: { message: "Invalid student on this branch or ID" } };
+    }
+
     const session = await Session.findById(validData.data.sessionId);
 
     if (!session || !session.isActive) {
@@ -391,7 +395,9 @@ export const gets = async (queryParams: {
     }
 
     // Allowable sort fields
-    const sortField = ["createdAt", "updatedAt"].includes(queryParams.sortBy)
+    const sortField = ["createdAt", "updatedAt", "paymentDate"].includes(
+      queryParams.sortBy
+    )
       ? queryParams.sortBy
       : "createdAt";
     const sortDirection =
@@ -403,6 +409,12 @@ export const gets = async (queryParams: {
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
         .limit(queryParams.limit)
+        .populate(
+          "studentId",
+          "studentId branch firstName lastName gender monthlyFee mealFee"
+        )
+        .populate("sessionId", "sessionName isActive")
+        .populate("collectedBy", "phone role")
         .exec(),
       FeeCollection.countDocuments(query),
     ]);

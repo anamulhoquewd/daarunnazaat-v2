@@ -1,4 +1,4 @@
-import { PaymentMethod } from "@/validations";
+import { Branch, PaymentMethod } from "@/validations";
 import { Context } from "hono";
 import { badRequestError, serverError } from "../error";
 import { salaryService } from "../services";
@@ -38,6 +38,7 @@ export const gets = async (c: Context) => {
   const staffId = c.req.query("staffId") as string;
   const fromDate = c.req.query("fromDate") as string;
   const toDate = c.req.query("toDate") as string;
+  const branch = c.req.query("branch") as Branch;
 
   const paymentDateRange = { from: fromDate, to: toDate };
 
@@ -58,6 +59,7 @@ export const gets = async (c: Context) => {
     paidBy,
     staffId,
     paymentDateRange,
+    branch,
   });
 
   if (response.serverError) {

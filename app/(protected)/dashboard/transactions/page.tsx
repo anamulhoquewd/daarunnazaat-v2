@@ -3,9 +3,9 @@
 import { DateRangePicker } from "@/components/common/dateRange";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
-import { SalariesBottomFilter } from "@/components/salaries/salariesBottomFilter";
-import { SalariesColumns } from "@/components/salaries/salariesColumns";
-import SalariesFilters from "@/components/salaries/salariesFilter";
+import { TransactionsBottomFilter } from "@/components/transactions/transactionsBottomFilter";
+import { TransactionsColumns } from "@/components/transactions/transactionsColumns";
+import TransactionsFilters from "@/components/transactions/transactionsFilter";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import useSalariesQuery from "@/hooks/salaries/useSalariesQuery";
+import useTransactionsQuery from "@/hooks/transactions/useTransactionsQuery";
 import {
   ColumnFiltersState,
   SortingState,
@@ -32,30 +32,24 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown, Filter, X } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
-function SalariesPage() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
+function TransactionsPage() {
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [selectId, setSelectId] = useState<string | null>(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    staffId: false,
+    description: false,
     branch: false,
-    year: false,
-    bonus: false,
-    salary: false,
-    paymentMethod: false,
-    paidByRole: false,
+    performedByPhone: false,
+    performedByRole: false,
   });
 
   const {
     pagination,
-    salaries,
-    setValues,
+    transactions,
     setPagination,
     search,
     setSearch,
@@ -65,18 +59,16 @@ function SalariesPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
-  } = useSalariesQuery();
+  } = useTransactionsQuery();
 
-  const columns = SalariesColumns({
-    setIsEditing,
+  const columns = TransactionsColumns({
     setIsDelOpen,
-    setValues,
     setSelectId,
   });
 
   const table = useReactTable({
     columns,
-    data: salaries,
+    data: transactions,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -105,9 +97,9 @@ function SalariesPage() {
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl">Salaries Management</CardTitle>
+            <CardTitle className="text-2xl">Transactions Management</CardTitle>
             <CardDescription className="mt-1">
-              Manage and view all salaries
+              Manage and view all transactions
             </CardDescription>
           </div>
 
@@ -129,16 +121,13 @@ function SalariesPage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
-            <Link href={"#"}>
-              <Button className="cursor-pointer">Add One</Button>
-            </Link>
           </div>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
         {/* Filter Controls Row */}
         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <SalariesFilters
+          <TransactionsFilters
             filters={combinedFilters}
             onChange={updateFilter}
             isExpanded={false}
@@ -149,10 +138,10 @@ function SalariesPage() {
         <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
           <div className="flex-1">
             <label className="text-sm font-medium mb-2 block">
-              Search by name, ID, nid, phone or email
+              Search by ID or description
             </label>
             <Input
-              placeholder="Search students..."
+              placeholder="Search transaction..."
               value={search.global}
               onChange={(e) =>
                 setSearch((prev) => ({
@@ -163,10 +152,10 @@ function SalariesPage() {
             />
           </div>
 
-          {/* Payment Date Range */}
+          {/* Transaction Date Range */}
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Payment Date Range
+              Transaction Date Range
             </label>
 
             <DateRangePicker
@@ -179,6 +168,48 @@ function SalariesPage() {
                 }))
               }
             />
+          </div>
+
+          {/* Amount Range */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Amount Range
+            </label>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="Min"
+                value={filterBy.amountRange?.min}
+                min={0}
+                onChange={(e) =>
+                  setFilterBy((values) => ({
+                    ...values,
+                    amountRange: {
+                      ...values.amountRange,
+                      min: e.target.value ? Number(e.target.value) : undefined,
+                    },
+                  }))
+                }
+                className="w-full"
+              />
+
+              <Input
+                min={0}
+                type="number"
+                placeholder="Max"
+                value={filterBy.amountRange.max}
+                onChange={(e) =>
+                  setFilterBy((values) => ({
+                    ...values,
+                    amountRange: {
+                      ...values.amountRange,
+                      max: e.target.value ? Number(e.target.value) : undefined,
+                    },
+                  }))
+                }
+                className="w-full"
+              />
+            </div>
           </div>
 
           <DropdownMenu>
@@ -229,7 +260,7 @@ function SalariesPage() {
 
         {pagination.total > 0 && (
           <div className="pt-4 flex items-center justify-between">
-            <SalariesBottomFilter
+            <TransactionsBottomFilter
               filters={combinedFilters}
               onChange={updateFilter}
             />
@@ -244,4 +275,4 @@ function SalariesPage() {
   );
 }
 
-export default SalariesPage;
+export default TransactionsPage;

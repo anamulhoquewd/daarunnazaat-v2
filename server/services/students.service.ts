@@ -515,7 +515,6 @@ export const updateMe = async ({
       isMealIncluded: true,
       isResidential: true,
       mealFee: true,
-      monthlyDiscount: true,
       monthlyFee: true,
       passoutDate: true,
       residentialFee: true,

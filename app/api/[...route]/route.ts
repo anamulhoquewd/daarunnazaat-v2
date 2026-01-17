@@ -9,6 +9,7 @@ import salaryPaymentRoutes from "@/server/routes/salary.route";
 import sessionRoute from "@/server/routes/session.route";
 import staffRoutes from "@/server/routes/staff.route";
 import studentRoutes from "@/server/routes/students.route";
+import transactionRoutes from "@/server/routes/transaction.route";
 import userRoutes from "@/server/routes/users.route";
 import { userServices } from "@/server/services";
 import { Hono } from "hono";
@@ -79,10 +80,13 @@ app.route("/salaries", salaryPaymentRoutes);
 // Staff routes
 app.route("/staffs", staffRoutes);
 
-// Staff routes
+// fees routes
 app.route("/fees", feeCollectionRoutes);
 
-// Staff routes
+// transactions routes
+app.route("/transactions", transactionRoutes);
+
+// blogs routes
 app.route("/blogs", blogRoutes);
 
 // Global Error Handler

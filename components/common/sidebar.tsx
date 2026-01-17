@@ -66,7 +66,6 @@ const data = {
       title: "Users",
       url: "/dashboard/users",
       icon: SquareTerminal,
-      isActive: true,
       items: [
         {
           title: "Registration",
@@ -86,7 +85,6 @@ const data = {
       title: "Staffs",
       url: "/dashboard/staffs",
       icon: SquareTerminal,
-      isActive: true,
       items: [
         {
           title: "Registration",
@@ -106,7 +104,6 @@ const data = {
       title: "Classes",
       url: "/dashboard/classes",
       icon: SquareTerminal,
-      isActive: true,
       items: [
         {
           title: "Registration",
@@ -126,7 +123,6 @@ const data = {
       title: "Sessions",
       url: "/dashboard/sessions",
       icon: SquareTerminal,
-      isActive: true,
       items: [
         {
           title: "Registration",
@@ -146,7 +142,44 @@ const data = {
       title: "Guardians",
       url: "/dashboard/guardians",
       icon: SquareTerminal,
-      isActive: true,
+      items: [
+        {
+          title: "Registration",
+          url: null,
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+    {
+      title: "Fees ",
+      url: "/dashboard/fees ",
+      icon: SquareTerminal,
+      items: [
+        {
+          title: "Registration",
+          url: null,
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+    {
+      title: "Transactions ",
+      url: "/dashboard/transactions ",
+      icon: SquareTerminal,
       items: [
         {
           title: "Registration",
@@ -166,7 +199,6 @@ const data = {
       title: "Salaries ",
       url: "/dashboard/salaries ",
       icon: SquareTerminal,
-      isActive: true,
       items: [
         {
           title: "Registration",

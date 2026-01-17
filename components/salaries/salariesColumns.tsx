@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 // Define Props Interface
@@ -23,18 +24,18 @@ export const SalariesColumns = ({
 }: ColumnsProps): ColumnDef<any>[] => [
   {
     header: "Receipt number",
-    cell: ({ row }) => row.original.receiptNumber || "-",
+    cell: ({ row }) => row.original?.receiptNumber || "-",
   },
   {
     accessorKey: "staffId",
     header: "Staff Id",
-    cell: ({ row }) => row.original?.staffId.staffId || "-",
+    cell: ({ row }) => row.original?.staffId?.staffId || "-",
   },
   {
     header: "Staff name",
     cell: ({ row }) =>
-      `${row.original?.staffId.firstName || ""} ${
-        row.original?.staffId.lastName || ""
+      `${row.original?.staffId?.firstName || ""} ${
+        row.original?.staffId?.lastName || ""
       }`,
   },
   {
@@ -45,12 +46,12 @@ export const SalariesColumns = ({
   {
     accessorKey: "staff_salary",
     header: "Staff Salary",
-    cell: ({ row }) => row.original?.staffId.basicSalary || "-",
+    cell: ({ row }) => row.original?.staffId?.basicSalary || "-",
   },
   {
     accessorKey: "designation",
     header: "Designation",
-    cell: ({ row }) => row.original?.staffId.designation || "-",
+    cell: ({ row }) => row.original?.staffId?.designation || "-",
   },
   {
     accessorKey: "gender",
@@ -94,6 +95,14 @@ export const SalariesColumns = ({
     accessorKey: "paymentMethod",
     header: "Payment Method",
     cell: ({ row }) => row.original?.paymentMethod,
+  },
+  {
+    accessorKey: "paymentDate",
+    header: "Payment Date",
+    cell: ({ getValue }) => {
+      const value = getValue<string>();
+      return value ? format(new Date(value), "yyyy-MM-dd") : "-";
+    },
   },
   {
     accessorKey: "paidByPhone",

@@ -1,4 +1,5 @@
 import {
+  Branch,
   ISalaryPayment,
   ISalaryPaymentUpdate,
   mongoIdZ,
@@ -252,6 +253,7 @@ export const gets = async (queryParams: {
     from?: string | Date;
     to?: string | Date;
   };
+  branch: Branch;
 }) => {
   try {
     const query: any = {};
@@ -267,6 +269,11 @@ export const gets = async (queryParams: {
           _id: new mongoose.Types.ObjectId(queryParams.search),
         });
       }
+    }
+
+    // Filter by branch
+    if (queryParams.branch) {
+      query.branch = queryParams.branch;
     }
 
     // Filter by staffId

@@ -44,8 +44,8 @@ export const gets = async (c: Context) => {
   const minFee = parseInt(c.req.query("minFee") as string, 10);
   const maxFee = parseInt(c.req.query("maxFee") as string, 10);
 
-  const paymentDateFrom = c.req.query("paymentDateFrom") as string;
-  const paymentDateTo = c.req.query("paymentDateTo") as string;
+  const fromDate = c.req.query("fromDate") as string;
+  const toDate = c.req.query("toDate") as string;
 
   const response = await feeCollectionsService.gets({
     page,
@@ -62,7 +62,7 @@ export const gets = async (c: Context) => {
     studentId,
     collectedBy,
     feeType,
-    paymentDate: { from: paymentDateFrom, to: paymentDateTo },
+    paymentDate: { from: fromDate, to: toDate },
     paymentSource,
     sessionId,
   });

@@ -318,7 +318,6 @@ export const studentZ = personBaseZ.extend({
   admissionFee: z.number().min(0),
   admissionDiscount: z.number().min(0).default(0),
   monthlyFee: z.number().min(0),
-  monthlyDiscount: z.number().min(0).default(0),
   residentialFee: z.number().min(0).optional(),
   mealFee: z.number().min(0).optional(),
   passoutDate: z.coerce.date().optional(), // fareg

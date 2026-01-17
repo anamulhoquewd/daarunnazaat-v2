@@ -3,9 +3,9 @@
 import { DateRangePicker } from "@/components/common/dateRange";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
-import { SalariesBottomFilter } from "@/components/salaries/salariesBottomFilter";
-import { SalariesColumns } from "@/components/salaries/salariesColumns";
-import SalariesFilters from "@/components/salaries/salariesFilter";
+import FeesFilters from "@/components/fees/feesFilter";
+import { FeesBottomFilter } from "@/components/fees/feesBottomFilter";
+import { FeesColumns } from "@/components/fees/feesColumns";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import useSalariesQuery from "@/hooks/salaries/useSalariesQuery";
+import useFeesQuery from "@/hooks/fees/useFeesQuery";
 import {
   ColumnFiltersState,
   SortingState,
@@ -35,7 +35,7 @@ import { ChevronDown, Filter, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-function SalariesPage() {
+function FeesPage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [selectId, setSelectId] = useState<string | null>(null);
@@ -43,18 +43,23 @@ function SalariesPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    staffId: false,
+    collectedByRole: false,
     branch: false,
     year: false,
-    bonus: false,
-    salary: false,
     paymentMethod: false,
-    paidByRole: false,
+    dueAmount: false,
+    discount: false,
+    amount: false,
+    session: false,
+    residentialFee: false,
+    monthlyFee: false,
+    mealFee: false,
+    source: false,
   });
 
   const {
     pagination,
-    salaries,
+    fees,
     setValues,
     setPagination,
     search,
@@ -65,9 +70,9 @@ function SalariesPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
-  } = useSalariesQuery();
+  } = useFeesQuery();
 
-  const columns = SalariesColumns({
+  const columns = FeesColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,
@@ -76,7 +81,7 @@ function SalariesPage() {
 
   const table = useReactTable({
     columns,
-    data: salaries,
+    data: fees,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -105,9 +110,9 @@ function SalariesPage() {
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl">Salaries Management</CardTitle>
+            <CardTitle className="text-2xl">Fees Management</CardTitle>
             <CardDescription className="mt-1">
-              Manage and view all salaries
+              Manage and view all fees
             </CardDescription>
           </div>
 
@@ -138,7 +143,7 @@ function SalariesPage() {
       <CardContent className="flex-1 flex flex-col">
         {/* Filter Controls Row */}
         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <SalariesFilters
+          <FeesFilters
             filters={combinedFilters}
             onChange={updateFilter}
             isExpanded={false}
@@ -229,7 +234,7 @@ function SalariesPage() {
 
         {pagination.total > 0 && (
           <div className="pt-4 flex items-center justify-between">
-            <SalariesBottomFilter
+            <FeesBottomFilter
               filters={combinedFilters}
               onChange={updateFilter}
             />
@@ -244,4 +249,4 @@ function SalariesPage() {
   );
 }
 
-export default SalariesPage;
+export default FeesPage;
