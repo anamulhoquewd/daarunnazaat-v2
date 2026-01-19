@@ -1,5 +1,4 @@
 import {
-  Gender,
   guardianUpdateZ,
   guardianZ,
   IGuardian,
@@ -7,13 +6,12 @@ import {
   mongoIdZ,
   UserRole,
 } from "@/validations";
-import mongoose from "mongoose";
+import mongoose, { PipelineStage } from "mongoose";
 import { schemaValidationError } from "../error";
 import { Guardian } from "../models/guardians.model";
 import { User } from "../models/users.model";
 import pagination from "../utils/pagination";
 import { generateGuardianId } from "../utils/string-generator";
-import { PipelineStage } from "mongoose";
 
 export const createGuardian = async (body: IGuardian) => {
   // Safe Parse for better error handling
@@ -79,7 +77,7 @@ export const createGuardian = async (body: IGuardian) => {
         profile: newGuardian._id,
         profileModel: "Guardian", // Dynamic ref এর জন্য
       },
-      { session }
+      { session },
     );
 
     // ✅ Transaction commit
@@ -104,7 +102,7 @@ export const createGuardian = async (body: IGuardian) => {
       },
     };
   } finally {
-    // Session end করো
+    // Session end
     session.endSession();
   }
 };
@@ -268,7 +266,7 @@ export const updates = async ({
     return {
       error: schemaValidationError(
         bodyValidation.error,
-        "Invalid request body"
+        "Invalid request body",
       ),
     };
   }
@@ -343,7 +341,7 @@ export const updateMe = async ({
     return {
       error: schemaValidationError(
         bodyValidation.error,
-        "Invalid request body"
+        "Invalid request body",
       ),
     };
   }

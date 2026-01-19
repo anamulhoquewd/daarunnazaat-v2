@@ -1,5 +1,4 @@
 import type React from "react";
-
 import { AuthGate } from "@/components/auth/authGet";
 import { AppSidebar } from "@/components/common/sidebar";
 import Header from "@/components/layout/header";

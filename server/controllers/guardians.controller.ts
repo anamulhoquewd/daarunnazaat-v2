@@ -1,4 +1,4 @@
-import { BloodGroup, Gender } from "@/validations";
+import { Gender } from "@/validations";
 import type { Context } from "hono";
 import { badRequestError, serverError } from "../error";
 import { guardanService } from "../services";

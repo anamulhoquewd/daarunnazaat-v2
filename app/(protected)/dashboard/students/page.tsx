@@ -34,6 +34,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { StudentBottomFilter } from "@/components/students/studentBottomFilter";
 import { StudentColumns } from "@/components/students/studentColumns";
+import { cn } from "@/lib/utils";
 
 function StudentPage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -102,11 +103,11 @@ function StudentPage() {
 
   return (
     // Full-height card so header stays fixed and table area scrolls
-    <Card className="w-full -[calc(100vh-140px)] flex flex-col overflow-hidden">
+    <Card className="w-full  flex flex-col overflow-hidden">
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl">Student Management</CardTitle>
+            <CardTitle>Student Management</CardTitle>
             <CardDescription className="mt-1">
               Manage and view all students
             </CardDescription>
@@ -200,7 +201,7 @@ function StudentPage() {
                     getCanHide: () => boolean;
                     getIsVisible: () => boolean;
                     toggleVisibility: (value: boolean) => void;
-                  }) => column.getCanHide()
+                  }) => column.getCanHide(),
                 )
                 .map(
                   (column: {
@@ -221,7 +222,7 @@ function StudentPage() {
                         {column.id}
                       </DropdownMenuCheckboxItem>
                     );
-                  }
+                  },
                 )}
             </DropdownMenuContent>
           </DropdownMenu>

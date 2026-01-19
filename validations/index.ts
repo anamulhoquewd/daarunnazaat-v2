@@ -157,6 +157,16 @@ export enum BlogStatus {
 // Bangladesh phone regex (local format like 017xxxxxxxx)
 export const BDPhoneRegex = /^01[3-9]\d{8}$/;
 
+export const addressZ = z.object({
+  village: z.string().trim().min(1, "Village is required"),
+  postOffice: z.string().trim().min(1, "Post office is required"),
+  upazila: z.string().trim().min(1, "Upazila is required"),
+  district: z.string().trim().min(1, "District is required"),
+  division: z.string().trim().optional(),
+});
+
+const moneyZ = z.coerce.number().min(0);
+
 // Image validation
 export const imageZ = z.object({
   url: z.string().url(),
@@ -166,7 +176,7 @@ export const imageZ = z.object({
 export const mongoZ = z
   .any()
   .transform((val) =>
-    val instanceof mongoose.Types.ObjectId ? val.toString() : val
+    val instanceof mongoose.Types.ObjectId ? val.toString() : val,
   )
   .refine((val) => mongoose.Types.ObjectId.isValid(val), {
     message: "Invalid MongoDB User ID format",
@@ -212,7 +222,7 @@ export const userUpdateZ = userZ.partial().refine(
     // ensure at least one field present on update
     return Object.keys(data).length > 0;
   },
-  { message: "At least one field must be provided for update" }
+  { message: "At least one field must be provided for update" },
 );
 
 // change password
@@ -244,22 +254,8 @@ const personBaseZ = z.object({
     .trim()
     .optional(),
   birthCertificateNumber: z.string().optional(),
-  presentAddress: z.object({
-    village: z.string(),
-    postOffice: z.string(),
-    upazila: z.string(),
-    district: z.string(),
-    division: z.string().optional(),
-  }),
-  permanentAddress: z
-    .object({
-      village: z.string(),
-      postOffice: z.string(),
-      upazila: z.string(),
-      district: z.string(),
-      division: z.string().optional(),
-    })
-    .optional(),
+  presentAddress: addressZ,
+  permanentAddress: addressZ.optional(),
   avatar: imageZ.optional(),
   alternativePhone: z
     .string()
@@ -288,7 +284,7 @@ export const studentZ = personBaseZ.extend({
         enrollmentDate: z.coerce.date(),
         completionDate: z.coerce.date().nullable(),
         status: z.enum(["ongoing", "completed", "dropped"]).default("ongoing"),
-      })
+      }),
     )
     .optional(),
   guardianRelation: z
@@ -301,11 +297,11 @@ export const studentZ = personBaseZ.extend({
           .includes(val),
       {
         message: "Invalid guardian relation",
-      }
+      },
     )
     .transform((val) => {
       const entry = Object.values(GuardianRelation).find(
-        (v) => v.toLowerCase() === val
+        (v) => v.toLowerCase() === val,
       );
       return entry as GuardianRelation;
     }),
@@ -315,11 +311,11 @@ export const studentZ = personBaseZ.extend({
   admissionDate: z.coerce.date(),
   isResidential: z.boolean().default(false),
   isMealIncluded: z.boolean().default(false),
-  admissionFee: z.number().min(0),
-  admissionDiscount: z.number().min(0).default(0),
-  monthlyFee: z.number().min(0),
-  residentialFee: z.number().min(0).optional(),
-  mealFee: z.number().min(0).optional(),
+  admissionFee: moneyZ.min(0),
+  admissionDiscount: moneyZ.min(0).default(0),
+  monthlyFee: moneyZ.min(0),
+  residentialFee: moneyZ.min(0).optional(),
+  mealFee: moneyZ.min(0).optional(),
   passoutDate: z.coerce.date().optional(), // fareg
 });
 
@@ -329,7 +325,7 @@ export const studentUpdateZ = studentZ.partial().refine(
     // ensure at least one field present on update
     return Object.keys(data).length > 0;
   },
-  { message: "At least one field must be provided for update" }
+  { message: "At least one field must be provided for update" },
 );
 
 // Guardian Schema
@@ -338,7 +334,7 @@ export const guardianZ = personBaseZ.omit({ dateOfBirth: true }).extend({
   userId: mongoZ,
   guardianId: z.string().optional(),
   occupation: z.string().optional(),
-  monthlyIncome: z.number().optional(),
+  monthlyIncome: moneyZ.optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -347,7 +343,7 @@ export const guardianUpdateZ = guardianZ.partial().refine(
     // ensure at least one field present on update
     return Object.keys(data).length > 0;
   },
-  { message: "At least one field must be provided for update" }
+  { message: "At least one field must be provided for update" },
 );
 
 // Staff Schema
@@ -358,7 +354,7 @@ export const staffZ = personBaseZ.extend({
   designation: z.string(),
   department: z.string().optional(),
   joinDate: z.coerce.date(),
-  basicSalary: z.number().min(0),
+  basicSalary: moneyZ.min(0),
   branch: z.nativeEnum(Branch),
   resignationDate: z.coerce.date().optional(),
 });
@@ -369,7 +365,7 @@ export const staffUpdateZ = staffZ.partial().refine(
     // ensure at least one field present on update
     return Object.keys(data).length > 0;
   },
-  { message: "At least one field must be provided for update" }
+  { message: "At least one field must be provided for update" },
 );
 
 // Class Schema
@@ -377,8 +373,8 @@ export const classZ = z.object({
   _id: mongoZ.optional(),
   className: z.string(),
   description: z.string().optional(),
-  monthlyFee: z.number().min(0),
-  capacity: z.number().min(1).optional(),
+  monthlyFee: moneyZ.min(0),
+  capacity: moneyZ.min(1).optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -388,7 +384,7 @@ export const classUpdateZ = classZ.partial().refine(
     // ensure at least one field present on update
     return Object.keys(data).length > 0;
   },
-  { message: "At least one field must be provided for update" }
+  { message: "At least one field must be provided for update" },
 );
 
 // Session Schema
@@ -407,7 +403,7 @@ export const sessionUpdateZ = sessionZ.partial().refine(
     // ensure at least one field present on update
     return Object.keys(data).length > 0;
   },
-  { message: "At least one field must be provided for update" }
+  { message: "At least one field must be provided for update" },
 );
 
 // Fee Collection Schema
@@ -416,14 +412,14 @@ export const feeCollectionZ = z.object({
   receiptNumber: z.string().optional(),
   studentId: mongoZ,
   sessionId: mongoZ,
-  month: z.number().min(1).max(12),
-  year: z.number().min(2000),
+  month: moneyZ.min(1).max(12),
+  year: moneyZ.min(2000),
   feeType: z.nativeEnum(FeeType),
   branch: z.nativeEnum(Branch),
-  amount: z.number().min(0),
-  discount: z.number().min(0).default(0),
-  paidAmount: z.number().min(0),
-  dueAmount: z.number().min(0).default(0),
+  amount: moneyZ.min(0),
+  discount: moneyZ.min(0).default(0),
+  paidAmount: moneyZ.min(0),
+  dueAmount: moneyZ.min(0).default(0),
   paymentStatus: z.nativeEnum(PaymentStatus).optional(),
   paymentSource: z.nativeEnum(PaymentSource),
   paymentMethod: z.nativeEnum(PaymentMethod),
@@ -438,7 +434,7 @@ export const feeCollectionsUpdateZ = feeCollectionZ.partial().refine(
     // ensure at least one field present on update
     return Object.keys(data).length > 0;
   },
-  { message: "At least one field must be provided for update" }
+  { message: "At least one field must be provided for update" },
 );
 
 // Salary Payment Schema
@@ -446,11 +442,11 @@ export const salaryPaymentZ = z.object({
   _id: mongoZ.optional(),
   receiptNumber: z.string().optional(),
   staffId: mongoZ,
-  month: z.number().min(1).max(12),
-  year: z.number().min(2000),
-  basicSalary: z.number().min(0),
-  bonus: z.number().min(0).default(0),
-  netSalary: z.number().optional(),
+  month: moneyZ.min(1).max(12),
+  year: moneyZ.min(2000),
+  basicSalary: moneyZ.min(0),
+  bonus: moneyZ.min(0).default(0),
+  netSalary: moneyZ.optional(),
   paymentDate: z.coerce.date().default(() => new Date()),
   paymentMethod: z.nativeEnum(PaymentMethod),
   branch: z.nativeEnum(Branch),
@@ -465,7 +461,7 @@ export const salaryPaymentUpdateZ = salaryPaymentZ.partial().refine(
     // ensure at least one field present on update
     return Object.keys(data).length > 0;
   },
-  { message: "At least one field must be provided for update" }
+  { message: "At least one field must be provided for update" },
 );
 
 // Expense Schema
@@ -474,7 +470,7 @@ export const expenseZ = z.object({
   voucherNumber: z.string(),
   category: z.nativeEnum(ExpenseCategory),
   description: z.string(),
-  amount: z.number().min(0),
+  amount: moneyZ.min(0),
   expenseDate: z.coerce.date().default(() => new Date()),
   paymentMethod: z.nativeEnum(PaymentMethod),
   branch: z.nativeEnum(Branch),
@@ -490,7 +486,7 @@ export const expenseUpdateZ = expenseZ.partial().refine(
     // ensure at least one field present on update
     return Object.keys(data).length > 0;
   },
-  { message: "At least one field must be provided for update" }
+  { message: "At least one field must be provided for update" },
 );
 
 // Transaction Log Schema
@@ -498,7 +494,7 @@ export const transactionLogZ = z.object({
   transactionType: z.nativeEnum(TransactionType),
   referenceId: mongoZ,
   referenceModel: z.enum(["FeeCollection", "SalaryPayment", "Expense"]),
-  amount: z.number(),
+  amount: moneyZ,
   description: z.string(),
   performedBy: mongoZ.optional(),
   branch: z.nativeEnum(Branch),
@@ -536,13 +532,13 @@ export const examZ = z.object({
   classId: mongoZ,
   sessionId: mongoZ,
   examDate: z.coerce.date(),
-  totalMarks: z.number().min(0),
-  passingMarks: z.number().min(0),
+  totalMarks: moneyZ.min(0),
+  passingMarks: moneyZ.min(0),
   subjects: z.array(
     z.object({
       subjectName: z.string(),
-      marks: z.number().min(0),
-    })
+      marks: moneyZ.min(0),
+    }),
   ),
 });
 
@@ -555,15 +551,15 @@ export const resultZ = z.object({
   marks: z.array(
     z.object({
       subjectName: z.string(),
-      obtainedMarks: z.number().min(0),
-      totalMarks: z.number().min(0),
-    })
+      obtainedMarks: moneyZ.min(0),
+      totalMarks: moneyZ.min(0),
+    }),
   ),
-  totalMarks: z.number().min(0),
-  obtainedMarks: z.number().min(0),
-  percentage: z.number().min(0).max(100),
+  totalMarks: moneyZ.min(0),
+  obtainedMarks: moneyZ.min(0),
+  percentage: moneyZ.min(0).max(100),
   grade: z.string().optional(),
-  position: z.number().optional(),
+  position: moneyZ.optional(),
   remarks: z.string().optional(),
 });
 
@@ -577,8 +573,8 @@ export const bookZ = z.object({
   publisher: z.string().optional(),
   edition: z.string().optional(),
   category: z.string(),
-  quantity: z.number().min(0),
-  availableQuantity: z.number().min(0),
+  quantity: moneyZ.min(0),
+  availableQuantity: moneyZ.min(0),
   status: z.nativeEnum(BookStatus),
   branch: z.nativeEnum(Branch),
 });
@@ -594,7 +590,7 @@ export const bookIssueZ = z.object({
   status: z.enum(["issued", "returned", "lost"]),
   issuedBy: mongoZ,
   returnedTo: mongoZ.optional(),
-  fineAmount: z.number().min(0).default(0),
+  fineAmount: moneyZ.default(0),
   remarks: z.string().optional(),
 });
 
@@ -611,7 +607,7 @@ export const noticeZ = z.object({
         name: z.string(),
         url: z.string(),
         type: z.string(),
-      })
+      }),
     )
     .optional(),
   type: z.nativeEnum(NoticeType),
@@ -642,7 +638,7 @@ export const blogZ = z.object({
   publishedBy: mongoZ.optional(),
   status: z.nativeEnum(BlogStatus).optional(),
   tags: z.array(z.string()).optional(),
-  views: z.number().default(0),
+  views: moneyZ.default(0),
   publishedAt: z.coerce.date().optional(),
   expiresAt: z.coerce.date().optional(),
 });
@@ -653,7 +649,7 @@ export const blogUpdateZ = blogZ.partial().refine(
     // ensure at least one field present on update
     return Object.keys(data).length > 0;
   },
-  { message: "At least one field must be provided for update" }
+  { message: "At least one field must be provided for update" },
 );
 
 // SMS Log Schema
@@ -684,7 +680,7 @@ export const loginZ = z
   .object({
     email: z.preprocess(
       (val) => (val === "" ? undefined : val),
-      z.string().email("Invalid email address").trim().toLowerCase().optional()
+      z.string().email("Invalid email address").trim().toLowerCase().optional(),
     ),
 
     phone: z
@@ -866,7 +862,7 @@ export const signInZ = z.object({
         BDPhoneRegex.test(value) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
       {
         message: "Must be a valid email or 11-digit phone number",
-      }
+      },
     ),
   password: z
     .string()

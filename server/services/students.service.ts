@@ -72,7 +72,7 @@ export const createStudent = async (body: IStudent) => {
 
     // 4️⃣ Validate guardian
     const guardian = await Guardian.findById(validData.data.guardianId).session(
-      session
+      session,
     );
     if (!guardian) {
       await session.abortTransaction();
@@ -131,7 +131,7 @@ export const createStudent = async (body: IStudent) => {
         profile: newStudent._id,
         profileModel: "Student", // Dynamic ref এর জন্য
       },
-      { session }
+      { session },
     );
 
     // ✅ Transaction commit
@@ -738,7 +738,7 @@ export const promote = async ({
 
   try {
     const student = await Student.findById(idValidation.data._id).session(
-      session
+      session,
     );
 
     if (!student) {
@@ -757,7 +757,8 @@ export const promote = async ({
 
     // Complete current session
     const currentHistory = student.sessionHistory.find(
-      (h: any) => h.sessionId.toString() === student.currentSessionId.toString()
+      (h: any) =>
+        h.sessionId.toString() === student.currentSessionId.toString(),
     );
 
     if (currentHistory) {

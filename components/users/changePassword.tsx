@@ -85,7 +85,7 @@ function ChangePassword({ isOpen, onClose }: PasswordChangeModalProps) {
                 </DialogClose>
                 <Button
                   className="cursor-pointer"
-                  type="submit"
+                  type="handleSubmit"
                   disabled={false}
                 >
                   {false ? (

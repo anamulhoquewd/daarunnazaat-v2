@@ -1,3 +1,4 @@
+import { UserRole } from "@/validations";
 import axios from "axios";
 import { Context } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
@@ -11,7 +12,6 @@ import {
 import { User } from "../models/users.model";
 import { userServices } from "../services";
 import { generateAccessToken } from "../utils";
-import { UserRole } from "@/validations";
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
@@ -121,7 +121,7 @@ export const getMe = async (c: Context) => {
         message: "User fetched successfully",
         data: me,
       },
-      200
+      200,
     );
   } catch (error: any) {
     return c.json(
@@ -130,7 +130,7 @@ export const getMe = async (c: Context) => {
         message: error.message,
         stack: process.env.NODE_ENV === "production" ? null : error.stack,
       },
-      500
+      500,
     );
   }
 };
@@ -201,7 +201,7 @@ export const signIn = async (c: Context) => {
             ? process.env.DOMAIN_NAME
             : undefined,
         maxAge: 60 * 15,
-      }
+      },
     );
 
     await setSignedCookie(
@@ -218,7 +218,7 @@ export const signIn = async (c: Context) => {
             ? process.env.DOMAIN_NAME
             : undefined,
         maxAge: 7 * 24 * 60 * 60, // 7d
-      }
+      },
     );
   }
 
@@ -232,7 +232,7 @@ export const signOut = async (c: Context) => {
     const rToken = await getSignedCookie(
       c,
       process.env.JWT_REFRESH_SECRET as string,
-      "refreshToken"
+      "refreshToken",
     );
 
     if (!rToken) {
@@ -276,7 +276,7 @@ export const signOut = async (c: Context) => {
         success: true,
         message: "signOut successful",
       },
-      200
+      200,
     );
   } catch (error: any) {
     return c.json(
@@ -285,7 +285,7 @@ export const signOut = async (c: Context) => {
         message: error.message,
         stack: process.env.NODE_ENV === "production" ? null : error.stack,
       },
-      500
+      500,
     );
   }
 };
@@ -297,7 +297,7 @@ export const refreshToken = async (c: Context) => {
     const rToken = await getSignedCookie(
       c,
       process.env.JWT_REFRESH_SECRET as string,
-      "refreshToken"
+      "refreshToken",
     );
 
     if (!rToken) {
@@ -307,7 +307,7 @@ export const refreshToken = async (c: Context) => {
     // Verify refresh payload
     const payload = await verify(
       rToken,
-      process.env.JWT_REFRESH_SECRET as string
+      process.env.JWT_REFRESH_SECRET as string,
     );
 
     if (!payload) {
@@ -348,7 +348,7 @@ export const refreshToken = async (c: Context) => {
             ? process.env.DOMAIN_NAME
             : undefined,
         maxAge: 60 * 15,
-      }
+      },
     );
 
     // Response
@@ -360,14 +360,14 @@ export const refreshToken = async (c: Context) => {
           accessToken,
         },
       },
-      200
+      200,
     );
   } catch (error: any) {
     console.log("Error during token refresh:", error);
     if (error.name === "JwtTokenExpired") {
       return authorizationError(
         c,
-        "Refresh token expired. Please login again."
+        "Refresh token expired. Please login again.",
       );
     }
 
@@ -377,7 +377,7 @@ export const refreshToken = async (c: Context) => {
         message: error.message,
         stack: process.env.NODE_ENV === "production" ? null : error.stack,
       },
-      500
+      500,
     );
   }
 };

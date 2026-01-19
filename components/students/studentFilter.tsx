@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
+import { ClassCombobox } from "../clasess/classCombox";
 
 interface StudentFiltersProps {
   filters: Record<string, string | boolean | undefined>;
@@ -123,10 +124,10 @@ export default function StudentFilters({
                   filters.residential === "all"
                     ? "all"
                     : filters.residential === true
-                    ? "true"
-                    : filters.residential === false
-                    ? "false"
-                    : "all"
+                      ? "true"
+                      : filters.residential === false
+                        ? "false"
+                        : "all"
                 }
                 onValueChange={(v) => onChange("residential", v)}
               >
@@ -141,14 +142,10 @@ export default function StudentFilters({
               </Select>
             </div>
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">Class</label>
-              <Input
-                placeholder="Search class by id..."
-                value={(filters.classId as string) || ""}
-                onChange={(e) => onChange("classId", e.target.value)}
-              />
-            </div>
+            <ClassCombobox
+              value={filters.classId as string}
+              onChange={onChange}
+            />
 
             <div>
               <label className="text-sm font-medium mb-2 block">

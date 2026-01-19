@@ -50,7 +50,7 @@ const data = {
       items: [
         {
           title: "Registration",
-          url: null,
+          url: "/dashboard/students/new",
         },
         {
           title: "Starred",

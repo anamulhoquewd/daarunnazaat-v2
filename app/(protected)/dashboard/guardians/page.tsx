@@ -98,7 +98,7 @@ function GuardianPage() {
 
   return (
     // Full-height card so header stays fixed and table area scrolls
-    <Card className="w-full -[calc(100vh-140px)] flex flex-col overflow-hidden">
+    <Card className="w-full  flex flex-col overflow-hidden">
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -185,7 +185,7 @@ function GuardianPage() {
                     getCanHide: () => boolean;
                     getIsVisible: () => boolean;
                     toggleVisibility: (value: boolean) => void;
-                  }) => column.getCanHide()
+                  }) => column.getCanHide(),
                 )
                 .map(
                   (column: {
@@ -206,7 +206,7 @@ function GuardianPage() {
                         {column.id}
                       </DropdownMenuCheckboxItem>
                     );
-                  }
+                  },
                 )}
             </DropdownMenuContent>
           </DropdownMenu>

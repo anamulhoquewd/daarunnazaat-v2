@@ -1,14 +1,13 @@
 /* eslint-disable max-lines */
 "use client";
 
-import React, { type FC, useState, useEffect, useRef, JSX } from "react";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarIcon, CheckIcon } from "lucide-react";
+import { type FC, JSX, useEffect, useRef, useState } from "react";
 import { DateInput } from "./dateInput";
 
 export interface DateRangePickerProps {
@@ -99,11 +99,11 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
   const openedRangeRef = useRef<DateRange | undefined>(undefined);
 
   const [selectedPreset, setSelectedPreset] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   const [isSmallScreen, setIsSmallScreen] = useState(
-    typeof window !== "undefined" ? window.innerWidth < 960 : false
+    typeof window !== "undefined" ? window.innerWidth < 960 : false,
   );
 
   useEffect(() => {
@@ -192,13 +192,13 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
       const normalizedRangeFrom = new Date(range.from);
       normalizedRangeFrom.setHours(0, 0, 0, 0);
       const normalizedPresetFrom = new Date(
-        presetRange.from.setHours(0, 0, 0, 0)
+        presetRange.from.setHours(0, 0, 0, 0),
       );
 
       const normalizedRangeTo = new Date(range.to ?? 0);
       normalizedRangeTo.setHours(0, 0, 0, 0);
       const normalizedPresetTo = new Date(
-        presetRange.to?.setHours(0, 0, 0, 0) ?? 0
+        presetRange.to?.setHours(0, 0, 0, 0) ?? 0,
       );
 
       if (
@@ -224,8 +224,8 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
           ? getDateAdjustedForTimezone(initialDateTo)
           : initialDateTo
         : typeof initialDateFrom === "string"
-        ? getDateAdjustedForTimezone(initialDateFrom)
-        : initialDateFrom,
+          ? getDateAdjustedForTimezone(initialDateFrom)
+          : initialDateFrom,
     });
   };
 
@@ -379,8 +379,8 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
                 defaultMonth={
                   new Date(
                     new Date().setMonth(
-                      new Date().getMonth() - (isSmallScreen ? 0 : 1)
-                    )
+                      new Date().getMonth() - (isSmallScreen ? 0 : 1),
+                    ),
                   )
                 }
               />

@@ -101,7 +101,7 @@ function SalariesPage() {
 
   return (
     // Full-height card so header stays fixed and table area scrolls
-    <Card className="w-full -[calc(100vh-140px)] flex flex-col overflow-hidden">
+    <Card className="w-full flex flex-col overflow-hidden">
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
