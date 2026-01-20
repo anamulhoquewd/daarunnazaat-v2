@@ -21,7 +21,7 @@ import api from "@/axios/intercepter";
 
 type UserItem = {
   _id: string;
-  email: string;
+  className: string;
 };
 
 type Props = {
@@ -29,35 +29,35 @@ type Props = {
   onChange: (value: string) => void;
 };
 
-export function UserCombobox({ value, onChange }: Props) {
+export function ClassCombobox({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [users, setUsers] = useState<UserItem[]>([]);
+  const [classes, setClasses] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchClasses = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/users?search=${search}`);
-        setUsers(res.data.data);
+        const res = await api.get(`/classes?search=${search}`);
+        setClasses(res.data.data);
       } catch (error) {
-        console.error("Failed to fetch users:", error);
+        console.error("Failed to fetch guardians:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsers();
+    fetchClasses();
   }, [search]);
 
-  const selectedUser = users.find((u) => u._id === value);
+  const selectedUser = classes.find((u) => u._id === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-between">
-          {selectedUser?.email || "Select user..."}
+          {selectedUser?.className || "Select user..."}
           <ChevronsUpDown className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -76,22 +76,22 @@ export function UserCombobox({ value, onChange }: Props) {
             </CommandEmpty>
 
             <CommandGroup>
-              {users.map((user) => (
+              {classes.map((c) => (
                 <CommandItem
-                  key={user._id}
-                  value={user.email}
+                  key={c._id}
+                  value={c._id} // value যেকোনো string হতে পারে
                   onSelect={() => {
-                    onChange(user._id); // 🔥 form value
+                    onChange(c._id);
                     setOpen(false);
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === user._id ? "opacity-100" : "opacity-0",
+                      value === c._id ? "opacity-100" : "opacity-0",
                     )}
                   />
-                  {user.email}
+                  {c?.className}
                 </CommandItem>
               ))}
             </CommandGroup>

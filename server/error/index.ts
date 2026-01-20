@@ -9,7 +9,7 @@ export const serverError = (c: Context, error: any) => {
       message: error.message,
       stack: process.env.NODE_ENV === "production" ? null : error.stack,
     },
-    500
+    500,
   );
 };
 
@@ -19,9 +19,8 @@ export const badRequestError = (
   {
     message = "Bad Request",
     fields = [],
-  }: { message?: string; fields?: Array<{ name: string; message: string }> }
+  }: { message?: string; fields?: Array<{ name: string; message: string }> },
 ) => {
-  console.error("Bad Request: ", message, fields);
   return c.json(
     {
       success: false,
@@ -31,7 +30,7 @@ export const badRequestError = (
       },
       fields: fields.length > 0 ? fields : null,
     },
-    400
+    400,
   );
 };
 
@@ -41,7 +40,7 @@ export const conflictError = (
   {
     message = "Conflict",
     fields = [],
-  }: { message?: string; fields?: Array<{ name: string; message: string }> }
+  }: { message?: string; fields?: Array<{ name: string; message: string }> },
 ) => {
   console.error("Conflict: ", message, fields);
   return c.json(
@@ -53,7 +52,7 @@ export const conflictError = (
       },
       fields,
     },
-    409
+    409,
   );
 };
 
@@ -65,14 +64,14 @@ export const notFoundError = (c: Context) => {
       success: false,
       message: `Not Found - [${c.req.method}] ${c.req.url}`,
     },
-    404
+    404,
   );
 };
 
 // Authentication Error Handler
 export const authenticationError = (
   c: Context,
-  message = "Authentication Failed"
+  message = "Authentication Failed",
 ) => {
   console.error("Authentication Error: ", message);
   return c.json(
@@ -83,14 +82,14 @@ export const authenticationError = (
         code: 401,
       },
     },
-    401
+    401,
   );
 };
 
 // Authorization Error Handler
 export const authorizationError = (
   c: Context,
-  message = "Permission Denied"
+  message = "Permission Denied",
 ) => {
   console.error("Authorization Error: ", message);
   return c.json(
@@ -101,7 +100,7 @@ export const authorizationError = (
         code: 403,
       },
     },
-    403
+    403,
   );
 };
 

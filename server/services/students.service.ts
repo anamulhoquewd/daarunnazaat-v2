@@ -66,6 +66,12 @@ export const createStudent = async (body: IStudent) => {
       return {
         error: {
           message: "Student profile already exists for this user.",
+          fields: [
+            {
+              name: "userId",
+              message: "Student profile already exists for this user.",
+            },
+          ],
         },
       };
     }
@@ -129,7 +135,7 @@ export const createStudent = async (body: IStudent) => {
       validData.data.userId,
       {
         profile: newStudent._id,
-        profileModel: "Student", // Dynamic ref এর জন্য
+        profileModel: "Student", // Dynamic reference
       },
       { session },
     );
@@ -162,6 +168,7 @@ export const createStudent = async (body: IStudent) => {
 };
 
 import { PipelineStage } from "mongoose";
+import { fi } from "date-fns/locale";
 
 export const gets = async (queryParams: {
   page: number;

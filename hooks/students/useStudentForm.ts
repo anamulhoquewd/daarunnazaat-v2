@@ -1,128 +1,126 @@
 import api from "@/axios/intercepter";
-import { stepSchemas } from "@/components/students/new/stepper";
 import {
-  stepFields,
-  steps,
-  studentFinalZ,
-} from "@/components/students/new/validation";
-import { handleAxiosError } from "@/lib/utils";
-import { IStudent, IUpdateStudent } from "@/validations";
+  clearStorage,
+  getFromStorage,
+  handleAxiosError,
+  saveToStorage,
+  scrollToFirstError,
+} from "@/lib/utils";
+import { IStudent, studentZ } from "@/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import z from "zod";
 
 export const useStudentForm = (onSuccess?: () => void) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [stepIndex, setStepIndex] = useState(0);
+  const isResettingRef = useRef(false);
 
-  const currentStep = steps[stepIndex];
+  const savedData = getFromStorage();
 
-  const isPreviewStep = currentStep === "preview";
-
-  const resolver = useMemo(() => {
-    if (isPreviewStep) return undefined;
-    console.log("Currest Step: ", currentStep);
-    return zodResolver(stepSchemas[stepIndex]);
-  }, [stepIndex, isPreviewStep]);
-
-  const form = useForm({
-    resolver,
+  const form = useForm<IStudent>({
+    resolver: zodResolver(studentZ),
     shouldUnregister: false,
-    mode: "onBlur",
-    reValidateMode: "onChange",
+    defaultValues: savedData ?? {
+      presentAddress: {
+        village: "",
+        postOffice: "",
+        upazila: "",
+        district: "",
+        division: "",
+      },
+      permanentAddress: {
+        village: "",
+        postOffice: "",
+        upazila: "",
+        district: "",
+        division: "",
+      },
+    },
   });
 
-  console.log("Form values: ", form.getValues());
+  const watchedValues = form.watch();
 
-  // 🔥 STEP VALIDATION
-  const validateStep = async () => {
-    const fields = stepFields[currentStep];
-    if (!fields.length) return true;
-    return await form.trigger(fields as any);
-  };
+  useEffect(() => {
+    if (isResettingRef.current) return;
 
-  const next = async () => {
-    const valid = await validateStep();
-    if (!valid) return;
-    setStepIndex((i) => Math.min(i + 1, steps.length - 1));
-  };
+    const timeout = setTimeout(() => {
+      saveToStorage(watchedValues);
+    }, 400);
 
-  const prev = () => {
-    setStepIndex((i) => Math.max(i - 1, 0));
-  };
-
-  const jumpToStepByField = (fieldName?: string) => {
-    if (!fieldName) return;
-
-    const entry = Object.entries(stepFields).find(([_, fields]) =>
-      fields.includes(fieldName as any),
-    );
-
-    if (!entry) return;
-
-    const stepIndex = steps.indexOf(entry[0] as any);
-    if (stepIndex !== -1) {
-      setStepIndex(stepIndex);
-    }
-  };
+    return () => clearTimeout(timeout);
+  }, [watchedValues]);
 
   const handleSubmit = async (data: IStudent) => {
     setIsLoading(true);
 
     try {
-      // 🔥 FINAL FULL VALIDATION
-      const parsedData = studentFinalZ.parse(data);
+      // 🔥 ZOD already validated here
+      const response = await api.post("/students/register", data);
 
-      // 🔥 API CALL (only if validation passed)
-      const res = await api.post("/users/auth/register", parsedData);
+      if (!response.data.data.success) {
+        throw new Error("Failed to create student");
+      }
 
       toast.success("Student created successfully!");
 
+      isResettingRef.current = true;
       form.reset();
-      setStepIndex(0);
-      onSuccess?.();
+      clearStorage();
+
+      setTimeout(() => {
+        isResettingRef.current = false;
+      }, 0);
     } catch (error: any) {
-      // 🟡 ZOD VALIDATION ERROR
-      if (error instanceof z.ZodError) {
-        error?.errors?.forEach((err) => {
-          const fieldPath = err.path.join(".");
-          form.setError(fieldPath as any, {
-            message: err.message,
-          });
-        });
-
-        // 🔥 jump to first error step (optional but recommended)
-        jumpToStepByField(error.errors[0]?.path[0]);
-        return;
-      }
-
-      // 🔴 API / SERVER ERROR
       handleAxiosError(error);
 
-      if (error.response?.data?.fields) {
-        error.response.data.fields.forEach((f: any) => {
-          form.setError(f.name as any, { message: f.message });
-        });
+      // 🔥 AUTO SCROLL TO FIRST ERROR
+      const firstErrorField = scrollToFirstError(form.formState.errors);
 
-        // optional: jump to step
-        jumpToStepByField(error.response.data.fields[0]?.name);
+      if (firstErrorField) {
+        setTimeout(() => {
+          const el = document.querySelector(
+            `[name="${firstErrorField}"]`,
+          ) as HTMLElement | null;
+
+          el?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+
+          el?.focus();
+        }, 100);
+      }
+
+      if (error.response?.data?.fields?.length) {
+        error.response.data.fields.forEach((f: any) => {
+          form.setError(f.name as any, {
+            message: f.message,
+          });
+        });
       }
     } finally {
       setIsLoading(false);
     }
   };
 
+  const clearForm = () => {
+    isResettingRef.current = true;
+
+    form.reset();
+
+    clearStorage();
+
+    // next tick এ আবার auto-save চালু
+    setTimeout(() => {
+      isResettingRef.current = false;
+    }, 0);
+  };
+
   return {
     form,
     isLoading,
-    stepIndex,
-    currentStep,
-    next,
-    prev,
     handleSubmit,
-    isFirst: stepIndex === 0,
-    isLast: currentStep === "preview",
+    clearForm,
   };
 };

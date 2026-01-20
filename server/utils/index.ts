@@ -1,15 +1,9 @@
-import { sign } from "hono/jwt";
-import { setSignedCookie } from "hono/cookie";
-import type { Context } from "hono";
 import { IUser } from "@/validations";
+import { sign } from "hono/jwt";
 
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
-
-const COOKIE_SECRET = process.env.COOKIE_SECRET as string;
-
-const DOMAIN_NAME = process.env.DOMAIN_NAME as string;
 
 // Generate Access Token
 export const generateAccessToken = async ({
@@ -26,7 +20,7 @@ export const generateAccessToken = async ({
       exp: Math.floor(Date.now() / 1000) + 60 * expMinutes,
       // exp: Math.floor(Date.now() / 1000) + 60, // 1m
     },
-    JWT_ACCESS_SECRET
+    JWT_ACCESS_SECRET,
   );
 
   if (!token) {
@@ -51,7 +45,7 @@ export const generateRefreshToken = async ({
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * expDays,
       // exp: Math.floor(Date.now() / 1000) + 60 * 2, // 2m
     },
-    JWT_REFRESH_SECRET as string
+    JWT_REFRESH_SECRET as string,
   );
 
   if (!token) {

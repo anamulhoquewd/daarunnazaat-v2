@@ -131,7 +131,7 @@ function StudentPage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
-            <Link href={"#"}>
+            <Link href={"/dashboard/students/new"}>
               <Button className="cursor-pointer">Add One</Button>
             </Link>
           </div>

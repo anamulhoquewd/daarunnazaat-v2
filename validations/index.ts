@@ -239,7 +239,10 @@ export const changePasswordZ = z
 
 // Person Base Schema (for common fields)
 const personBaseZ = z.object({
-  firstName: z.string().min(1),
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .min(2, "First name must be at least 2 characters"),
   lastName: z.string().optional(),
   fatherName: z.string().optional(),
   motherName: z.string().optional(),
@@ -253,9 +256,22 @@ const personBaseZ = z.object({
     })
     .trim()
     .optional(),
-  birthCertificateNumber: z.string().optional(),
+  birthCertificateNumber: z
+    .string()
+    .refine((val) => /^\d{17}$/.test(val), {
+      message: "Birth certificate number must be 17 digits",
+    })
+    .optional(),
   presentAddress: addressZ,
-  permanentAddress: addressZ.optional(),
+  permanentAddress: z
+    .object({
+      village: z.string().trim().optional(),
+      postOffice: z.string().trim().optional(),
+      upazila: z.string().trim().optional(),
+      district: z.string().trim().optional(),
+      division: z.string().trim().optional(),
+    })
+    .optional(),
   avatar: imageZ.optional(),
   alternativePhone: z
     .string()

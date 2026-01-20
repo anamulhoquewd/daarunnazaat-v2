@@ -5,27 +5,14 @@ import AddressInformation from "@/components/students/new/steps/addressInformati
 import ContactInformation from "@/components/students/new/steps/contactInformation";
 import FeesTab from "@/components/students/new/steps/feesTab";
 import PersonalInformation from "@/components/students/new/steps/personalInformation";
-import PreviewStep from "@/components/students/new/steps/previewStep";
 import UserSelection from "@/components/students/new/steps/userSelection";
-import { steps } from "@/components/students/new/validation";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStudentForm } from "@/hooks/students/useStudentForm";
 import { FormProvider } from "react-hook-form";
 
 export default function StudentRegistrationPage() {
-  const {
-    form,
-    currentStep,
-    stepIndex,
-    handleSubmit,
-    isFirst,
-    isLast,
-    prev,
-    next,
-    isLoading,
-  } = useStudentForm();
+  const { form, handleSubmit, isLoading, clearForm } = useStudentForm();
 
   return (
     <main className="w-full flex flex-col overflow-hidden gap-8">
@@ -44,63 +31,30 @@ export default function StudentRegistrationPage() {
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-8"
           >
-            <Tabs value={currentStep}>
-              <TabsList className="w-full">
-                {steps.map((s, i) => (
-                  <TabsTrigger
-                    key={s}
-                    value={s}
-                    disabled={i > stepIndex} // 🔥 jump blocked
-                    className="capitalize"
-                  >
-                    {s}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+            <UserSelection />
+            <PersonalInformation />
+            <ContactInformation />
+            <AddressInformation />
+            <AcademicInformation />
+            <FeesTab />
 
-              <TabsContent value="user">
-                <UserSelection />
-              </TabsContent>
-              <TabsContent value="personal">
-                <PersonalInformation />
-              </TabsContent>
-              <TabsContent value="contact">
-                <ContactInformation />
-              </TabsContent>
-              <TabsContent value="address">
-                <AddressInformation />
-              </TabsContent>
-              <TabsContent value="academic">
-                <AcademicInformation />
-              </TabsContent>
-              <TabsContent value="fees">
-                <FeesTab />
-              </TabsContent>
-              <TabsContent value="preview">
-                <PreviewStep />
-              </TabsContent>
-            </Tabs>
+            <div className="flex justify-end pt-6 gap-2.5">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={clearForm}
+                className="cursor-pointer"
+              >
+                Clear
+              </Button>
 
-            <div className="flex justify-between pt-6">
-              {!isFirst && (
-                <Button type="button" variant="outline" onClick={prev}>
-                  Back
-                </Button>
-              )}
-
-              {!isLast ? (
-                <Button type="button" onClick={next}>
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={form.handleSubmit(handleSubmit)}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Submitting..." : "Confirm & Submit"}
-                </Button>
-              )}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="cursor-pointer"
+              >
+                {isLoading ? "Submitting..." : "Confirm & Submit"}
+              </Button>
             </div>
           </form>
         </Form>

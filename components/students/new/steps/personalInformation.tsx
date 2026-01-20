@@ -1,4 +1,4 @@
-import { DateOfBirthField } from "@/components/common/dateCalendar";
+import { DateField } from "@/components/common/dateCalendar";
 import {
   Card,
   CardContent,
@@ -27,7 +27,7 @@ import { useFormContext } from "react-hook-form";
 import { GuardianCombobox } from "../guardianCombobox";
 
 function PersonalInformation() {
-  const { control, watch } = useFormContext();
+  const { control } = useFormContext();
 
   return (
     <>
@@ -105,7 +105,7 @@ function PersonalInformation() {
                 <FormItem>
                   <FormLabel>Birth Certificate (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="17 digits or something" {...field} />
+                    <Input placeholder="17 digits" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -130,7 +130,7 @@ function PersonalInformation() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <DateOfBirthField name="dateOfBirth" />
+            <DateField name="dateOfBirth" lable="Date of Birth" />
             <FormField
               control={control}
               name="gender"
@@ -210,13 +210,6 @@ function PersonalInformation() {
                         onChange={field.onChange}
                       />
                     </FormControl>
-                    <SelectContent>
-                      {Object.entries(GuardianRelation).map(([key, value]) => (
-                        <SelectItem key={value} value={value}>
-                          {key}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
@@ -238,11 +231,14 @@ function PersonalInformation() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.entries(GuardianRelation).map(([key, value]) => (
-                        <SelectItem key={value} value={value}>
-                          {key}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="Father">Father</SelectItem>
+                      <SelectItem value="Mother">Mother</SelectItem>
+                      <SelectItem value="Uncle">Uncle</SelectItem>
+                      <SelectItem value="Aunt">Aunt</SelectItem>
+                      <SelectItem value="Brother">Brother</SelectItem>
+                      <SelectItem value="Sister">Sister</SelectItem>
+                      <SelectItem value="Grandmother">Grandmother</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

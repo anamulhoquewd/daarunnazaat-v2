@@ -21,7 +21,7 @@ import api from "@/axios/intercepter";
 
 type UserItem = {
   _id: string;
-  user: { email: string };
+  sessionName: string;
 };
 
 type Props = {
@@ -29,18 +29,18 @@ type Props = {
   onChange: (value: string) => void;
 };
 
-export function GuardianCombobox({ value, onChange }: Props) {
+export function SessionCombobox({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [guardians, setGuardians] = useState<UserItem[]>([]);
+  const [sessions, setSession] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchGuardians = async () => {
+    const fetchSession = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/guardians?search=${search}`);
-        setGuardians(res.data.data);
+        const res = await api.get(`/sessions?search=${search}`);
+        setSession(res.data.data);
       } catch (error) {
         console.error("Failed to fetch guardians:", error);
       } finally {
@@ -48,16 +48,16 @@ export function GuardianCombobox({ value, onChange }: Props) {
       }
     };
 
-    fetchGuardians();
+    fetchSession();
   }, [search]);
 
-  const selectedUser = guardians.find((u) => u._id === value);
+  const selectedUser = sessions.find((u) => u._id === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-between">
-          {selectedUser?.user?.email || "Select user..."}
+          {selectedUser?.sessionName || "Select user..."}
           <ChevronsUpDown className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -76,22 +76,22 @@ export function GuardianCombobox({ value, onChange }: Props) {
             </CommandEmpty>
 
             <CommandGroup>
-              {guardians.map((guardian) => (
+              {sessions.map((s) => (
                 <CommandItem
-                  key={guardian._id}
-                  value={guardian._id} // value যেকোনো string হতে পারে
+                  key={s._id}
+                  value={s._id} // value যেকোনো string হতে পারে
                   onSelect={() => {
-                    onChange(guardian._id);
+                    onChange(s._id);
                     setOpen(false);
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === guardian._id ? "opacity-100" : "opacity-0",
+                      value === s._id ? "opacity-100" : "opacity-0",
                     )}
                   />
-                  {guardian?.user.email}
+                  {s.sessionName}
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -1,3 +1,4 @@
+import { DateField } from "@/components/common/dateCalendar";
 import {
   Card,
   CardContent,
@@ -5,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   FormControl,
   FormField,
@@ -13,7 +13,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -21,8 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BatchType, Branch, studentZ } from "@/validations";
+import { BatchType, Branch } from "@/validations";
 import { useFormContext } from "react-hook-form";
+import { ClassCombobox } from "../classCombobox";
+import { SessionCombobox } from "../sessionCombobox";
 
 function AcademicInformation() {
   const { control } = useFormContext();
@@ -92,35 +93,8 @@ function AcademicInformation() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          <FormField
-            control={control}
-            name="admissionDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Admission Date *</FormLabel>
-                <FormControl>
-                  <Input
-                    type="date"
-                    name={field.name}
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                    value={
-                      field.value instanceof Date
-                        ? field.value.toISOString().split("T")[0]
-                        : field.value || ""
-                    }
-                    onChange={(e) => {
-                      const date = e.target.value
-                        ? new Date(e.target.value)
-                        : undefined;
-                      field.onChange(date);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <DateField name="admissionDate" lable="Admission Date" />
+
           <FormField
             control={control}
             name="classId"
@@ -128,7 +102,10 @@ function AcademicInformation() {
               <FormItem>
                 <FormLabel>Class *</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Class A, SSC 2024" {...field} />
+                  <ClassCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -141,7 +118,10 @@ function AcademicInformation() {
               <FormItem>
                 <FormLabel>Session *</FormLabel>
                 <FormControl>
-                  <Input placeholder="2024" {...field} />
+                  <SessionCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
