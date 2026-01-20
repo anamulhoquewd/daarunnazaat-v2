@@ -8,6 +8,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 // Define Props Interface
 interface ColumnsProps {
@@ -26,11 +27,21 @@ export const StudentColumns = ({
     header: "Student ID",
     cell: ({ row }) => row.original.studentId || "-",
   },
-  {
-    header: "Name",
-    cell: ({ row }) =>
-      `${row.original.firstName || ""} ${row.original.lastName || ""}`,
+ {
+  header: "Name",
+  cell: ({ row }) => {
+    const { _id, firstName, lastName } = row.original;
+
+    return (
+      <Link
+        href={`/students/${_id}`}
+        className="text-blue-600 hover:underline font-medium"
+      >
+        {firstName ?? ""} {lastName ?? ""}
+      </Link>
+    );
   },
+}
   {
     header: "Class",
     cell: ({ row }) => row.original.class?.className || "-",

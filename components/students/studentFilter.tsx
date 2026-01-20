@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
-import { ClassCombobox } from "../clasess/classCombox";
+import { ClassFilterCombobox } from "../clasess/classFilterCombobox";
 
 interface StudentFiltersProps {
   filters: Record<string, string | boolean | undefined>;
@@ -142,7 +142,7 @@ export default function StudentFilters({
               </Select>
             </div>
 
-            <ClassCombobox
+            <ClassFilterCombobox
               value={filters.classId as string}
               onChange={onChange}
             />

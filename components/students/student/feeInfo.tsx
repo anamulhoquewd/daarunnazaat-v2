@@ -7,12 +7,22 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Fees, feesSchema } from "@/validations/student";
 import { EditableSection } from "./editableSection";
+import { IStudent } from "@/validations";
+import { useEffect } from "react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface FeesSectionProps {
   isEditing: boolean;
   onEditChange: (value: boolean) => void;
-  data?: Fees;
-  onSave?: (data: Fees) => Promise<void>;
+  data?: IStudent;
+  onSave?: (data: IStudent) => Promise<void>;
 }
 
 export function FeesSection({
@@ -21,24 +31,26 @@ export function FeesSection({
   data,
   onSave,
 }: FeesSectionProps) {
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<Fees>({
+  const form = useForm({
     resolver: zodResolver(feesSchema),
-    defaultValues: data || {
-      admissionFee: 0,
-      admissionDiscount: 0,
-      monthlyFee: 0,
-      residentialFee: 0,
-      mealFee: 0,
-      isResidential: false,
-      isMealIncluded: false,
-    },
   });
+
+  useEffect(() => {
+    if (data) {
+      form.reset({
+        admissionFee: data.admissionFee || 0,
+        admissionDiscount: data.admissionDiscount || 0,
+        monthlyFee: data.monthlyFee || 0,
+        residentialFee: data.residentialFee || 0,
+        mealFee: data.mealFee || 0,
+        isResidential: data.isResidential || false,
+        isMealIncluded: data.isMealIncluded || false,
+        admissionDate: data.admissionDate
+          ? new Date(data.admissionDate)
+          : new Date(),
+      });
+    }
+  }, [data, form]);
 
   const handleSave = async (formData: Fees) => {
     try {
@@ -57,176 +69,171 @@ export function FeesSection({
       isEditing={isEditing}
       onEdit={() => onEditChange(true)}
       onCancel={() => {
-        reset();
+        form.reset();
         onEditChange(false);
       }}
-      onSave={handleSubmit(handleSave)}
+      onSave={form.handleSubmit(handleSave)}
+      isSaving={form.formState.isSubmitting}
     >
       {isEditing ? (
-        <form className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="admissionFee">Admission Fee</Label>
-              <Input
-                id="admissionFee"
-                type="number"
-                placeholder="0"
-                {...register("admissionFee", {
-                  valueAsNumber: true,
-                })}
-              />
-              {errors.admissionFee && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.admissionFee.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="admissionDiscount">Admission Discount</Label>
-              <Input
-                id="admissionDiscount"
-                type="number"
-                placeholder="0"
-                {...register("admissionDiscount", {
-                  valueAsNumber: true,
-                })}
-              />
-              {errors.admissionDiscount && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.admissionDiscount.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="monthlyFee">Monthly Fee</Label>
-            <Input
-              id="monthlyFee"
-              type="number"
-              placeholder="0"
-              {...register("monthlyFee", {
-                valueAsNumber: true,
-              })}
-            />
-            {errors.monthlyFee && (
-              <p className="text-sm text-red-500 mt-1">
-                {errors.monthlyFee.message}
-              </p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="residentialFee">Residential Fee</Label>
-              <Input
-                id="residentialFee"
-                type="number"
-                placeholder="0"
-                {...register("residentialFee", {
-                  valueAsNumber: true,
-                })}
-              />
-              {errors.residentialFee && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.residentialFee.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="mealFee">Meal Fee</Label>
-              <Input
-                id="mealFee"
-                type="number"
-                placeholder="0"
-                {...register("mealFee", {
-                  valueAsNumber: true,
-                })}
-              />
-              {errors.mealFee && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.mealFee.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 pt-2">
-            <div className="flex items-center gap-2">
-              <Controller
-                name="isResidential"
-                control={control}
+        <Form {...form}>
+          <form className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="monthlyFee"
                 render={({ field }) => (
-                  <Checkbox
-                    id="isResidential"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <FormItem>
+                    <FormLabel>Monthly Fee</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
-              <Label htmlFor="isResidential" className="cursor-pointer">
-                Is Residential
-              </Label>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Controller
-                name="isMealIncluded"
-                control={control}
+              <FormField
+                control={form.control}
+                name="residentialFee"
                 render={({ field }) => (
-                  <Checkbox
-                    id="isMealIncluded"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <FormItem>
+                    <FormLabel>Residential Fee</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
-              <Label htmlFor="isMealIncluded" className="cursor-pointer">
-                Meal Included
-              </Label>
+              <FormField
+                control={form.control}
+                name="mealFee"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meal Fee</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          </div>
-        </form>
+
+            <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="admissionFee"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Admission Fee</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="admissionDiscount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Admission Discount</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex items-center gap-4 pt-2">
+                <FormField
+                  control={form.control}
+                  name="isResidential"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal cursor-pointer">
+                        Is Residential Student
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="isMealIncluded"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal cursor-pointer">
+                        Meal Included
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          </form>
+        </Form>
       ) : (
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Monthly Fee</p>
+              <p className="font-medium">{data?.monthlyFee?.toFixed(2) || 0}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Residential Fee</p>
+              <p className="font-medium">
+                {data?.residentialFee?.toFixed(2) || 0}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Meal Fee</p>
+              <p className="font-medium">{data?.mealFee?.toFixed(2) || 0}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Admission Fee</p>
-              <p className="font-medium">৳ {data?.admissionFee || 0}</p>
+              <p className="font-medium">
+                {data?.admissionFee.toFixed(2) || 0}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">
                 Admission Discount
               </p>
-              <p className="font-medium">৳ {data?.admissionDiscount || 0}</p>
-            </div>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Monthly Fee</p>
-            <p className="font-medium">৳ {data?.monthlyFee || 0}</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Residential Fee</p>
-              <p className="font-medium">৳ {data?.residentialFee || 0}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Meal Fee</p>
-              <p className="font-medium">৳ {data?.mealFee || 0}</p>
-            </div>
-          </div>
-          <div className="flex gap-6 pt-2">
-            <div>
-              <p className="text-sm text-muted-foreground">Residential</p>
               <p className="font-medium">
-                {data?.isResidential ? "Yes" : "No"}
+                {data?.admissionDiscount?.toFixed(2) || 0}
               </p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Meal Included</p>
-              <p className="font-medium">
-                {data?.isMealIncluded ? "Yes" : "No"}
-              </p>
+            <div className="flex gap-6 pt-2">
+              <div>
+                <p className="text-sm text-muted-foreground">Residential</p>
+                <p className="font-medium">
+                  {data?.isResidential ? "Yes" : "No"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Meal Included</p>
+                <p className="font-medium">
+                  {data?.isMealIncluded ? "Yes" : "No"}
+                </p>
+              </div>
             </div>
           </div>
         </div>

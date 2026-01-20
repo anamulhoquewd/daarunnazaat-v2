@@ -130,7 +130,7 @@ function PersonalInformation() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <DateField name="dateOfBirth" lable="Date of Birth" />
+            <DateField name="dateOfBirth" label="Date of Birth" />
             <FormField
               control={control}
               name="gender"
@@ -147,14 +147,18 @@ function PersonalInformation() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
+                      {Object.entries(BloodGroup).map(([_, value]) => (
+                        <SelectItem key={value} value={value}>
+                          {value}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={control}
               name="bloodGroup"
@@ -231,14 +235,11 @@ function PersonalInformation() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Father">Father</SelectItem>
-                      <SelectItem value="Mother">Mother</SelectItem>
-                      <SelectItem value="Uncle">Uncle</SelectItem>
-                      <SelectItem value="Aunt">Aunt</SelectItem>
-                      <SelectItem value="Brother">Brother</SelectItem>
-                      <SelectItem value="Sister">Sister</SelectItem>
-                      <SelectItem value="Grandmother">Grandmother</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      {Object.entries(GuardianRelation).map(([_, value]) => (
+                        <SelectItem key={value} value={value}>
+                          {value}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

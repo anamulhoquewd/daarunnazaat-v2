@@ -18,7 +18,7 @@ export const useStudentForm = (onSuccess?: () => void) => {
 
   const savedData = getFromStorage();
 
-  const form = useForm<IStudent>({
+  const form = useForm({
     resolver: zodResolver(studentZ),
     shouldUnregister: false,
     defaultValues: savedData ?? {
@@ -58,8 +58,10 @@ export const useStudentForm = (onSuccess?: () => void) => {
       // 🔥 ZOD already validated here
       const response = await api.post("/students/register", data);
 
-      if (!response.data.data.success) {
-        throw new Error("Failed to create student");
+      if (!response.data.success) {
+        throw new Error(
+          response.data.error.message || "Failed to create student",
+        );
       }
 
       toast.success("Student created successfully!");

@@ -1,3 +1,4 @@
+import { PipelineStage } from "mongoose";
 import {
   BatchType,
   Branch,
@@ -166,9 +167,6 @@ export const createStudent = async (body: IStudent) => {
     session.endSession();
   }
 };
-
-import { PipelineStage } from "mongoose";
-import { fi } from "date-fns/locale";
 
 export const gets = async (queryParams: {
   page: number;
@@ -475,11 +473,19 @@ export const updates = async ({
     Object.assign(student, validData.data);
     const docs = await student.save();
 
+    const populatedStudent = await Student.findById(docs._id)
+      .populate("userId")
+      .populate("guardianId")
+      .populate("classId")
+      .populate("currentSessionId")
+      .populate("sessionHistory.sessionId")
+      .populate("sessionHistory.classId");
+
     return {
       success: {
         success: true,
         message: "Student updated successfully",
-        data: docs,
+        data: populatedStudent,
       },
     };
   } catch (error: any) {

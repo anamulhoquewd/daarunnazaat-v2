@@ -13,7 +13,7 @@ interface EditableSectionProps {
   isEditing: boolean;
   onCancel: () => void;
   onSave: () => void;
-  isSaving?: boolean;
+  isSaving: boolean;
 }
 
 export function EditableSection({
@@ -32,7 +32,7 @@ export function EditableSection({
         <div className="flex gap-2">
           {!isEditing ? (
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={onEdit}
               className="gap-2"

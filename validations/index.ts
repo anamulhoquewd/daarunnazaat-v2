@@ -24,6 +24,7 @@ export enum BloodGroup {
   O_NEGATIVE = "O-",
   AB_POSITIVE = "AB+",
   AB_NEGATIVE = "AB-",
+  NON = "NON", // for those who don't want to disclose
 }
 
 export enum Branch {
@@ -113,7 +114,7 @@ export enum ExamType {
 }
 
 export enum BookStatus {
-  AVAILABLE = "available",
+  AVAIlabel = "availabel",
   ISSUED = "issued",
   LOST = "lost",
   DAMAGED = "damaged",
@@ -590,7 +591,7 @@ export const bookZ = z.object({
   edition: z.string().optional(),
   category: z.string(),
   quantity: moneyZ.min(0),
-  availableQuantity: moneyZ.min(0),
+  availabelQuantity: moneyZ.min(0),
   status: z.nativeEnum(BookStatus),
   branch: z.nativeEnum(Branch),
 });
@@ -788,11 +789,11 @@ export interface IPagination {
 //     edition: { type: String },
 //     category: { type: String, required: true },
 //     quantity: { type: Number, required: true, min: 0 },
-//     availableQuantity: { type: Number, required: true, min: 0 },
+//     availabelQuantity: { type: Number, required: true, min: 0 },
 //     status: {
 //       type: String,
 //       enum: Object.values(BookStatus),
-//       default: BookStatus.AVAILABLE,
+//       default: BookStatus.AVAIlabel,
 //     },
 //     branch: { type: String, enum: Object.values(Branch), required: true },
 //   },

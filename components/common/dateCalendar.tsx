@@ -19,7 +19,7 @@ function formatDate(date: Date | undefined) {
   });
 }
 
-export function DateField({ name, lable }: { name: string; lable: string }) {
+export function DateField({ name, label }: { name: string; label: string }) {
   const { control } = useFormContext();
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState<Date | undefined>(new Date());
@@ -30,7 +30,7 @@ export function DateField({ name, lable }: { name: string; lable: string }) {
       control={control}
       render={({ field, fieldState }) => (
         <FormItem>
-          <Label htmlFor={name}>{lable}</Label>
+          <Label htmlFor={name}>{label}</Label>
           <FormControl>
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>

@@ -227,6 +227,7 @@ function StudentPage() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
         <TableComponent table={table} columns={columns} />
 
         {pagination.total > 0 && (

@@ -29,7 +29,7 @@ interface Props {
   onChange: (key: "classId", value: string) => void;
 }
 
-export function ClassCombobox({ value, onChange }: Props) {
+export function ClassFilterCombobox({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -52,7 +52,7 @@ export function ClassCombobox({ value, onChange }: Props) {
 
     setLoading(true);
 
-    const res = await api(`/classes?search=${search}&page=${page}&limit=2`);
+    const res = await api(`/classes?search=${search}&page=${page}`);
     if (!res.data.success) {
       throw new Error(res.data.error.message);
     }
@@ -74,7 +74,7 @@ export function ClassCombobox({ value, onChange }: Props) {
 
   return (
     <div>
-      <label className="text-sm font-medium mb-2 block">Class</label>
+      <label className="text-sm font-medium mb-2 block">Classes</label>
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
