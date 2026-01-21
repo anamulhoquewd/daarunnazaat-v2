@@ -3,7 +3,7 @@
 import React from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Edit2, X } from "lucide-react";
 
 interface EditableSectionProps {
@@ -27,8 +27,10 @@ export function EditableSection({
 }: EditableSectionProps) {
   return (
     <Card className="p-6 border border-border">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      <div className="flex items-center justify-between">
+        <CardHeader className="flex-1">
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
         <div className="flex gap-2">
           {!isEditing ? (
             <Button

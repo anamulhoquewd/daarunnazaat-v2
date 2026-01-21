@@ -12,13 +12,11 @@ import Link from "next/link";
 
 // Define Props Interface
 interface ColumnsProps {
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
 }
 export const StudentColumns = ({
-  setIsEditing,
   setIsDelOpen,
   setValues,
   setSelectId,
@@ -27,21 +25,21 @@ export const StudentColumns = ({
     header: "Student ID",
     cell: ({ row }) => row.original.studentId || "-",
   },
- {
-  header: "Name",
-  cell: ({ row }) => {
-    const { _id, firstName, lastName } = row.original;
+  {
+    header: "Name",
+    cell: ({ row }) => {
+      const { _id, firstName, lastName } = row.original;
 
-    return (
-      <Link
-        href={`/students/${_id}`}
-        className="text-blue-600 hover:underline font-medium"
-      >
-        {firstName ?? ""} {lastName ?? ""}
-      </Link>
-    );
+      return (
+        <Link
+          href={`/dashboard/students/${_id}`}
+          className="text-blue-600 hover:underline font-medium"
+        >
+          {firstName ?? ""} {lastName ?? ""}
+        </Link>
+      );
+    },
   },
-}
   {
     header: "Class",
     cell: ({ row }) => row.original.class?.className || "-",
@@ -121,17 +119,6 @@ export const StudentColumns = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onClick={() => {
-              setValues(row.original);
-              setSelectId(row.original._id);
-              setIsEditing(true);
-            }}
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-
           <DropdownMenuItem
             className="text-destructive"
             onClick={() => {

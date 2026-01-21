@@ -15,12 +15,14 @@ import { useState } from "react";
 function DeleteAlert({
   isOpen,
   setIsOpen,
-  setId,
+  setSelectId,
   cb,
+  isLoading,
 }: {
   isOpen: boolean;
+  isLoading: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  setId: (userId: string) => void;
+  setSelectId: (userId: string) => void;
   cb: () => void;
 }) {
   const [prompt, setPrompt] = useState(""); // Local state to track the input value
@@ -31,7 +33,7 @@ function DeleteAlert({
       onOpenChange={(open) => {
         setIsOpen(open);
         if (!open) {
-          setId("");
+          setSelectId("");
         }
       }}
     >
@@ -68,7 +70,7 @@ function DeleteAlert({
               "cursor-pointer text-white hover:text-white bg-destructive/90 hover:bg-destructive"
             }`}
           >
-            Delete Account
+            {isLoading ? "Deleting..." : "Delete Account"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

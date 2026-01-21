@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { EditableSection } from "./editableSection";
 import { useEffect } from "react";
+import { CardContent } from "@/components/ui/card";
 
 interface AddressSectionProps {
   isEditing: boolean;
@@ -58,18 +59,18 @@ export function AddressSection({
     if (data) {
       form.reset({
         presentAddress: {
-          village: data?.presentAddress.village || "",
-          postOffice: data?.presentAddress.postOffice || "",
-          upazila: data?.presentAddress.upazila || "",
-          district: data?.presentAddress.district || "",
-          division: data?.presentAddress.division || "",
+          village: data?.presentAddress?.village ?? "",
+          postOffice: data?.presentAddress?.postOffice ?? "",
+          upazila: data?.presentAddress?.upazila ?? "",
+          district: data?.presentAddress?.district ?? "",
+          division: data?.presentAddress?.division ?? "",
         },
         permanentAddress: {
-          village: data?.permanentAddress?.village || "",
-          postOffice: data?.permanentAddress?.postOffice || "",
-          upazila: data?.permanentAddress?.upazila || "",
-          district: data?.permanentAddress?.district || "",
-          division: data?.permanentAddress?.division || "",
+          village: data?.permanentAddress?.village ?? "",
+          postOffice: data?.permanentAddress?.postOffice ?? "",
+          upazila: data?.permanentAddress?.upazila ?? "",
+          district: data?.permanentAddress?.district ?? "",
+          division: data?.permanentAddress?.division ?? "",
         },
       });
     }
@@ -99,173 +100,176 @@ export function AddressSection({
       onSave={form.handleSubmit(handleSave)}
     >
       {isEditing ? (
-        <Form {...form}>
-          <form className="space-y-6">
-            {/* Present Address */}
-            <div>
-              <h4 className="text-sm font-semibold mb-3 text-foreground">
-                Present Address
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="presentAddress.village"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Village </FormLabel>
-                      <FormControl>
-                        <Input placeholder="Village" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="presentAddress.postOffice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Post Office (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Post Office" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <CardContent>
+          {" "}
+          <Form {...form}>
+            <form className="space-y-6">
+              {/* Present Address */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3 text-foreground">
+                  Present Address
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="presentAddress.village"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Village </FormLabel>
+                        <FormControl>
+                          <Input placeholder="Village" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="presentAddress.postOffice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Post Office (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Post Office" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <FormField
+                    control={form.control}
+                    name="presentAddress.upazila"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Upazila</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Upazila" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="presentAddress.district"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>District</FormLabel>
+                        <FormControl>
+                          <Input placeholder="District" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <FormField
+                    control={form.control}
+                    name="presentAddress.division"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Division (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Division" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <FormField
-                  control={form.control}
-                  name="presentAddress.upazila"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Upazila</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Upazila" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Permanent Address */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3 text-foreground">
+                  Permanent Address
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="permanentAddress.village"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Village </FormLabel>
+                        <FormControl>
+                          <Input placeholder="Village" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="permanentAddress.postOffice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Post Office (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Post Office" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name="presentAddress.district"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>District</FormLabel>
-                      <FormControl>
-                        <Input placeholder="District" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <FormField
+                    control={form.control}
+                    name="permanentAddress.upazila"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Upazila</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Upazila" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="permanentAddress.district"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>District</FormLabel>
+                        <FormControl>
+                          <Input placeholder="District" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <FormField
+                    control={form.control}
+                    name="permanentAddress.division"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Division (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Division" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-
-              <div className="mt-4">
-                <FormField
-                  control={form.control}
-                  name="presentAddress.division"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Division (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Division" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Permanent Address */}
-            <div>
-              <h4 className="text-sm font-semibold mb-3 text-foreground">
-                Permanent Address
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="permanentAddress.village"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Village </FormLabel>
-                      <FormControl>
-                        <Input placeholder="Village" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="permanentAddress.postOffice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Post Office (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Post Office" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <FormField
-                  control={form.control}
-                  name="permanentAddress.upazila"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Upazila</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Upazila" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="permanentAddress.district"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>District</FormLabel>
-                      <FormControl>
-                        <Input placeholder="District" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="mt-4">
-                <FormField
-                  control={form.control}
-                  name="permanentAddress.division"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Division (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Division" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-          </form>
-        </Form>
+            </form>
+          </Form>
+        </CardContent>
       ) : (
-        <div className="space-y-6">
+        <CardContent className="space-y-6">
           {/* Present Address Display */}
           <div>
             <h4 className="text-sm font-semibold mb-3 text-foreground">
@@ -275,13 +279,13 @@ export function AddressSection({
               <div>
                 <p className="text-sm text-muted-foreground">Village</p>
                 <p className="font-medium">
-                  {data?.presentAddress.village || "N/A"}
+                  {data?.presentAddress?.village || "N/A"}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Post Office</p>
                 <p className="font-medium">
-                  {data?.presentAddress.postOffice || "N/A"}
+                  {data?.presentAddress?.postOffice || "N/A"}
                 </p>
               </div>
             </div>
@@ -289,13 +293,13 @@ export function AddressSection({
               <div>
                 <p className="text-sm text-muted-foreground">Upazila</p>
                 <p className="font-medium">
-                  {data?.presentAddress.upazila || "N/A"}
+                  {data?.presentAddress?.upazila || "N/A"}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">District</p>
                 <p className="font-medium">
-                  {data?.presentAddress.district || "N/A"}
+                  {data?.presentAddress?.district || "N/A"}
                 </p>
               </div>
             </div>
@@ -311,13 +315,13 @@ export function AddressSection({
                 <div>
                   <p className="text-sm text-muted-foreground">Village</p>
                   <p className="font-medium">
-                    {data.permanentAddress.village || "N/A"}
+                    {data.permanentAddress?.village || "N/A"}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Post Office</p>
                   <p className="font-medium">
-                    {data.permanentAddress.postOffice || "N/A"}
+                    {data.permanentAddress?.postOffice || "N/A"}
                   </p>
                 </div>
               </div>
@@ -325,19 +329,19 @@ export function AddressSection({
                 <div>
                   <p className="text-sm text-muted-foreground">Upazila</p>
                   <p className="font-medium">
-                    {data.permanentAddress.upazila || "N/A"}
+                    {data.permanentAddress?.upazila || "N/A"}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">District</p>
                   <p className="font-medium">
-                    {data.permanentAddress.district || "N/A"}
+                    {data.permanentAddress?.district || "N/A"}
                   </p>
                 </div>
               </div>
             </div>
           )}
-        </div>
+        </CardContent>
       )}
     </EditableSection>
   );

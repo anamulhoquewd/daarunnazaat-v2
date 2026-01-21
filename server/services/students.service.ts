@@ -277,10 +277,12 @@ export const gets = async (queryParams: {
 
     const matchStage: any = {};
 
-    if (classId) matchStage.classId = classId;
+    if (classId) matchStage.classId = new mongoose.Types.ObjectId(classId);
     if (branch) matchStage.branch = branch;
-    if (sessionId) matchStage.currentSessionId = sessionId;
-    if (guardianId) matchStage.guardianId = guardianId;
+    if (sessionId)
+      matchStage.currentSessionId = new mongoose.Types.ObjectId(sessionId);
+    if (guardianId)
+      matchStage.guardianId = new mongoose.Types.ObjectId(guardianId);
     if (batchType) matchStage.batchType = batchType;
     if (gender) matchStage.gender = gender;
     if (typeof isResidential === "boolean")

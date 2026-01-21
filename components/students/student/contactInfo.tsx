@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 
 import { Input } from "@/components/ui/input";
+import { CardContent } from "@/components/ui/card";
 
 interface ContactInfoSectionProps {
   isEditing: boolean;
@@ -42,8 +43,8 @@ export function ContactInfoSection({
   useEffect(() => {
     if (data) {
       form.reset({
-        alternativePhone: data.alternativePhone ?? "",
-        whatsApp: data.whatsApp ?? "",
+        alternativePhone: data?.alternativePhone ?? "",
+        whatsApp: data?.whatsApp ?? "",
       });
     }
   }, [data, form.reset]);
@@ -72,51 +73,53 @@ export function ContactInfoSection({
       onSave={form.handleSubmit(handleSave)}
     >
       {isEditing ? (
-        <Form {...form}>
-          <form className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Alternative Phone */}
-              <FormField
-                control={form.control}
-                name="alternativePhone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Alternative Phone (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Alternative phone" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <CardContent>
+          <Form {...form}>
+            <form className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Alternative Phone */}
+                <FormField
+                  control={form.control}
+                  name="alternativePhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Alternative Phone (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Alternative phone" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* WhatsApp */}
-              <FormField
-                control={form.control}
-                name="whatsApp"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>WhatsApp (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="WhatsApp number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </form>
-        </Form>
+                {/* WhatsApp */}
+                <FormField
+                  control={form.control}
+                  name="whatsApp"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>WhatsApp (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="WhatsApp number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </form>
+          </Form>
+        </CardContent>
       ) : (
-        <div className="space-y-3">
+        <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{data?.userId.email || "N/A"}</p>
+              <p className="font-medium">{data?.userId?.email || "N/A"}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Phone</p>
-              <p className="font-medium">{data?.userId.phone || "N/A"}</p>
+              <p className="font-medium">{data?.userId?.phone || "N/A"}</p>
             </div>
           </div>
           {(data?.alternativePhone || data?.whatsApp) && (
@@ -133,7 +136,7 @@ export function ContactInfoSection({
               </div>
             </div>
           )}
-        </div>
+        </CardContent>
       )}
     </EditableSection>
   );

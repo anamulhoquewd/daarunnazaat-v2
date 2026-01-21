@@ -333,7 +333,8 @@ export const studentZ = personBaseZ.extend({
   monthlyFee: moneyZ.min(0),
   residentialFee: moneyZ.min(0).optional(),
   mealFee: moneyZ.min(0).optional(),
-  passoutDate: z.coerce.date().optional(), // fareg
+  passoutDate: z.coerce.date().optional(),
+  avatar: z.string().optional(),
 });
 
 // If you want a separate update  where fields can be optional:

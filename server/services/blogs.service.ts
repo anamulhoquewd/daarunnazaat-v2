@@ -99,7 +99,7 @@ export const gets = async (queryParams: {
 
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "title"].includes(
-      queryParams.sortBy
+      queryParams.sortBy,
     )
       ? queryParams.sortBy
       : "createdAt";
@@ -244,7 +244,7 @@ export const getDrafts = async (queryParams: {
 
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "title"].includes(
-      queryParams.sortBy
+      queryParams.sortBy,
     )
       ? queryParams.sortBy
       : "createdAt";
@@ -625,7 +625,7 @@ export const getUserBlogs = async ({
 
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "title"].includes(
-      queryParams.sortBy
+      queryParams.sortBy,
     )
       ? queryParams.sortBy
       : "createdAt";

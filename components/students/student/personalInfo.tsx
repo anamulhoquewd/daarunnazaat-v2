@@ -25,6 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { DateField } from "@/components/common/dateCalendar";
+import { CardContent } from "@/components/ui/card";
 
 interface PersonalInfoSectionProps {
   isEditing: boolean;
@@ -46,15 +47,15 @@ export function PersonalInfoSection({
   useEffect(() => {
     if (data) {
       form.reset({
-        firstName: data.firstName || "",
-        lastName: data.lastName || "",
+        firstName: data.firstName ?? "",
+        lastName: data.lastName ?? "",
         dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : new Date(),
-        gender: data.gender || "",
-        fatherName: data.fatherName || "",
-        motherName: data.motherName || "",
-        bloodGroup: data.bloodGroup || BloodGroup.NON,
-        nid: data.nid || "",
-        birthCertificateNumber: data.birthCertificateNumber || "",
+        gender: data.gender ?? "",
+        fatherName: data.fatherName ?? "",
+        motherName: data.motherName ?? "",
+        bloodGroup: data.bloodGroup ?? BloodGroup.NON,
+        nid: data.nid ?? "",
+        birthCertificateNumber: data.birthCertificateNumber ?? "",
       });
     }
   }, [data, form.reset]);
@@ -83,164 +84,167 @@ export function PersonalInfoSection({
       isSaving={form.formState.isSubmitting}
     >
       {isEditing ? (
-        <Form {...form}>
-          <form className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="fatherName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Father's Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Father's full name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="motherName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mother's Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Mother's full name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="nid"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>NID (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="10 or 17 digits" {...field} />
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Must be 10 or 17 digits
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="birthCertificateNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Birth Certificate (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="17 digits" {...field} />
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Must be 17 digits
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <DateField name="dateOfBirth" label="Date of Birth" />
-
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gender</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+        <CardContent>
+          {" "}
+          <Form {...form}>
+            <form className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
                       <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
+                        <Input placeholder="John" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {Object.entries(Gender).map(([_, value]) => (
-                          <SelectItem key={value} value={value}>
-                            {value}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="bloodGroup"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Blood Group</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
                       <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select blood group" />
-                        </SelectTrigger>
+                        <Input placeholder="Doe" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {Object.entries(BloodGroup).map(([_, value]) => (
-                          <SelectItem key={value} value={value}>
-                            {value}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </form>
-        </Form>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="fatherName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Father's Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Father's full name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="motherName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mother's Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Mother's full name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="nid"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>NID (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="10 or 17 digits" {...field} />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        Must be 10 or 17 digits
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="birthCertificateNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Birth Certificate (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="17 digits" {...field} />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        Must be 17 digits
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <DateField name="dateOfBirth" label="Date of Birth" />
+
+                <FormField
+                  control={form.control}
+                  name="gender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gender</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Object.entries(Gender).map(([_, value]) => (
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="bloodGroup"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Blood Group</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select blood group" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Object.entries(BloodGroup).map(([_, value]) => (
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </form>
+          </Form>
+        </CardContent>
       ) : (
-        <div className="space-y-3">
+        <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">First Name</p>
@@ -297,7 +301,7 @@ export function PersonalInfoSection({
               <p className="font-medium capitalize">{data?.gender || "N/A"}</p>
             </div>
           </div>
-        </div>
+        </CardContent>
       )}
     </EditableSection>
   );

@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DateField } from "@/components/common/dateCalendar";
+import { CardContent } from "@/components/ui/card";
 
 interface AcademicInfoSectionProps {
   isEditing: boolean;
@@ -58,11 +59,11 @@ export function AcademicInfoSection({
   useEffect(() => {
     if (data) {
       form.reset({
-        studentId: data?.studentId || "",
-        branch: data?.branch || "",
-        batchType: data?.batchType || "",
-        classId: data?.classId._id || "",
-        currentSessionId: data?.currentSessionId._id || "",
+        studentId: data?.studentId ?? "",
+        branch: data?.branch ?? "",
+        batchType: data?.batchType ?? "",
+        classId: data?.classId?._id ?? "",
+        currentSessionId: data?.currentSessionId?._id ?? "",
         admissionDate: new Date(),
       });
     }
@@ -83,121 +84,123 @@ export function AcademicInfoSection({
       onSave={form.handleSubmit(handleSave)}
     >
       {isEditing ? (
-        <Form {...form}>
-          <form className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="studentId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Student ID</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Student ID" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="classId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Class Name</FormLabel>
-                    <FormControl>
-                      <ClassCombobox
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="branch"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Branch</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+        <CardContent>
+          <Form {...form}>
+            <form className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="studentId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Student ID</FormLabel>
                       <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select branch" />
-                        </SelectTrigger>
+                        <Input placeholder="Student ID" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {Object.entries(Branch).map(([key, value]) => (
-                          <SelectItem key={value} value={value}>
-                            {key}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="batchType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Batch Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select batch type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.entries(BatchType).map(([key, value]) => (
-                          <SelectItem key={value} value={value}>
-                            {key}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="currentSessionId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Session</FormLabel>
-                    <FormControl>
-                      <SessionCombobox
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DateField name="admissionDate" label="Admission Date" />
-            </div>
-          </form>
-        </Form>
+                <FormField
+                  control={form.control}
+                  name="classId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Class Name</FormLabel>
+                      <FormControl>
+                        <ClassCombobox
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="branch"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Branch</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select branch" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Object.entries(Branch).map(([key, value]) => (
+                            <SelectItem key={value} value={value}>
+                              {key}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="batchType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Batch Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select batch type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Object.entries(BatchType).map(([key, value]) => (
+                            <SelectItem key={value} value={value}>
+                              {key}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="currentSessionId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Session</FormLabel>
+                      <FormControl>
+                        <SessionCombobox
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DateField name="admissionDate" label="Admission Date" />
+              </div>
+            </form>
+          </Form>
+        </CardContent>
       ) : (
-        <div className="space-y-3">
+        <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Student ID</p>
@@ -205,7 +208,7 @@ export function AcademicInfoSection({
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Class Name</p>
-              <p className="font-medium">{data?.classId.className || "N/A"}</p>
+              <p className="font-medium">{data?.classId?.className || "N/A"}</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -222,19 +225,19 @@ export function AcademicInfoSection({
             <div>
               <p className="text-sm text-muted-foreground">Current Session</p>
               <p className="font-medium">
-                {data?.currentSessionId.sessionName || "N/A"}
+                {data?.currentSessionId?.sessionName || "N/A"}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Admission Date</p>
               <p className="font-medium">
                 {data?.admissionDate
-                  ? new Date(data.admissionDate).toLocaleDateString()
+                  ? new Date(data?.admissionDate).toLocaleDateString()
                   : "N/A"}
               </p>
             </div>
           </div>
-        </div>
+        </CardContent>
       )}
     </EditableSection>
   );

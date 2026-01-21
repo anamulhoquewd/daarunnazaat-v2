@@ -17,6 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { CardContent } from "@/components/ui/card";
 
 interface FeesSectionProps {
   isEditing: boolean;
@@ -38,13 +39,13 @@ export function FeesSection({
   useEffect(() => {
     if (data) {
       form.reset({
-        admissionFee: data.admissionFee || 0,
-        admissionDiscount: data.admissionDiscount || 0,
-        monthlyFee: data.monthlyFee || 0,
-        residentialFee: data.residentialFee || 0,
-        mealFee: data.mealFee || 0,
-        isResidential: data.isResidential || false,
-        isMealIncluded: data.isMealIncluded || false,
+        admissionFee: data.admissionFee ?? 0,
+        admissionDiscount: data.admissionDiscount ?? 0,
+        monthlyFee: data.monthlyFee ?? 0,
+        residentialFee: data.residentialFee ?? 0,
+        mealFee: data.mealFee ?? 0,
+        isResidential: data.isResidential ?? false,
+        isMealIncluded: data.isMealIncluded ?? false,
         admissionDate: data.admissionDate
           ? new Date(data.admissionDate)
           : new Date(),
@@ -76,119 +77,121 @@ export function FeesSection({
       isSaving={form.formState.isSubmitting}
     >
       {isEditing ? (
-        <Form {...form}>
-          <form className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="monthlyFee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Monthly Fee</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="residentialFee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Residential Fee</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="mealFee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Meal Fee</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="admissionFee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Admission Fee</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="admissionDiscount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Admission Discount</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex items-center gap-4 pt-2">
+        <CardContent>
+          <Form {...form}>
+            <form className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="isResidential"
+                  name="monthlyFee"
                   render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2">
+                    <FormItem>
+                      <FormLabel>Monthly Fee</FormLabel>
                       <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Input type="number" placeholder="0" {...field} />
                       </FormControl>
-                      <FormLabel className="font-normal cursor-pointer">
-                        Is Residential Student
-                      </FormLabel>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
-                  name="isMealIncluded"
+                  name="residentialFee"
                   render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2">
+                    <FormItem>
+                      <FormLabel>Residential Fee</FormLabel>
                       <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Input type="number" placeholder="0" {...field} />
                       </FormControl>
-                      <FormLabel className="font-normal cursor-pointer">
-                        Meal Included
-                      </FormLabel>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="mealFee"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Meal Fee</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="0" {...field} />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-            </div>
-          </form>
-        </Form>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="admissionFee"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Admission Fee</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="0" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="admissionDiscount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Admission Discount</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="0" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex items-center gap-4 pt-2">
+                  <FormField
+                    control={form.control}
+                    name="isResidential"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Is Residential Student
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="isMealIncluded"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Meal Included
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
       ) : (
-        <div className="space-y-3">
+        <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Monthly Fee</p>
@@ -210,7 +213,7 @@ export function FeesSection({
             <div>
               <p className="text-sm text-muted-foreground">Admission Fee</p>
               <p className="font-medium">
-                {data?.admissionFee.toFixed(2) || 0}
+                {data?.admissionFee?.toFixed(2) || 0}
               </p>
             </div>
             <div>
@@ -236,7 +239,7 @@ export function FeesSection({
               </div>
             </div>
           </div>
-        </div>
+        </CardContent>
       )}
     </EditableSection>
   );

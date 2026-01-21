@@ -1,8 +1,11 @@
 "use client";
 
 import { DateRangePicker } from "@/components/common/dateRange";
+import DeleteAlert from "@/components/common/deleteAlert";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
+import { StudentBottomFilter } from "@/components/students/studentBottomFilter";
+import { StudentColumns } from "@/components/students/studentColumns";
 import StudentFilters from "@/components/students/studentFilter";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { useStudentActions } from "@/hooks/students/useStudentActions";
 import useStudentQuery from "@/hooks/students/useStudentQuery";
 import {
   ColumnFiltersState,
@@ -30,14 +34,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown, Filter, X } from "lucide-react";
-import { useState } from "react";
 import Link from "next/link";
-import { StudentBottomFilter } from "@/components/students/studentBottomFilter";
-import { StudentColumns } from "@/components/students/studentColumns";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 function StudentPage() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [selectId, setSelectId] = useState<string | null>(null);
 
@@ -68,9 +68,9 @@ function StudentPage() {
     updateFilter,
     combinedFilters,
   } = useStudentQuery();
+  const { deleteStudent, isLoading } = useStudentActions();
 
   const columns = StudentColumns({
-    setIsEditing,
     setIsDelOpen,
     setValues,
     setSelectId,
@@ -241,6 +241,15 @@ function StudentPage() {
               setPagination={setPagination}
             />
           </div>
+        )}
+        {selectId && (
+          <DeleteAlert
+            isOpen={isDelOpen}
+            setIsOpen={setIsDelOpen}
+            cb={deleteStudent.bind(null, selectId)}
+            setSelectId={setSelectId}
+            isLoading={isLoading}
+          />
         )}
       </CardContent>
     </Card>

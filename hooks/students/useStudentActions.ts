@@ -1,19 +1,15 @@
 import api from "@/axios/intercepter";
 import { handleAxiosError } from "@/lib/utils";
-import { IStudent } from "@/validations";
-import { ContactInfo, PersonalInfo } from "@/validations/student";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { PersonalInfo } from "@/validations/student";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export const useStudentActions = (onSuccess?: () => void) => {
-  const params = useParams();
-  const id = params.id as string;
-
   const [isLoading, setIsLoading] = useState(false);
-  const [student, setStudent] = useState<IStudent | null>(null);
 
   const getStudentById = async (studentId: string) => {
+    if (!studentId) return null;
+
     setIsLoading(true);
     try {
       const response = await api.get(`/students/${studentId}`);
@@ -26,9 +22,7 @@ export const useStudentActions = (onSuccess?: () => void) => {
 
       onSuccess?.();
 
-      console.log("Fetched student data:", response.data.data);
-
-      setStudent(response.data.data);
+      return response.data.data;
     } catch (error) {
       handleAxiosError(error);
     } finally {
@@ -64,13 +58,18 @@ export const useStudentActions = (onSuccess?: () => void) => {
       const response = await api.delete(`/students/${studentId}`);
 
       if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to delete student");
         throw new Error(
           response.data.error.message || "Failed to delete student",
         );
       }
 
+      toast.success(
+        response.data.success.message || "Student deleted successfully",
+      );
       onSuccess?.();
     } catch (error) {
+      toast.error("An error occurred while deleting the student.");
       handleAxiosError(error);
     } finally {
       setIsLoading(false);
@@ -101,17 +100,12 @@ export const useStudentActions = (onSuccess?: () => void) => {
     }
   };
 
-  useEffect(() => {
-    getStudentById(id);
-  }, [id]);
-
   return {
     isLoading,
     deleteStudent,
     activateStudent,
     deactivateStudent,
     getStudentById,
-    student,
     handleUpdate,
   };
 };
