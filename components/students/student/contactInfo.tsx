@@ -1,12 +1,5 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Label } from "@/components/ui/label";
-import { ContactInfo, contactInfoSchema } from "@/validations/student";
-import { EditableSection } from "./editableSection";
-import { IStudent } from "@/validations";
-import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -15,15 +8,21 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { IStudent, IUpdateStudent } from "@/validations";
+import { ContactInfo, contactInfoSchema } from "@/validations/student";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { EditableSection } from "./editableSection";
 
-import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 interface ContactInfoSectionProps {
   isEditing: boolean;
   onEditChange: (value: boolean) => void;
   data?: IStudent;
-  onSave?: (data: IStudent) => Promise<void>;
+  onSave?: (data: IUpdateStudent) => Promise<void>;
 }
 
 export function ContactInfoSection({

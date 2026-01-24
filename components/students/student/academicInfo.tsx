@@ -1,12 +1,8 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { BatchType, Branch, IStudent } from "@/validations";
-import { AcademicInfo, academicInfoSchema } from "@/validations/student";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { EditableSection } from "./editableSection";
+import { DateField } from "@/components/common/dateCalendar";
+import { ClassCombobox } from "@/components/students/new/classCombobox";
+import { CardContent } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -15,9 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useEffect } from "react";
-import { ClassCombobox } from "@/components/students/new/classCombobox";
-import { SessionCombobox } from "../new/sessionCombobox";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -25,14 +19,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DateField } from "@/components/common/dateCalendar";
-import { CardContent } from "@/components/ui/card";
+import { BatchType, Branch, IStudent, IUpdateStudent } from "@/validations";
+import { AcademicInfo, academicInfoSchema } from "@/validations/student";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { SessionCombobox } from "../new/sessionCombobox";
+import { EditableSection } from "./editableSection";
 
 interface AcademicInfoSectionProps {
   isEditing: boolean;
   onEditChange: (value: boolean) => void;
   data?: IStudent;
-  onSave?: (data: IStudent) => Promise<void>;
+  onSave?: (data: IUpdateStudent) => Promise<void>;
 }
 
 export function AcademicInfoSection({

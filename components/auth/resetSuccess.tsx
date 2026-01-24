@@ -1,7 +1,6 @@
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
-import React from "react";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 function SuccessComponent() {

@@ -2,13 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Form,
   FormControl,
   FormDescription,
@@ -27,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { IUser, UserRole } from "@/validations";
 import { useEffect } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider } from "react-hook-form";
 
 export default function UserRegistrationForm({
   form,
@@ -39,7 +32,7 @@ export default function UserRegistrationForm({
   isLoading: boolean;
   clearForm: () => void;
   handleSubmit: (data: IUser) => Promise<void>;
-  form: ReturnType<typeof useForm>;
+  form: any;
   values: IUser | null;
 }) {
   useEffect(() => {

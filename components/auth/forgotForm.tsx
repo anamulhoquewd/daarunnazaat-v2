@@ -1,8 +1,6 @@
 "use client";
 
-import type React from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -11,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, Loader2 } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -20,9 +17,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import useForgot from "@/hooks/auth/useForgotPassword";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import SuccessComponent from "./forgotSuccess";
-import useForgot from "@/hooks/auth/useForgotPassword";
 
 function ForgotForm() {
   const { form, handleSubmit, isLoading, isSuccess, value } = useForgot();
@@ -59,7 +58,7 @@ function ForgotForm() {
                 </FormItem>
               )}
             />
-            <Button type="handleSubmit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -3,9 +3,9 @@
 import { DateRangePicker } from "@/components/common/dateRange";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
-import FeesFilters from "@/components/fees/feesFilter";
 import { FeesBottomFilter } from "@/components/fees/feesBottomFilter";
 import { FeesColumns } from "@/components/fees/feesColumns";
+import FeesFilters from "@/components/fees/feesFilter";
 import { Button } from "@/components/ui/button";
 import {
   Card,

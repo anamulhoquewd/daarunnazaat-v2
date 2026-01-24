@@ -1,12 +1,10 @@
 "use client";
 
-import type React from "react";
 
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -23,9 +21,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import useReset from "@/hooks/auth/useResetPassword";
 import Link from "next/link";
 import SuccessComponent from "./resetSuccess";
-import useReset from "@/hooks/auth/useResetPassword";
 
 export function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -140,7 +139,7 @@ export function ResetPasswordForm() {
                 {error}
               </span>
             )}
-            <Button type="handleSubmit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

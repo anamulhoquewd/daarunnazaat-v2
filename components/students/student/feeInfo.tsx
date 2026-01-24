@@ -1,14 +1,7 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Fees, feesSchema } from "@/validations/student";
-import { EditableSection } from "./editableSection";
-import { IStudent } from "@/validations";
-import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -17,13 +10,19 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { IStudent, IUpdateStudent } from "@/validations";
+import { Fees, feesSchema } from "@/validations/student";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { EditableSection } from "./editableSection";
 
 interface FeesSectionProps {
   isEditing: boolean;
   onEditChange: (value: boolean) => void;
   data?: IStudent;
-  onSave?: (data: IStudent) => Promise<void>;
+  onSave?: (data: IUpdateStudent) => Promise<void>;
 }
 
 export function FeesSection({
@@ -88,7 +87,15 @@ export function FeesSection({
                     <FormItem>
                       <FormLabel>Monthly Fee</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          name={field.name}
+                          value={field.value != null ? String(field.value) : ""}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -101,7 +108,15 @@ export function FeesSection({
                     <FormItem>
                       <FormLabel>Residential Fee</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          name={field.name}
+                          value={field.value != null ? String(field.value) : ""}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -114,7 +129,15 @@ export function FeesSection({
                     <FormItem>
                       <FormLabel>Meal Fee</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          name={field.name}
+                          value={field.value != null ? String(field.value) : ""}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -130,7 +153,15 @@ export function FeesSection({
                     <FormItem>
                       <FormLabel>Admission Fee</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          name={field.name}
+                          value={field.value != null ? String(field.value) : ""}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -143,7 +174,15 @@ export function FeesSection({
                     <FormItem>
                       <FormLabel>Admission Discount</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          name={field.name}
+                          value={field.value != null ? String(field.value) : ""}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

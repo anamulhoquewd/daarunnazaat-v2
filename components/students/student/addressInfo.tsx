@@ -1,5 +1,6 @@
 "use client";
 
+import { CardContent } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -9,24 +10,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { IStudent } from "@/validations";
+import { IUpdateStudent } from "@/validations";
 import {
   Addresses,
   permanentAddress,
   presentAddress,
 } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { EditableSection } from "./editableSection";
-import { useEffect } from "react";
-import { CardContent } from "@/components/ui/card";
 
 interface AddressSectionProps {
   isEditing: boolean;
   onEditChange: (value: boolean) => void;
   data?: Addresses;
-  onSave?: (data: IStudent) => Promise<void>;
+  onSave?: (data: IUpdateStudent) => Promise<void>;
 }
 
 export function AddressSection({

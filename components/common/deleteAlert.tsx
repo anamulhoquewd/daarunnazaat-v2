@@ -8,9 +8,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
 import { useState } from "react";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 function DeleteAlert({
   isOpen,

@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { Dispatch, SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { IPagination } from "@/validations";
+import { Dispatch, SetStateAction } from "react";
 
 function Paginations({
   pagination,

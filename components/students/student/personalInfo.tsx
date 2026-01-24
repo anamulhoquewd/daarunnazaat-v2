@@ -1,20 +1,7 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { EditableSection } from "./editableSection";
-import { PersonalInfo, personalInfoSchema } from "@/validations/student";
-import { BloodGroup, Gender, IStudent } from "@/validations";
-import { useEffect } from "react";
+import { DateField } from "@/components/common/dateCalendar";
+import { CardContent } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -24,14 +11,26 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { DateField } from "@/components/common/dateCalendar";
-import { CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { BloodGroup, Gender, IStudent, IUpdateStudent } from "@/validations";
+import { PersonalInfo, personalInfoSchema } from "@/validations/student";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { EditableSection } from "./editableSection";
 
 interface PersonalInfoSectionProps {
   isEditing: boolean;
   onEditChange: (value: boolean) => void;
   data?: IStudent;
-  onSave?: (data: IStudent) => Promise<void>;
+  onSave?: (data: IUpdateStudent) => Promise<void>;
 }
 
 export function PersonalInfoSection({

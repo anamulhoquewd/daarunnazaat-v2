@@ -1,7 +1,6 @@
 import api from "@/axios/intercepter";
 import { handleAxiosError } from "@/lib/utils";
 import { IStudent, IUpdateStudent } from "@/validations";
-import { PersonalInfo } from "@/validations/student";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";

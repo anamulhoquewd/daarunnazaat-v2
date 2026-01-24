@@ -30,7 +30,7 @@ export default function StudentProfilePage() {
       {loading.fetch ? (
         <StudentProfileHeaderSkeleton />
       ) : (
-        <StudentProfileHeader data={student} />
+        student && <StudentProfileHeader data={student} />
       )}
 
       <div className="container max-w-6xl mx-auto px-4 py-8">
@@ -53,7 +53,7 @@ export default function StudentProfilePage() {
                     onEditChange={(isEditing) =>
                       setEditingSection(isEditing ? "personal" : null)
                     }
-                    data={student}
+                    data={student ?? undefined}
                     onSave={handleUpdate}
                   />
                   <ContactInfoSection
@@ -61,7 +61,7 @@ export default function StudentProfilePage() {
                     onEditChange={(isEditing) =>
                       setEditingSection(isEditing ? "contact" : null)
                     }
-                    data={student}
+                    data={student ?? undefined}
                     onSave={handleUpdate}
                   />
                 </div>
@@ -70,7 +70,7 @@ export default function StudentProfilePage() {
                   onEditChange={(isEditing) =>
                     setEditingSection(isEditing ? "address" : null)
                   }
-                  data={student}
+                  data={student ?? undefined}
                   onSave={handleUpdate}
                 />
                 <FeesSection
@@ -78,7 +78,7 @@ export default function StudentProfilePage() {
                   onEditChange={(isEditing) =>
                     setEditingSection(isEditing ? "fees" : null)
                   }
-                  data={student}
+                  data={student ?? undefined}
                   onSave={handleUpdate}
                 />
               </TabsContent>
@@ -90,18 +90,18 @@ export default function StudentProfilePage() {
                     onEditChange={(isEditing) =>
                       setEditingSection(isEditing ? "academic" : null)
                     }
-                    data={student}
+                    data={student ?? undefined}
                     onSave={handleUpdate}
                   />
-                  <ClassDetails data={student} />
+                  <ClassDetails data={student ?? undefined} />
                 </div>
-                <SessionHistorySection data={student} />
+                <SessionHistorySection data={student ?? undefined} />
               </TabsContent>
 
               <TabsContent value="additional" className="space-y-6 mt-6">
                 <div className="grid gap-6 md:grid-cols-2">
-                  <AdministrationSection data={student} />
-                  <GuardianDetails data={student} />
+                  <AdministrationSection data={student ?? undefined} />
+                  <GuardianDetails data={student ?? undefined} />
                 </div>
               </TabsContent>
             </>
@@ -112,109 +112,4 @@ export default function StudentProfilePage() {
   );
 }
 
-function StudentProfile() {
-  const [editingSection, setEditingSection] = useState<string | null>(null);
-  const [student, setStudent] = useState<any>(null);
-  const { isLoading, handleUpdate } = useStudentActions();
-  const params = useParams();
-  const id = params.id as string;
 
-  const { getStudentById } = useStudentActions();
-
-  useEffect(() => {
-    const fetchStudent = async () => {
-      try {
-        const data = await getStudentById(id);
-        setStudent(data);
-      } catch (error: any) {
-        console.error("Error fetching student data:", error);
-        setStudent(null);
-      }
-    };
-    fetchStudent();
-  }, [id]);
-
-  if (!student && !isLoading) return <StudentNotFound />;
-
-  return (
-    <main className="min-h-screen p-2">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Student Profile
-          </h1>
-          <p className="text-muted-foreground">
-            View and edit student information. Click the Edit button on each
-            section to modify details.
-          </p>
-        </div>
-
-        {/* Sections */}
-        <div className="space-y-6">
-          {/* Personal Info Section */}
-          <PersonalInfoSection
-            isEditing={editingSection === "personal"}
-            onEditChange={(isEditing) =>
-              setEditingSection(isEditing ? "personal" : null)
-            }
-            data={student}
-            onSave={handleUpdate}
-          />
-
-          {/* Contact Info Section */}
-          <ContactInfoSection
-            isEditing={editingSection === "contact"}
-            onEditChange={(isEditing) =>
-              setEditingSection(isEditing ? "contact" : null)
-            }
-            data={student}
-            onSave={handleUpdate}
-          />
-
-          {/* Address Section */}
-          <AddressSection
-            isEditing={editingSection === "address"}
-            onEditChange={(isEditing) =>
-              setEditingSection(isEditing ? "address" : null)
-            }
-            data={student}
-            onSave={handleUpdate}
-          />
-
-          {/* Academic Info Section */}
-          <AcademicInfoSection
-            isEditing={editingSection === "academic"}
-            onEditChange={(isEditing) =>
-              setEditingSection(isEditing ? "academic" : null)
-            }
-            data={student}
-            onSave={handleUpdate}
-          />
-
-          {/* Fees Section */}
-          <FeesSection
-            isEditing={editingSection === "fees"}
-            onEditChange={(isEditing) =>
-              setEditingSection(isEditing ? "fees" : null)
-            }
-            data={student}
-            onSave={handleUpdate}
-          />
-
-          {/* Administration Section */}
-          <AdministrationSection data={student} />
-
-          {/* Class details Section */}
-          <ClassDetails data={student} />
-
-          {/* Session History Section */}
-          <SessionHistorySection data={student} />
-
-          {/* Guardian details Section */}
-          <GuardianDetails data={student} />
-        </div>
-      </div>
-    </main>
-  );
-}

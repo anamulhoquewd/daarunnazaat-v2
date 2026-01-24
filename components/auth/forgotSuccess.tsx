@@ -1,6 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
-import React from "react";
 
 function SuccessComponent({ value }: { value: string }) {
   return (

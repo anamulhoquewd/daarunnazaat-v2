@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -10,12 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { Form } from "@/components/ui/form";
-import useChangePassword from "@/hooks/auth/useChangePassword";
-import { PasswordInputField } from "./passwordInputField";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import useChangePassword from "@/hooks/auth/useChangePassword";
+import { Loader2 } from "lucide-react";
+import { PasswordInputField } from "./passwordInputField";
 
 interface PasswordChangeModalProps {
   isOpen: boolean;
@@ -85,7 +84,7 @@ function ChangePassword({ isOpen, onClose }: PasswordChangeModalProps) {
                 </DialogClose>
                 <Button
                   className="cursor-pointer"
-                  type="handleSubmit"
+                  type="submit"
                   disabled={false}
                 >
                   {false ? (

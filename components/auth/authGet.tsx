@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useEffect } from "react";
 import LoadingPage from "../common/loading";
 
 export const AuthGate = ({ children }: { children: React.ReactNode }) => {

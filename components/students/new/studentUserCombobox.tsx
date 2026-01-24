@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import api from "@/axios/intercepter";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -15,9 +15,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
-import api from "@/axios/intercepter";
+import { useEffect, useState } from "react";
 
 type UserItem = {
   _id: string;

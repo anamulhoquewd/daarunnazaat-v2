@@ -180,9 +180,9 @@ function UsersPage() {
                   <UserRegistrationForm
                     values={values}
                     handleSubmit={isEditing ? handleUpdate : handleSubmit}
-                    isEditing={isEditing}
                     isLoading={isLoading}
                     form={form}
+                    clearForm={clearForm}
                   />
                   <ScrollBar orientation="vertical" className="w-2.5" />
                   <ScrollBar orientation="horizontal" className="w-2.5" />

@@ -2,15 +2,8 @@
 
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
+  SquareTerminal
 } from "lucide-react";
 import * as React from "react";
 
@@ -23,8 +16,8 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { NavMain } from "./navMenu";
 import { TeamSwitcher } from "./branchSwitcher";
+import { NavMain } from "./navMenu";
 
 // This is sample data.
 const data = {

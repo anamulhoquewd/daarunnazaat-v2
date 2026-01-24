@@ -93,7 +93,7 @@ function useUserQuery() {
   };
 
   const clearForm = () => {
-    form.reset({ email: "", phone: "", role: "" });
+    form.reset({ email: "", phone: "", role: undefined });
   };
 
   const handleUpdate = async (data: IUpdateUser) => {

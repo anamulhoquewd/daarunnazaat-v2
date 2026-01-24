@@ -1,7 +1,7 @@
 import { RecentActivity } from "@/components/dashboard/recentActivity";
 import { StatsCard } from "@/components/dashboard/stateCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Users, DollarSign, Calendar } from "lucide-react";
+import { BarChart3, Calendar, DollarSign, Users } from "lucide-react";
 
 function Dashboard() {
   return (

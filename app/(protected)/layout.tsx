@@ -1,9 +1,9 @@
-import type React from "react";
 import { AuthGate } from "@/components/auth/authGet";
 import { AppSidebar } from "@/components/common/sidebar";
 import Header from "@/components/layout/header";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { cookies } from "next/headers";
+import type React from "react";
 
 export default async function AdminLayout({
   children,
