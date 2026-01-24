@@ -1,9 +1,18 @@
 import api from "@/axios/intercepter";
 import { buildQuery, defaultPagination, handleAxiosError } from "@/lib/utils";
-import { IPagination, IUser, UserRole } from "@/validations";
+import {
+  IPagination,
+  IUpdateUser,
+  IUser,
+  UserRole,
+  userZ,
+} from "@/validations";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { useDebounce } from "../common/useDebounce";
 
 interface IFilter {
@@ -23,6 +32,9 @@ interface ISearch {
 type SortType = "asc" | "desc";
 
 function useUserQuery() {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
+  const [isAddOpen, setIsAddOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
   const [users, setUsers] = useState<IUser[]>([]);
   const [pagination, setPagination] = useState<IPagination>(defaultPagination);
@@ -39,9 +51,103 @@ function useUserQuery() {
     limit: "10",
     role: "all",
   });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
+
+  const form = useForm({
+    resolver: zodResolver(userZ.pick({ email: true, phone: true, role: true })),
+    defaultValues: values ?? {
+      email: "",
+      phone: "",
+    },
+  });
+
+  const handleSubmit = async (data: IUser) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.post("/auth/register", data);
+
+      if (!response.data.success) {
+        throw new Error(response.data.error.message || "Failed to create user");
+      }
+
+      toast.success("User created successfully!");
+    } catch (error: any) {
+      toast.error("User creation failed!");
+      handleAxiosError(error);
+
+      if (error.response?.data?.fields?.length) {
+        error.response.data.fields.forEach((f: any) => {
+          form.setError(f.name as any, {
+            message: f.message,
+          });
+        });
+      }
+    } finally {
+      setIsLoading(false);
+      setIsAddOpen(false);
+    }
+  };
+
+  const clearForm = () => {
+    form.reset({ email: "", phone: "", role: "" });
+  };
+
+  const handleUpdate = async (data: IUpdateUser) => {
+    setIsLoading(true);
+
+    console.log("Updating user with data:", data, "and ID:", selectedId);
+
+    try {
+      const response = await api.patch(`/auth/${selectedId}`, data);
+      if (!response.data.success) {
+        toast.error("Update failed");
+        throw new Error(response.data.error.message || "Failed to update user");
+      }
+
+      getUsers({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+      toast.success("Updated successfully");
+    } catch (e) {
+      toast.error("Update failed");
+    } finally {
+      setIsLoading(false);
+      setIsEditing(false);
+      setIsAddOpen(false);
+    }
+  };
+
+  const handleDelete = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.delete(`/students/${userId}`);
+
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to delete student");
+        throw new Error(
+          response.data.error.message || "Failed to delete student",
+        );
+      }
+
+      toast.success(
+        response.data.success.message || "Student deleted successfully",
+      );
+    } catch (error) {
+      toast.error("An error occurred while deleting the student.");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+      setIsDelOpen(false);
+    }
+  };
 
   const getUsers = async ({
     search,
@@ -166,6 +272,20 @@ function useUserQuery() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    handleSubmit,
+    clearForm,
+    handleDelete,
+    handleUpdate,
+    selectedId,
+    setSelectedId,
+    form,
+    values,
+    isEditing,
+    isAddOpen,
+    isDelOpen,
+    setIsEditing,
+    setIsAddOpen,
+    setIsDelOpen,
   };
 }
 

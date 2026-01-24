@@ -47,7 +47,6 @@ function useStudentQuery() {
     guardianId: "",
     global: "",
   });
-  const [values, setValues] = useState<IStudent | null>(null);
   const [filterBy, setFilterBy] = useState<IFilter>({
     dateRange: { from: undefined, to: undefined },
     batchType: "all",
@@ -214,7 +213,6 @@ function useStudentQuery() {
     pagination,
     setPagination,
     refetch: getStudents,
-    setValues,
     setSearch,
     search,
     filterBy,

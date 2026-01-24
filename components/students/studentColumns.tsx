@@ -12,14 +12,12 @@ import Link from "next/link";
 
 // Define Props Interface
 interface ColumnsProps {
-  setSelectId: React.Dispatch<React.SetStateAction<string | null>>;
+  setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setValues: (values: any) => void;
 }
 export const StudentColumns = ({
   setIsDelOpen,
-  setValues,
-  setSelectId,
+  setSelectedId,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
     header: "Student ID",
@@ -122,7 +120,7 @@ export const StudentColumns = ({
           <DropdownMenuItem
             className="text-destructive"
             onClick={() => {
-              setSelectId(row.original._id);
+              setSelectedId(row.original._id);
               setIsDelOpen(true);
             }}
           >

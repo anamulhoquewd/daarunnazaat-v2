@@ -1,8 +1,10 @@
 "use client";
 
 import { DateRangePicker } from "@/components/common/dateRange";
+import DeleteAlert from "@/components/common/deleteAlert";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
+import { AlertDialogHeader } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,15 +14,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { UserBottomFilter } from "@/components/users/userBottomFilter";
 import { UserColumns } from "@/components/users/userColumns";
 import UserFilters from "@/components/users/userFilter";
+import UserRegistrationForm from "@/components/users/userRegistrationForm";
 import useUserQuery from "@/hooks/users/useUserQuery";
 import {
   ColumnFiltersState,
@@ -31,15 +42,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Filter, X } from "lucide-react";
-import Link from "next/link";
+import { ChevronDown, Filter, Plus, X } from "lucide-react";
 import { useState } from "react";
 
 function UsersPage() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
-  const [selectId, setSelectId] = useState<string | null>(null);
-
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
@@ -48,9 +54,11 @@ function UsersPage() {
   });
 
   const {
+    isLoading,
     pagination,
     users,
     setValues,
+    values,
     setPagination,
     search,
     setSearch,
@@ -60,13 +68,27 @@ function UsersPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    selectedId,
+    handleDelete,
+    handleUpdate,
+    handleSubmit,
+    setSelectedId,
+    clearForm,
+    form,
+    isEditing,
+    isAddOpen,
+    isDelOpen,
+    setIsEditing,
+    setIsAddOpen,
+    setIsDelOpen,
   } = useUserQuery();
 
   const columns = UserColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,
-    setSelectId,
+    setSelectedId,
+    setIsAddOpen,
   });
 
   const table = useReactTable({
@@ -94,8 +116,9 @@ function UsersPage() {
     },
   });
 
+  console.log("Editing State:", isEditing);
+
   return (
-    // Full-height card so header stays fixed and table area scrolls
     <Card className="w-full  flex flex-col overflow-hidden">
       <CardHeader className="border-b">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -124,9 +147,48 @@ function UsersPage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
-            <Link href={"#"}>
-              <Button className="cursor-pointer">Add One</Button>
-            </Link>
+            <Dialog
+              open={isAddOpen}
+              onOpenChange={(open) => {
+                if (!open) {
+                  clearForm();
+                  setValues(null);
+                  setSelectedId("");
+                  setIsEditing(false);
+                }
+                setIsAddOpen(open);
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  onChange={() => setIsAddOpen(true)}
+                  className="w-full sm:w-auto cursor-pointer"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add one
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <AlertDialogHeader>
+                  <DialogTitle>Customer Registration Form</DialogTitle>
+                  <DialogDescription>
+                    Fill out the form below to complete new customer
+                    registration.
+                  </DialogDescription>
+                </AlertDialogHeader>
+                <ScrollArea className="sm:max-w-[525px] h-[65dvh] overflow-hidden pr-2 md:px-4">
+                  <UserRegistrationForm
+                    values={values}
+                    handleSubmit={isEditing ? handleUpdate : handleSubmit}
+                    isEditing={isEditing}
+                    isLoading={isLoading}
+                    form={form}
+                  />
+                  <ScrollBar orientation="vertical" className="w-2.5" />
+                  <ScrollBar orientation="horizontal" className="w-2.5" />
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </CardHeader>
@@ -233,6 +295,16 @@ function UsersPage() {
               setPagination={setPagination}
             />
           </div>
+        )}
+
+        {selectedId && (
+          <DeleteAlert
+            isOpen={isDelOpen}
+            setIsOpen={setIsDelOpen}
+            cb={handleDelete.bind(null, selectedId)}
+            setSelectedId={setSelectedId}
+            isLoading={isLoading}
+          />
         )}
       </CardContent>
     </Card>

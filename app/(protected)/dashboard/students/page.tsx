@@ -39,7 +39,7 @@ import { useState } from "react";
 
 function StudentPage() {
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
-  const [selectId, setSelectId] = useState<string | null>(null);
+  const [selectId, setSelectedId] = useState<string | null>(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -57,7 +57,6 @@ function StudentPage() {
   const {
     pagination,
     students,
-    setValues,
     setPagination,
     search,
     setSearch,
@@ -68,12 +67,14 @@ function StudentPage() {
     updateFilter,
     combinedFilters,
   } = useStudentQuery();
-  const { deleteStudent, isLoading } = useStudentActions();
+  const {
+    handleDelete,
+    loading: { delete: deleteLoading },
+  } = useStudentActions();
 
   const columns = StudentColumns({
     setIsDelOpen,
-    setValues,
-    setSelectId,
+    setSelectedId,
   });
 
   const table = useReactTable({
@@ -246,9 +247,9 @@ function StudentPage() {
           <DeleteAlert
             isOpen={isDelOpen}
             setIsOpen={setIsDelOpen}
-            cb={deleteStudent.bind(null, selectId)}
-            setSelectId={setSelectId}
-            isLoading={isLoading}
+            cb={handleDelete.bind(null, selectId)}
+            setSelectedId={setSelectedId}
+            isLoading={deleteLoading}
           />
         )}
       </CardContent>

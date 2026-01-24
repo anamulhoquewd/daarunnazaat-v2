@@ -11,15 +11,17 @@ import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 // Define Props Interface
 interface ColumnsProps {
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
-  setSelectId: React.Dispatch<React.SetStateAction<string | null>>;
+  setIsAddOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
 }
 export const UserColumns = ({
   setIsEditing,
+  setIsAddOpen,
   setIsDelOpen,
   setValues,
-  setSelectId,
+  setSelectedId,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
     header: "User ID",
@@ -63,8 +65,9 @@ export const UserColumns = ({
           <DropdownMenuItem
             onClick={() => {
               setValues(row.original);
-              setSelectId(row.original._id);
-              setIsEditing(true);
+              setSelectedId(row.original._id);
+              setIsAddOpen!(true);
+              setIsEditing!(true);
             }}
           >
             <Pencil className="mr-2 h-4 w-4" />
@@ -74,7 +77,7 @@ export const UserColumns = ({
           <DropdownMenuItem
             className="text-destructive"
             onClick={() => {
-              setSelectId(row.original._id);
+              setSelectedId(row.original._id);
               setIsDelOpen(true);
             }}
           >

@@ -109,7 +109,39 @@ export const useStudentForm = (onSuccess?: () => void) => {
   const clearForm = () => {
     isResettingRef.current = true;
 
-    form.reset();
+    form.reset({
+      presentAddress: {
+        village: "",
+        postOffice: "",
+        upazila: "",
+        district: "",
+        division: "",
+      },
+      permanentAddress: {
+        village: "",
+        postOffice: "",
+        upazila: "",
+        district: "",
+        division: "",
+      },
+      firstName: "",
+      lastName: "",
+      userId: "",
+      gender: "",
+      dateOfBirth: null,
+      classId: "",
+      sessionId: "",
+      whatsApp: "",
+      auternativePhone: "",
+      bloodGroup: "",
+      fatherName: "",
+      motherName: "",
+      guardianId: "",
+      guardianRelation: "",
+      branch: "",
+      batch: "",
+      admissionDate: null,
+    });
 
     clearStorage();
 

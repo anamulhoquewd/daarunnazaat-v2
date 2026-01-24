@@ -1,6 +1,5 @@
 import {
   changePasswordZ,
-  IUpdateUser,
   IUser,
   loginZ,
   mongoIdZ,
@@ -10,7 +9,6 @@ import {
   userUpdateZ,
   userZ,
 } from "@/validations";
-import crypto from "crypto";
 import mongoose from "mongoose";
 import z from "zod";
 import { schemaValidationError } from "../error";
@@ -18,7 +16,8 @@ import { User } from "../models/users.model";
 import { generateAccessToken, generateRefreshToken } from "../utils";
 import pagination from "../utils/pagination";
 import { stringGenerator } from "../utils/string-generator";
-import { DateRange } from "react-day-picker";
+import { transporter } from "../config/email";
+import { fi } from "zod/v4/locales";
 
 export const register = async (body: IUser) => {
   // Safe Parse for better error handling
@@ -31,6 +30,18 @@ export const register = async (body: IUser) => {
   }
 
   try {
+    // You can't register super admin via this route
+    if (validData.data.role === "super_admin") {
+      return {
+        error: {
+          message: "Not allowed to register super admin",
+          fields: [
+            { name: "role", message: "Not allowed to register super admin" },
+          ],
+        },
+      };
+    }
+
     // Check if user already exists
     const isUserExist = await User.findOne({
       $or: [{ email: validData.data.email }, { phone: validData.data.phone }],
@@ -39,7 +50,7 @@ export const register = async (body: IUser) => {
     if (isUserExist) {
       return {
         error: {
-          message: "Sorry! This email already exists.",
+          message: "Sorry! This email/phone already exists.",
           fields: [
             {
               name: "email",

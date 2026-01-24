@@ -13,36 +13,25 @@ import { useStudentActions } from "@/hooks/students/useStudentActions";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StudentProfileHeader } from "@/components/students/student/header";
+import { StudentProfileHeaderSkeleton } from "@/components/students/student/studentHeaderSkeleton";
+import { PersonalInfoSectionSkeleton } from "@/components/students/student/studentInfoSectionSkeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function StudentProfilePage() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
-  const [student, setStudent] = useState<any>(null);
-  const { isLoading, handleUpdate } = useStudentActions();
-  const params = useParams();
-  const id = params.id as string;
 
-  const { getStudentById } = useStudentActions();
+  const { student, loading, handleUpdate } = useStudentActions();
 
-  useEffect(() => {
-    const fetchStudent = async () => {
-      try {
-        const data = await getStudentById(id);
-        setStudent(data);
-      } catch (error: any) {
-        console.error("Error fetching student data:", error);
-        setStudent(null);
-      }
-    };
-    fetchStudent();
-  }, [id]);
-
-  if (!student && !isLoading) return <StudentNotFound />;
+  if (!student && !loading.fetch) return <StudentNotFound />;
 
   return (
     <main className="min-h-screen bg-background">
-      <StudentProfileHeader data={student} />
+      {loading.fetch ? (
+        <StudentProfileHeaderSkeleton />
+      ) : (
+        <StudentProfileHeader data={student} />
+      )}
 
       <div className="container max-w-6xl mx-auto px-4 py-8">
         <Tabs defaultValue="overview" className="w-full">
@@ -53,66 +42,70 @@ export default function StudentProfilePage() {
           </TabsList>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6 mt-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <PersonalInfoSection
-                isEditing={editingSection === "personal"}
-                onEditChange={(isEditing) =>
-                  setEditingSection(isEditing ? "personal" : null)
-                }
-                data={student}
-                onSave={handleUpdate}
-              />
-              <ContactInfoSection
-                isEditing={editingSection === "contact"}
-                onEditChange={(isEditing) =>
-                  setEditingSection(isEditing ? "contact" : null)
-                }
-                data={student}
-                onSave={handleUpdate}
-              />
-            </div>
-            <AddressSection
-              isEditing={editingSection === "address"}
-              onEditChange={(isEditing) =>
-                setEditingSection(isEditing ? "address" : null)
-              }
-              data={student}
-              onSave={handleUpdate}
-            />
-            <FeesSection
-              isEditing={editingSection === "fees"}
-              onEditChange={(isEditing) =>
-                setEditingSection(isEditing ? "fees" : null)
-              }
-              data={student}
-              onSave={handleUpdate}
-            />
-          </TabsContent>
+          {loading.fetch ? (
+            <PersonalInfoSectionSkeleton />
+          ) : (
+            <>
+              <TabsContent value="overview" className="space-y-6 mt-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <PersonalInfoSection
+                    isEditing={editingSection === "personal"}
+                    onEditChange={(isEditing) =>
+                      setEditingSection(isEditing ? "personal" : null)
+                    }
+                    data={student}
+                    onSave={handleUpdate}
+                  />
+                  <ContactInfoSection
+                    isEditing={editingSection === "contact"}
+                    onEditChange={(isEditing) =>
+                      setEditingSection(isEditing ? "contact" : null)
+                    }
+                    data={student}
+                    onSave={handleUpdate}
+                  />
+                </div>
+                <AddressSection
+                  isEditing={editingSection === "address"}
+                  onEditChange={(isEditing) =>
+                    setEditingSection(isEditing ? "address" : null)
+                  }
+                  data={student}
+                  onSave={handleUpdate}
+                />
+                <FeesSection
+                  isEditing={editingSection === "fees"}
+                  onEditChange={(isEditing) =>
+                    setEditingSection(isEditing ? "fees" : null)
+                  }
+                  data={student}
+                  onSave={handleUpdate}
+                />
+              </TabsContent>
 
-          {/* Academic Tab */}
-          <TabsContent value="academic" className="space-y-6 mt-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <AcademicInfoSection
-                isEditing={editingSection === "academic"}
-                onEditChange={(isEditing) =>
-                  setEditingSection(isEditing ? "academic" : null)
-                }
-                data={student}
-                onSave={handleUpdate}
-              />
-              <ClassDetails data={student} />
-            </div>
-            <SessionHistorySection data={student} />
-          </TabsContent>
+              <TabsContent value="academic" className="space-y-6 mt-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <AcademicInfoSection
+                    isEditing={editingSection === "academic"}
+                    onEditChange={(isEditing) =>
+                      setEditingSection(isEditing ? "academic" : null)
+                    }
+                    data={student}
+                    onSave={handleUpdate}
+                  />
+                  <ClassDetails data={student} />
+                </div>
+                <SessionHistorySection data={student} />
+              </TabsContent>
 
-          {/* Additional Info Tab */}
-          <TabsContent value="additional" className="space-y-6 mt-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <AdministrationSection data={student} />
-              <GuardianDetails data={student} />
-            </div>
-          </TabsContent>
+              <TabsContent value="additional" className="space-y-6 mt-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <AdministrationSection data={student} />
+                  <GuardianDetails data={student} />
+                </div>
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       </div>
     </main>

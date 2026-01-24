@@ -69,7 +69,7 @@ const data = {
       items: [
         {
           title: "Registration",
-          url: null,
+          url: "/dashboard/users/new",
         },
         {
           title: "Starred",

@@ -1,7 +1,7 @@
+import { IUser, UserRole } from "@/validations";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { Model, Schema, model, models } from "mongoose";
-import { IUser, UserRole } from "@/validations";
 
 // User Model
 const UserSchema = new Schema<IUser & Document>(
@@ -34,7 +34,7 @@ const UserSchema = new Schema<IUser & Document>(
     passwordResetToken: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 UserSchema.methods.generateResetPasswordToken = function (expMinutes = 30) {

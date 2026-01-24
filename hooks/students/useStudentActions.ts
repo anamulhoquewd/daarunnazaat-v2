@@ -1,59 +1,66 @@
 import api from "@/axios/intercepter";
 import { handleAxiosError } from "@/lib/utils";
+import { IStudent, IUpdateStudent } from "@/validations";
 import { PersonalInfo } from "@/validations/student";
-import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export const useStudentActions = (onSuccess?: () => void) => {
-  const [isLoading, setIsLoading] = useState(false);
+export const useStudentActions = () => {
+  const params = useParams();
+  const id = params.id as string;
+
+  const [student, setStudent] = useState<IStudent | null>(null);
+  const [loading, setLoading] = useState<{
+    fetch: boolean;
+    update: boolean;
+    delete: boolean;
+  }>({
+    fetch: false,
+    update: false,
+    delete: false,
+  });
 
   const getStudentById = async (studentId: string) => {
-    if (!studentId) return null;
-
-    setIsLoading(true);
+    setLoading((p) => ({ ...p, fetch: true }));
     try {
-      const response = await api.get(`/students/${studentId}`);
-
-      if (!response.data.success) {
-        throw new Error(
-          response.data.error.message || "Failed to delete student",
-        );
+      const res = await api.get(`/students/${studentId}`);
+      if (!res.data.success) {
+        toast.error("Failed to fetch student");
       }
-
-      onSuccess?.();
-
-      return response.data.data;
-    } catch (error) {
-      handleAxiosError(error);
+      setStudent(res.data.data);
+    } catch (e) {
+      handleAxiosError(e);
     } finally {
-      setIsLoading(false);
+      setLoading((p) => ({ ...p, fetch: false }));
     }
   };
 
-  const handleUpdate = async (data: PersonalInfo) => {
-    setIsLoading(true);
+  const handleUpdate = async (data: IUpdateStudent) => {
+    if (!student) return;
+
+    setLoading((p) => ({ ...p, update: true }));
+
     try {
       const response = await api.patch(`/students/${id}`, data);
-
       if (!response.data.success) {
-        toast.error("Failed to save personal info");
+        toast.error("Update failed");
         throw new Error(
-          response.data.error.message || "Failed to save personal info",
+          response.data.error.message || "Failed to update student",
         );
       }
-
       setStudent(response.data.data);
-
-      toast.success("Personal info saved successfully");
-    } catch (error) {
-      console.error("Error saving personal info:", error);
+      toast.success("Updated successfully");
+    } catch (e) {
+      toast.error("Update failed");
+      await getStudentById(id); // rollback
     } finally {
-      setIsLoading(false);
+      setLoading((p) => ({ ...p, update: false }));
     }
   };
 
-  const deleteStudent = async (studentId: string) => {
-    setIsLoading(true);
+  const handleDelete = async (studentId: string) => {
+    setLoading((p) => ({ ...p, delete: true }));
     try {
       const response = await api.delete(`/students/${studentId}`);
 
@@ -67,45 +74,23 @@ export const useStudentActions = (onSuccess?: () => void) => {
       toast.success(
         response.data.success.message || "Student deleted successfully",
       );
-      onSuccess?.();
     } catch (error) {
       toast.error("An error occurred while deleting the student.");
       handleAxiosError(error);
     } finally {
-      setIsLoading(false);
+      setLoading((p) => ({ ...p, delete: false }));
     }
   };
 
-  const activateStudent = async (studentId: string) => {
-    setIsLoading(true);
-    try {
-      await api.patch(`/students/${studentId}/activate`);
-      onSuccess?.();
-    } catch (error) {
-      handleAxiosError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const deactivateStudent = async (studentId: string) => {
-    setIsLoading(true);
-    try {
-      await api.patch(`/students/${studentId}/deactivate`);
-      onSuccess?.();
-    } catch (error) {
-      handleAxiosError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    getStudentById(id);
+  }, [id]);
 
   return {
-    isLoading,
-    deleteStudent,
-    activateStudent,
-    deactivateStudent,
-    getStudentById,
+    student,
+    loading,
     handleUpdate,
+    getStudentById,
+    handleDelete,
   };
 };

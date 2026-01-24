@@ -15,14 +15,14 @@ import { useState } from "react";
 function DeleteAlert({
   isOpen,
   setIsOpen,
-  setSelectId,
+  setSelectedId,
   cb,
   isLoading,
 }: {
   isOpen: boolean;
   isLoading: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  setSelectId: (userId: string) => void;
+  setSelectedId: (userId: string) => void;
   cb: () => void;
 }) {
   const [prompt, setPrompt] = useState(""); // Local state to track the input value
@@ -33,7 +33,7 @@ function DeleteAlert({
       onOpenChange={(open) => {
         setIsOpen(open);
         if (!open) {
-          setSelectId("");
+          setSelectedId("");
         }
       }}
     >

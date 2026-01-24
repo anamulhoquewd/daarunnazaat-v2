@@ -38,7 +38,7 @@ import { useState } from "react";
 function StaffsPage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
-  const [selectId, setSelectId] = useState<string | null>(null);
+  const [selectId, setSelectedId] = useState<string | null>(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -70,7 +70,7 @@ function StaffsPage() {
     setIsEditing,
     setIsDelOpen,
     setValues,
-    setSelectId,
+    setSelectedId,
   });
 
   const table = useReactTable({

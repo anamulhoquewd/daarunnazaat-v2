@@ -38,7 +38,7 @@ import { useState } from "react";
 function FeesPage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
-  const [selectId, setSelectId] = useState<string | null>(null);
+  const [selectId, setSelectedId] = useState<string | null>(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -76,7 +76,7 @@ function FeesPage() {
     setIsEditing,
     setIsDelOpen,
     setValues,
-    setSelectId,
+    setSelectedId,
   });
 
   const table = useReactTable({

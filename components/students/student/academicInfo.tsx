@@ -69,8 +69,6 @@ export function AcademicInfoSection({
     }
   }, [data, form.reset]);
 
-  console.log("form values:", form.getValues(), "data:", data);
-
   return (
     <EditableSection
       title="Academic Information"

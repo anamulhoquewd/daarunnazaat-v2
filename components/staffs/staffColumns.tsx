@@ -12,7 +12,7 @@ import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 // Define Props Interface
 interface ColumnsProps {
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
-  setSelectId: React.Dispatch<React.SetStateAction<string | null>>;
+  setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
 }
@@ -20,7 +20,7 @@ export const StaffColumns = ({
   setIsEditing,
   setIsDelOpen,
   setValues,
-  setSelectId,
+  setSelectedId,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
     header: "Staff ID",
@@ -95,7 +95,7 @@ export const StaffColumns = ({
           <DropdownMenuItem
             onClick={() => {
               setValues(row.original);
-              setSelectId(row.original._id);
+              setSelectedId(row.original._id);
               setIsEditing(true);
             }}
           >
@@ -106,7 +106,7 @@ export const StaffColumns = ({
           <DropdownMenuItem
             className="text-destructive"
             onClick={() => {
-              setSelectId(row.original._id);
+              setSelectedId(row.original._id);
               setIsDelOpen(true);
             }}
           >

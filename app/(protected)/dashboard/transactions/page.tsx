@@ -36,7 +36,7 @@ import { useState } from "react";
 
 function TransactionsPage() {
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
-  const [selectId, setSelectId] = useState<string | null>(null);
+  const [selectId, setSelectedId] = useState<string | null>(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -63,7 +63,7 @@ function TransactionsPage() {
 
   const columns = TransactionsColumns({
     setIsDelOpen,
-    setSelectId,
+    setSelectedId,
   });
 
   const table = useReactTable({
