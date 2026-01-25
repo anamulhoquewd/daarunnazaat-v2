@@ -3,7 +3,7 @@
 import {
   AudioWaveform,
   GalleryVerticalEnd,
-  SquareTerminal
+  SquareTerminal,
 } from "lucide-react";
 import * as React from "react";
 
@@ -81,7 +81,7 @@ const data = {
       items: [
         {
           title: "Registration",
-          url: null,
+          url: "/dashboard/staffs/new",
         },
         {
           title: "Starred",

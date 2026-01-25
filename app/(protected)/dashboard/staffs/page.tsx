@@ -128,7 +128,7 @@ function StaffsPage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
-            <Link href={"#"}>
+            <Link href={"/dashboard/staffs/new"}>
               <Button className="cursor-pointer">Add One</Button>
             </Link>
           </div>

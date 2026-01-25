@@ -6,20 +6,20 @@ import {
   saveToStorage,
   scrollToFirstError,
 } from "@/lib/utils";
-import { IStudent, studentZ } from "@/validations";
+import { IStaff, staffZ } from "@/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export const useStudentForm = (onSuccess?: () => void) => {
+export const useStaffForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const isResettingRef = useRef(false);
 
   const savedData = getFromStorage();
 
   const form = useForm({
-    resolver: zodResolver(studentZ),
+    resolver: zodResolver(staffZ),
     shouldUnregister: false,
     defaultValues: savedData ?? {
       presentAddress: {
@@ -51,20 +51,19 @@ export const useStudentForm = (onSuccess?: () => void) => {
     return () => clearTimeout(timeout);
   }, [watchedValues]);
 
-  const handleSubmit = async (data: IStudent) => {
+  const handleSubmit = async (data: IStaff) => {
     setIsLoading(true);
 
     try {
-      // 🔥 ZOD already validated here
-      const response = await api.post("/students/register", data);
+      const response = await api.post("/staffs/register", data);
 
       if (!response.data.success) {
         throw new Error(
-          response.data.error.message || "Failed to create student",
+          response.data.error.message || "Failed to create staff",
         );
       }
 
-      toast.success("Student created successfully!");
+      toast.success("Staff created successfully!");
 
       isResettingRef.current = true;
       clearForm();
@@ -124,23 +123,22 @@ export const useStudentForm = (onSuccess?: () => void) => {
         district: "",
         division: "",
       },
+      userId: "",
+      auternativePhone: "",
+      whatsApp: "",
       firstName: "",
       lastName: "",
-      userId: "",
-      gender: "",
       dateOfBirth: null,
-      classId: "",
-      sessionId: "",
-      whatsApp: "",
-      auternativePhone: "",
+      gender: "",
       bloodGroup: "",
-      fatherName: "",
-      motherName: "",
-      guardianId: "",
-      guardianRelation: "",
+      nid: "",
+      birthCertificateNumber: "",
+      designation: "",
+      department: "",
+      joinDate: null,
+      basicSalary: "",
       branch: "",
-      batch: "",
-      admissionDate: null,
+      resignationDate: null,
     });
 
     clearStorage();

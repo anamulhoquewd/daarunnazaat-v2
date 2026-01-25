@@ -84,7 +84,7 @@ export const createStaff = async (body: IStaff) => {
         profile: newStaff._id,
         profileModel: "Staff", // Dynamic ref এর জন্য
       },
-      { session }
+      { session },
     );
 
     // ✅ Transaction commit
@@ -261,7 +261,9 @@ export const get = async (_id: string) => {
 
   try {
     // Check if staff exists
-    const staff = await Staff.findById(idValidation.data._id);
+    const staff = await Staff.findById(idValidation.data._id).populate(
+      "userId",
+    );
 
     if (!staff) {
       return {
@@ -308,7 +310,7 @@ export const updates = async ({
     return {
       error: schemaValidationError(
         bodyValidation.error,
-        "Invalid request body"
+        "Invalid request body",
       ),
     };
   }
@@ -339,14 +341,15 @@ export const updates = async ({
 
     // Update only provided fields
     Object.assign(staff, bodyValidation.data);
-
     const docs = await staff.save();
+
+    const populatedStaffs = await Staff.findById(docs._id).populate("userId");
 
     return {
       success: {
         success: true,
         message: "Staff updated successfully",
-        data: docs,
+        data: populatedStaffs,
       },
     };
   } catch (error: any) {
@@ -392,7 +395,7 @@ export const updateMe = async ({
     return {
       error: schemaValidationError(
         bodyValidation.error,
-        "Invalid request body"
+        "Invalid request body",
       ),
     };
   }

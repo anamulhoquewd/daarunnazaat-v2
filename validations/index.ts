@@ -375,6 +375,7 @@ export const staffZ = personBaseZ.extend({
   basicSalary: moneyZ.min(0),
   branch: z.nativeEnum(Branch),
   resignationDate: z.coerce.date().optional(),
+  avatar: z.string().optional(),
 });
 
 // If you want a separate update  where fields can be optional:

@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function StudentProfileHeaderSkeleton() {
+export function ProfileHeaderSkeleton() {
   return (
     <div className="border-b border-border bg-card">
       <div className="container max-w-6xl mx-auto px-4 py-8">

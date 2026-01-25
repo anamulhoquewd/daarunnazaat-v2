@@ -14,7 +14,7 @@ const StaffSchema = new Schema<IStaff & Document>(
     whatsApp: { type: String },
     staffId: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    lastName: { type: String },
     dateOfBirth: { type: Date },
     gender: { type: String, enum: Object.values(Gender), required: true },
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },
@@ -25,7 +25,7 @@ const StaffSchema = new Schema<IStaff & Document>(
       postOffice: { type: String, required: true },
       upazila: { type: String, required: true },
       district: { type: String, required: true },
-      division: { type: String, required: true },
+      division: { type: String },
     },
     permanentAddress: {
       village: { type: String },
@@ -42,7 +42,7 @@ const StaffSchema = new Schema<IStaff & Document>(
     branch: { type: String, enum: Object.values(Branch), required: true },
     resignationDate: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 StaffSchema.index({ branch: 1 });

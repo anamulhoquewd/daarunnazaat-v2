@@ -10,12 +10,11 @@ import { PersonalInfoSection } from "@/components/students/student/personalInfo"
 import { SessionHistorySection } from "@/components/students/student/sessionHistory";
 import { StudentNotFound } from "@/components/students/student/studenNotFound";
 import { useStudentActions } from "@/hooks/students/useStudentActions";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { StudentProfileHeader } from "@/components/students/student/header";
-import { StudentProfileHeaderSkeleton } from "@/components/students/student/studentHeaderSkeleton";
-import { PersonalInfoSectionSkeleton } from "@/components/students/student/studentInfoSectionSkeleton";
+import { ProfileHeaderSkeleton } from "@/components/students/student/headerSkeleton";
+import { InfoSectionSkeleton } from "@/components/students/student/InfoSectionSkeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function StudentProfilePage() {
@@ -28,7 +27,7 @@ export default function StudentProfilePage() {
   return (
     <main className="min-h-screen bg-background">
       {loading.fetch ? (
-        <StudentProfileHeaderSkeleton />
+        <ProfileHeaderSkeleton />
       ) : (
         student && <StudentProfileHeader data={student} />
       )}
@@ -43,7 +42,7 @@ export default function StudentProfilePage() {
 
           {/* Overview Tab */}
           {loading.fetch ? (
-            <PersonalInfoSectionSkeleton />
+            <InfoSectionSkeleton />
           ) : (
             <>
               <TabsContent value="overview" className="space-y-6 mt-6">
@@ -111,5 +110,3 @@ export default function StudentProfilePage() {
     </main>
   );
 }
-
-

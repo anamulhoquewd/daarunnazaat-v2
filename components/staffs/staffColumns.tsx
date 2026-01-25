@@ -8,6 +8,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 // Define Props Interface
 interface ColumnsProps {
@@ -28,8 +29,18 @@ export const StaffColumns = ({
   },
   {
     header: "Name",
-    cell: ({ row }) =>
-      `${row.original.firstName || ""} ${row.original.lastName || ""}`,
+    cell: ({ row }) => {
+      const { _id, firstName, lastName } = row.original;
+
+      return (
+        <Link
+          href={`/dashboard/staffs/${_id}`}
+          className="text-blue-600 hover:underline font-medium"
+        >
+          {firstName ?? ""} {lastName ?? ""}
+        </Link>
+      );
+    },
   },
   {
     accessorKey: "branch",

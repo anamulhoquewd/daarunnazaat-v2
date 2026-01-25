@@ -8,7 +8,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { IStudent, IUpdateStudent } from "@/validations";
+import { IStaff, IStudent, IUpdateStaff, IUpdateStudent } from "@/validations";
 import { ContactInfo, contactInfoSchema } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -21,8 +21,8 @@ import { Input } from "@/components/ui/input";
 interface ContactInfoSectionProps {
   isEditing: boolean;
   onEditChange: (value: boolean) => void;
-  data?: IStudent;
-  onSave?: (data: IUpdateStudent) => Promise<void>;
+  data?: IStudent | IStaff;
+  onSave?: (data: IUpdateStudent | IUpdateStaff) => Promise<void>;
 }
 
 export function ContactInfoSection({

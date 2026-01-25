@@ -28,7 +28,8 @@ export const gets = async (c: Context) => {
   const branch = c.req.query("branch") as Branch;
   const gender = c.req.query("gender") as Gender;
   const minSalary = parseInt(c.req.query("minSalary") as string, 10) || 0;
-  const maxSalary = parseInt(c.req.query("maxSalary") as string, 10) || 100000;
+  const maxSalary =
+    parseInt(c.req.query("maxSalary") as string, 10) || 99999999;
   const fromDate = c.req.query("fromDate") as string;
   const toDate = c.req.query("toDate") as string;
 
