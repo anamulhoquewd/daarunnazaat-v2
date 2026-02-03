@@ -521,7 +521,7 @@ export const updateMe = async ({
     .omit({
       classId: true,
       admissionDate: true,
-      admissionDiscount: true,
+      payableAdmissionFee: true,
       admissionFee: true,
       batchType: true,
       branch: true,

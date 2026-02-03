@@ -50,14 +50,14 @@ export enum BatchType {
 }
 
 export enum FeeType {
-  ADMISSION = "admission",
-  MONTHLY = "monthly",
-  RESIDENTIAL = "residential",
-  COACHING = "coaching",
-  DAYCARE = "daycare",
-  UTILITY = "utility",
-  MEAL = "meal",
-  OTHER = "other",
+  ADMISSION = "admissionFee",
+  MONTHLY = "monthlyFee",
+  RESIDENTIAL = "residentialFee",
+  COACHING = "coachingFee",
+  DAYCARE = "daycareFee",
+  UTILITY = "utilityFee",
+  MEAL = "mealFee",
+  OTHER = "otherFee",
 }
 
 export enum PaymentSource {
@@ -325,14 +325,49 @@ export const studentZ = personBaseZ.extend({
   classId: mongoZ,
   branch: z.nativeEnum(Branch),
   batchType: z.nativeEnum(BatchType),
+
+  payableAdmissionFee: moneyZ.min(0),
+  admissionFee: moneyZ.min(0),
   admissionDate: z.coerce.date(),
+
   isResidential: z.boolean().default(false),
   isMealIncluded: z.boolean().default(false),
-  admissionFee: moneyZ.min(0),
-  admissionDiscount: moneyZ.min(0).default(0),
+
   monthlyFee: moneyZ.min(0),
   residentialFee: moneyZ.min(0).optional(),
   mealFee: moneyZ.min(0).optional(),
+  daycareFee: moneyZ.min(0).optional(),
+  coachingFee: moneyZ.min(0).optional(),
+
+  feeBalance: z
+    .object({
+      monthlyFee: z.object({
+        due: moneyZ.min(0).default(0),
+        advance: moneyZ.min(0).default(0),
+      }),
+      residentialFee: z.object({
+        due: moneyZ.min(0).default(0),
+        advance: moneyZ.min(0).default(0),
+      }),
+      mealFee: z.object({
+        due: moneyZ.min(0).default(0),
+        advance: moneyZ.min(0).default(0),
+      }),
+      coachingFee: z.object({
+        due: moneyZ.min(0).default(0),
+        advance: moneyZ.min(0).default(0),
+      }),
+      daycareFee: z.object({
+        due: moneyZ.min(0).default(0),
+        advance: moneyZ.min(0).default(0),
+      }),
+      admissionFee: z.object({
+        due: moneyZ.min(0).default(0),
+        advance: moneyZ.min(0).default(0),
+      }),
+    })
+    .optional(),
+
   passoutDate: z.coerce.date().optional(),
   avatar: z.string().optional(),
 });
@@ -426,26 +461,77 @@ export const sessionUpdateZ = sessionZ.partial().refine(
 );
 
 // Fee Collection Schema
-export const feeCollectionZ = z.object({
-  _id: mongoZ.optional(),
-  receiptNumber: z.string().optional(),
-  studentId: mongoZ,
-  sessionId: mongoZ,
-  month: moneyZ.min(1).max(12),
-  year: moneyZ.min(2000),
-  feeType: z.nativeEnum(FeeType),
-  branch: z.nativeEnum(Branch),
-  amount: moneyZ.min(0),
-  discount: moneyZ.min(0).default(0),
-  paidAmount: moneyZ.min(0),
-  dueAmount: moneyZ.min(0).default(0),
-  paymentStatus: z.nativeEnum(PaymentStatus).optional(),
-  paymentSource: z.nativeEnum(PaymentSource),
-  paymentMethod: z.nativeEnum(PaymentMethod),
-  paymentDate: z.coerce.date().default(() => new Date()),
-  collectedBy: mongoZ.optional(), // Staff who collected
-  remarks: z.string().optional(),
-});
+export const feeCollectionZ = z
+  .object({
+    _id: mongoZ.optional(),
+    receiptNumber: z.string().optional(),
+    studentId: mongoZ,
+    sessionId: mongoZ.optional(),
+    branch: z.nativeEnum(Branch).optional(),
+
+    feeType: z.nativeEnum(FeeType),
+    month: moneyZ.min(1).max(12).optional(),
+    year: moneyZ.min(2000).optional(),
+
+    payableAmount: moneyZ.min(0).optional(),
+    receivedAmount: moneyZ.min(0).default(0),
+    baseAmount: moneyZ.min(0).optional(),
+
+    dueAmount: moneyZ.min(0).default(0),
+    advanceAmount: moneyZ.min(0).default(0),
+
+    paymentStatus: z.nativeEnum(PaymentStatus).optional(),
+
+    paymentSource: z.nativeEnum(PaymentSource),
+    paymentMethod: z.nativeEnum(PaymentMethod),
+    paymentDate: z.coerce.date().default(() => new Date()),
+
+    collectedBy: mongoZ.optional(), // Staff who collected
+    updatedBy: mongoZ.optional(), // Staff who collected
+
+    isDeleted: z.boolean().optional(),
+    deletedAt: z.coerce.date().optional(),
+
+    remarks: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    const monthlyFees = [
+      FeeType.MONTHLY,
+      FeeType.COACHING,
+      FeeType.DAYCARE,
+      FeeType.MEAL,
+    ];
+
+    if (monthlyFees.includes(data.feeType)) {
+      if (!data.month) {
+        ctx.addIssue({
+          path: ["month"],
+          message: "Month is required for monthly type fees",
+          code: z.ZodIssueCode.custom,
+        });
+      }
+
+      if (!data.year) {
+        ctx.addIssue({
+          path: ["year"],
+          message: "Year is required for monthly type fees",
+          code: z.ZodIssueCode.custom,
+        });
+      }
+    }
+
+    if (
+      [FeeType.UTILITY, FeeType.OTHER, FeeType.ADMISSION].includes(data.feeType)
+    ) {
+      if (!data.payableAmount || data.payableAmount <= 0) {
+        ctx.addIssue({
+          path: ["payableAmount"],
+          message: "Payable amount is required for this fee type",
+          code: z.ZodIssueCode.custom,
+        });
+      }
+    }
+  });
 
 // If you want a separate update  where fields can be optional:
 export const feeCollectionsUpdateZ = feeCollectionZ.partial().refine(

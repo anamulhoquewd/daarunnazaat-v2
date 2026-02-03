@@ -33,15 +33,18 @@ const StudentSchema = new Schema<IStudent & Document>(
     classId: { type: Schema.Types.ObjectId, ref: "Class", required: true },
     branch: { type: String, enum: Object.values(Branch), required: true },
     batchType: { type: String, enum: Object.values(BatchType), required: true },
+
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     fatherName: { type: String },
     motherName: { type: String },
-    dateOfBirth: { type: Date, required: true },
+
+    dateOfBirth: { type: Date },
     gender: { type: String, enum: Object.values(Gender), required: true },
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },
     nid: { type: String, unique: true, sparse: true },
     birthCertificateNumber: { type: String },
+
     presentAddress: {
       village: { type: String, required: true },
       postOffice: { type: String, required: true },
@@ -56,6 +59,7 @@ const StudentSchema = new Schema<IStudent & Document>(
       district: { type: String },
       division: { type: String },
     },
+
     currentSessionId: {
       type: Schema.Types.ObjectId,
       ref: "Session",
@@ -75,18 +79,53 @@ const StudentSchema = new Schema<IStudent & Document>(
         },
       },
     ],
+
     avatar: { type: String },
+
     admissionDate: { type: Date, required: true },
+    admissionFee: { type: Number, required: true, min: 0 },
+    payableAdmissionFee: { type: Number, required: true, min: 0 },
+
     isResidential: { type: Boolean, default: false },
     isMealIncluded: { type: Boolean, default: false },
-    admissionFee: { type: Number, required: true, min: 0 },
-    admissionDiscount: { type: Number, default: 0, min: 0 },
+
     monthlyFee: { type: Number, required: true, min: 0 },
     residentialFee: { type: Number, min: 0 },
     mealFee: { type: Number, min: 0 },
+    coachingFee: { type: Number, min: 0 },
+    daycareFee: { type: Number, min: 0 },
+
+    // ===== Running balance (truth) =====
+    feeBalance: {
+      monthlyFee: {
+        due: { type: Number, default: 0, min: 0 },
+        advance: { type: Number, default: 0, min: 0 },
+      },
+      residentialFee: {
+        due: { type: Number, default: 0, min: 0 },
+        advance: { type: Number, default: 0, min: 0 },
+      },
+      mealFee: {
+        due: { type: Number, default: 0, min: 0 },
+        advance: { type: Number, default: 0, min: 0 },
+      },
+      coachingFee: {
+        due: { type: Number, default: 0, min: 0 },
+        advance: { type: Number, default: 0, min: 0 },
+      },
+      daycareFee: {
+        due: { type: Number, default: 0, min: 0 },
+        advance: { type: Number, default: 0, min: 0 },
+      },
+      admissionFee: {
+        due: { type: Number, default: 0, min: 0 },
+        advance: { type: Number, default: 0, min: 0 },
+      },
+    },
+
     passoutDate: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 StudentSchema.index({ guardianId: 1 });

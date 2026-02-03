@@ -4,6 +4,7 @@ import {
   feeCollectionZ,
   FeeType,
   IFeeCollection,
+  IStudent,
   IUser,
   mongoIdZ,
   PaymentMethod,
@@ -37,8 +38,23 @@ export const register = async ({
   }
 
   try {
-    // Define which fee types are monthly
-    const monthlyFees = [
+    const student = await Student.findById(validData.data.studentId);
+
+    if (!student) {
+      return { error: { message: "Student not found" } };
+    }
+
+    const session = await Session.findById(student.currentSessionId);
+
+    if (!session || !session.isActive) {
+      return {
+        error: { message: "Invalid or inactive student current session" },
+      };
+    }
+
+    // Fee types that are configured in student schema
+    const configuredFeeTypes: FeeType[] = [
+      FeeType.ADMISSION,
       FeeType.MONTHLY,
       FeeType.RESIDENTIAL,
       FeeType.COACHING,
@@ -46,80 +62,198 @@ export const register = async ({
       FeeType.MEAL,
     ];
 
-    // Only check duplicate if the fee type is monthly
-    let isExistFee: IFeeCollection | null = null;
+    // Fee types that are monthly recurring
+    const monthlyFees: FeeType[] = [
+      FeeType.MONTHLY,
+      FeeType.COACHING,
+      FeeType.DAYCARE,
+      FeeType.MEAL,
+      FeeType.RESIDENTIAL,
+    ];
 
-    if (monthlyFees.includes(validData.data.feeType)) {
-      const query: any = {
+    // Fee types that don't have balance tracking (one-time or ad-hoc)
+    const nonBalancedFeeTypes: FeeType[] = [FeeType.UTILITY, FeeType.OTHER];
+
+    // Only check duplicate based on fee type rules
+    let isFeeExist: IFeeCollection | null = null;
+
+    if (validData.data.feeType === FeeType.ADMISSION) {
+      // Admission → student + session unique
+      isFeeExist = await FeeCollection.findOne({
         studentId: validData.data.studentId,
-        sessionId: validData.data.sessionId,
+        sessionId: student?.currentSessionId,
+        feeType: FeeType.ADMISSION,
+        isDeleted: false,
+      });
+    } else if (monthlyFees.includes(validData.data.feeType)) {
+      // Monthly type → student + session + month + year unique
+      if (!validData.data.month || !validData.data.year) {
+        return {
+          error: {
+            message: "Month and year are required for this fee type",
+            fields: [
+              { name: "month", message: "Month is required" },
+              { name: "year", message: "Year is required" },
+            ],
+          },
+        };
+      }
+
+      isFeeExist = await FeeCollection.findOne({
+        studentId: validData.data.studentId,
+        sessionId: student.currentSessionId,
         feeType: validData.data.feeType,
         month: validData.data.month,
         year: validData.data.year,
-      };
-
-      isExistFee = await FeeCollection.findOne(query);
+        isDeleted: false,
+      });
     }
 
     // If duplicate exists, throw error
-    if (isExistFee) {
+    if (isFeeExist) {
       return {
         error: {
           message: "Fee already collected for this period.",
           fields: [
             {
               name: "feeType",
-              message: `Fee already collected for this fee type ${validData.data.feeType} for ${validData.data.month}/${validData.data.year}`,
+              message: `Fee already collected for ${validData.data.feeType}${
+                validData.data.feeType === FeeType.ADMISSION
+                  ? ""
+                  : ` for ${validData.data.month}/${validData.data.year}`
+              }`,
             },
           ],
         },
       };
     }
 
-    const student = await Student.findById(validData.data.studentId);
+    // ===== GET BASE AMOUNT FROM STUDENT =====
+    let baseAmount = 0;
 
-    if (!student) {
-      return { error: { message: "Student not found" } };
+    if (configuredFeeTypes.includes(validData.data.feeType)) {
+      // For configured fees (admission, monthly, residential, etc.)
+      const feeField = validData.data.feeType; // Direct use - no map needed
+
+      if ((student as any)[feeField] == null) {
+        return {
+          error: {
+            message: `${validData.data.feeType} is not configured for this student`,
+          },
+        };
+      }
+
+      baseAmount = (student as any)[feeField] as number;
+    } else if (nonBalancedFeeTypes.includes(validData.data.feeType)) {
+      // For UTILITY/OTHER fees - must provide payableAmount
+      if (!validData.data.payableAmount || validData.data.payableAmount <= 0) {
+        return {
+          error: {
+            message: "Payable amount is required for this fee type",
+          },
+        };
+      }
+
+      baseAmount = validData.data.payableAmount;
+    } else {
+      return {
+        error: { message: "Invalid fee type" },
+      };
     }
 
-    if (!student || student.branch !== validData.data.branch) {
-      return { error: { message: "Invalid student on this branch or ID" } };
+    // ===== GET PREVIOUS BALANCE (DUE/ADVANCE) =====
+    // Only for fees that have balance tracking
+    let previousDue = 0;
+    let previousAdvance = 0;
+
+    if (configuredFeeTypes.includes(validData.data.feeType)) {
+      const balanceKey = validData.data
+        .feeType as keyof typeof student.feeBalance;
+      const feeBalance = (student.feeBalance?.[balanceKey] as any) || {};
+      previousDue = feeBalance.due || 0;
+      previousAdvance = feeBalance.advance || 0;
     }
+    // For UTILITY/OTHER, previousDue and previousAdvance remain 0
 
-    const session = await Session.findById(validData.data.sessionId);
+    // ===== CALCULATE PAYABLE AMOUNT =====
+    // payableAmount = baseAmount + previousDue - previousAdvance
+    let payableAmount = baseAmount + previousDue - previousAdvance;
 
-    if (!session || !session.isActive) {
-      return { error: { message: "Invalid or inactive session" } };
+    const receivedAmount = validData.data.receivedAmount || 0;
+
+    // ===== CALCULATION =====
+    let dueAmount = 0;
+    let advanceAmount = 0;
+    let paymentStatus = PaymentStatus.PARTIAL;
+
+    if (receivedAmount >= payableAmount) {
+      paymentStatus = PaymentStatus.PAID;
+      advanceAmount = receivedAmount - payableAmount;
+      dueAmount = 0;
+    } else if (receivedAmount === 0) {
+      paymentStatus = PaymentStatus.DUE;
+      dueAmount = payableAmount - receivedAmount;
+      advanceAmount = 0;
+    } else {
+      paymentStatus = PaymentStatus.PARTIAL;
+      dueAmount = payableAmount - receivedAmount;
+      advanceAmount = 0;
     }
 
     const receiptNumber = await generateFeeReceiptNumber();
 
     // Create fee
-    const feeCollection = new FeeCollection({
+    const newFee = new FeeCollection({
       ...validData.data,
       receiptNumber,
       collectedBy: authUser._id,
+      branch: student.branch,
+      baseAmount,
+      payableAmount,
+      dueAmount,
+      advanceAmount,
+      paymentStatus,
+      sessionId: student.currentSessionId,
     });
 
     // Save fee
-    const docs = await feeCollection.save();
+    const fee = await newFee.save();
+
+    // ===== UPDATE STUDENT BALANCE =====
+    // Only update balance for configured fee types (not UTILITY/OTHER)
+    if (configuredFeeTypes.includes(validData.data.feeType)) {
+      const updatePath = `feeBalance.${validData.data.feeType}`;
+
+      await Student.findByIdAndUpdate(
+        validData.data.studentId,
+        {
+          $set: {
+            [`${updatePath}.due`]: dueAmount,
+            [`${updatePath}.advance`]: advanceAmount,
+          },
+        },
+        { new: true },
+      );
+    }
 
     // Create Transaction Log
-    await createTransactionLog({
-      transactionType: TransactionType.INCOME,
-      referenceId: docs._id,
-      referenceModel: "FeeCollection",
-      amount: docs.paidAmount,
-      description: `Fee collected for ${docs.feeType} | ${docs.month}/${docs.year}`,
-      performedBy: authUser._id,
-      branch: student.branch,
-    });
+    if (validData.data.receivedAmount > 0) {
+      await createTransactionLog({
+        transactionType: TransactionType.INCOME,
+        referenceId: fee._id,
+        referenceModel: "FeeCollection",
+        amount: validData.data.receivedAmount,
+        description: `${validData.data.feeType} fee collected`,
+        performedBy: authUser._id,
+        branch: student.branch,
+      });
+    }
 
     return {
       success: {
         success: true,
         message: "Fee created successfully",
-        data: docs,
+        data: fee,
       },
     };
   } catch (error: any) {
@@ -133,6 +267,7 @@ export const register = async ({
   }
 };
 
+// TODO is there any problem?
 export const updates = async ({
   _id,
   body,
@@ -159,106 +294,102 @@ export const updates = async ({
     };
   }
 
-  const bodyValidation = feeCollectionsUpdateZ.safeParse(body);
-  if (!bodyValidation.success) {
+  const validData = feeCollectionsUpdateZ.safeParse(body);
+  if (!validData.success) {
     return {
-      error: schemaValidationError(
-        bodyValidation.error,
-        "Invalid request body"
-      ),
+      error: schemaValidationError(validData.error, "Invalid request body"),
     };
   }
 
   try {
-    //  Fetch existing fee
+    // Fetch existing fee
     const fee = await FeeCollection.findById(idValidation.data._id);
     if (!fee) {
       return { error: { message: "Fee not found with the provided ID" } };
     }
+    if (fee.payableAmount == null) {
+      return { error: { message: "Payable amount is missing for this fee" } };
+    }
 
-    // Save old values for logging
-    const oldPaidAmount = fee.paidAmount;
-    const oldDueAmount = fee.dueAmount;
-    const oldStatus = fee.paymentStatus;
+    const oldReceived = fee.receivedAmount;
 
-    // Update only provided fields
-    Object.assign(fee, bodyValidation.data);
+    // Update received amount if provided
+    if (validData.data.receivedAmount != null) {
+      fee.receivedAmount = validData.data.receivedAmount;
+    }
 
-    // Recalculate dueAmount & paymentStatus
-    const payable = fee.amount - (fee.discount || 0);
-    fee.dueAmount = Math.max(payable - fee.paidAmount, 0);
-    fee.paymentStatus =
-      fee.dueAmount === 0 ? PaymentStatus.PAID : PaymentStatus.PARTIAL;
+    // Update remarks if provided
+    if (validData.data.remarks != null) {
+      fee.remarks = validData.data.remarks;
+    }
 
-    // Save updated fee
+    // ===== RECALCULATE =====
+    let dueAmount = 0;
+    let advanceAmount = 0;
+    let paymentStatus = PaymentStatus.PARTIAL;
+
+    if (fee.receivedAmount >= fee.payableAmount!) {
+      paymentStatus = PaymentStatus.PAID;
+      advanceAmount = fee.receivedAmount - fee.payableAmount!;
+      dueAmount = 0;
+    } else if (fee.receivedAmount === 0) {
+      paymentStatus = PaymentStatus.DUE;
+      dueAmount = fee.payableAmount! - fee.receivedAmount;
+      advanceAmount = 0;
+    } else {
+      paymentStatus = PaymentStatus.PARTIAL;
+      dueAmount = fee.payableAmount! - fee.receivedAmount;
+      advanceAmount = 0;
+    }
+
+    fee.dueAmount = dueAmount;
+    fee.advanceAmount = advanceAmount;
+    fee.paymentStatus = paymentStatus;
+    fee.updatedBy = updatedByUserId;
+
     const updatedFee = await fee.save();
 
-    // Create transaction log if amount or status changed
-    const logs: Promise<any>[] = [];
+    // ===== UPDATE STUDENT BALANCE =====
+    // Only update balance for configured fee types (not UTILITY/OTHER)
+    const configuredFeeTypes: FeeType[] = [
+      FeeType.ADMISSION,
+      FeeType.MONTHLY,
+      FeeType.RESIDENTIAL,
+      FeeType.COACHING,
+      FeeType.DAYCARE,
+      FeeType.MEAL,
+    ];
 
-    // Paid amount changed → income / adjustment
-    if (updatedFee.paidAmount !== oldPaidAmount) {
-      const diff = updatedFee.paidAmount - oldPaidAmount;
-      const type =
-        diff > 0 ? TransactionType.INCOME : TransactionType.ADJUSTMENT; // negative → adjustment/reversal
+    if (configuredFeeTypes.includes(fee.feeType as FeeType)) {
+      const updatePath = `feeBalance.${fee.feeType}`;
 
-      logs.push(
-        createTransactionLog({
-          transactionType: type,
-          referenceId: updatedFee._id,
-          referenceModel: "FeeCollection",
-          amount: Math.abs(diff),
-          description: `Fee payment ${
-            diff > 0 ? "increased" : "adjusted"
-          } for ${updatedFee.feeType} | ${updatedFee.month || "N/A"}/${
-            updatedFee.year
-          }`,
-          performedBy: updatedByUserId,
-          branch: updatedFee.branch,
-        })
+      await Student.findByIdAndUpdate(
+        fee.studentId,
+        {
+          $set: {
+            [`${updatePath}.due`]: dueAmount,
+            [`${updatePath}.advance`]: advanceAmount,
+          },
+        },
+        { new: true },
       );
     }
 
-    // Status changed → reversal / paid
-    if (updatedFee.paymentStatus !== oldStatus) {
-      if (
-        updatedFee.paymentStatus === PaymentStatus.PAID &&
-        oldStatus !== PaymentStatus.PAID
-      ) {
-        logs.push(
-          createTransactionLog({
-            transactionType: TransactionType.INCOME,
-            referenceId: updatedFee._id,
-            referenceModel: "FeeCollection",
-            amount: updatedFee.paidAmount,
-            description: `Fee marked as PAID for ${updatedFee.feeType} | ${
-              updatedFee.month || "N/A"
-            }/${updatedFee.year}`,
-            performedBy: updatedByUserId,
-            branch: updatedFee.branch,
-          })
-        );
-      } else if (
-        updatedFee.paymentStatus === PaymentStatus.PARTIAL &&
-        oldStatus === PaymentStatus.PAID
-      ) {
-        logs.push(
-          createTransactionLog({
-            transactionType: TransactionType.ADJUSTMENT,
-            referenceId: updatedFee._id,
-            referenceModel: "FeeCollection",
-            amount: updatedFee.paidAmount,
-            description: `Fee status changed to PARTIAL for ${
-              updatedFee.feeType
-            } | ${updatedFee.month || "N/A"}/${updatedFee.year}`,
-            performedBy: updatedByUserId,
-            branch: updatedFee.branch,
-          })
-        );
-      }
-    }
+    // ===== TRANSACTION LOG FOR DIFFERENCE =====
+    const diff = fee.receivedAmount - oldReceived;
 
-    await Promise.all(logs);
+    if (diff !== 0) {
+      await createTransactionLog({
+        transactionType:
+          diff > 0 ? TransactionType.INCOME : TransactionType.ADJUSTMENT,
+        referenceId: fee._id,
+        referenceModel: "FeeCollection",
+        amount: Math.abs(diff),
+        description: `Fee amount updated (${diff > 0 ? "+" : "-"}${Math.abs(diff)})`,
+        performedBy: updatedByUserId,
+        branch: fee.branch ?? Branch.BRANCH_1,
+      });
+    }
 
     return {
       success: {
@@ -390,13 +521,13 @@ export const gets = async (queryParams: {
         feeFilter.$lte = queryParams.feeRange.max;
       }
       if (Object.keys(feeFilter).length > 0) {
-        query.paidAmount = feeFilter;
+        query.receivedAmount = feeFilter;
       }
     }
 
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "paymentDate"].includes(
-      queryParams.sortBy
+      queryParams.sortBy,
     )
       ? queryParams.sortBy
       : "createdAt";
@@ -411,7 +542,7 @@ export const gets = async (queryParams: {
         .limit(queryParams.limit)
         .populate(
           "studentId",
-          "studentId branch firstName lastName gender monthlyFee mealFee"
+          "studentId branch firstName lastName gender monthlyFee mealFee",
         )
         .populate("sessionId", "sessionName isActive")
         .populate("collectedBy", "phone role")

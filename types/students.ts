@@ -31,7 +31,7 @@ export interface Student {
   isResidential: boolean;
   isMealIncluded: boolean;
   admissionFee: number;
-  admissionDiscount: number;
+  payableAdmissionFee: number;
   monthlyFee: number;
   mealFee: number;
   classId: ClassInfo;

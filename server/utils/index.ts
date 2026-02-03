@@ -53,3 +53,29 @@ export const generateRefreshToken = async ({
   }
   return token;
 };
+
+export function calculatePayable({
+  baseFee,
+  previousDue,
+  previousAdvance,
+}: {
+  baseFee: number;
+  previousDue: number;
+  previousAdvance: number;
+}) {
+  let payable = baseFee + previousDue - previousAdvance;
+
+  if (payable < 0) {
+    return {
+      payableAmount: 0,
+      usedAdvance: baseFee + previousDue,
+      remainingAdvance: Math.abs(payable),
+    };
+  }
+
+  return {
+    payableAmount: payable,
+    usedAdvance: previousAdvance,
+    remainingAdvance: 0,
+  };
+}

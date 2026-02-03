@@ -39,7 +39,7 @@ export function FeesSection({
     if (data) {
       form.reset({
         admissionFee: data.admissionFee ?? 0,
-        admissionDiscount: data.admissionDiscount ?? 0,
+        payableAdmissionFee: data.payableAdmissionFee ?? 0,
         monthlyFee: data.monthlyFee ?? 0,
         residentialFee: data.residentialFee ?? 0,
         mealFee: data.mealFee ?? 0,
@@ -92,7 +92,11 @@ export function FeesSection({
                           placeholder="0"
                           name={field.name}
                           value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : 0,
+                            )
+                          }
                           onBlur={field.onBlur}
                           ref={field.ref}
                         />
@@ -113,7 +117,11 @@ export function FeesSection({
                           placeholder="0"
                           name={field.name}
                           value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : 0,
+                            )
+                          }
                           onBlur={field.onBlur}
                           ref={field.ref}
                         />
@@ -134,7 +142,11 @@ export function FeesSection({
                           placeholder="0"
                           name={field.name}
                           value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : 0,
+                            )
+                          }
                           onBlur={field.onBlur}
                           ref={field.ref}
                         />
@@ -158,7 +170,11 @@ export function FeesSection({
                           placeholder="0"
                           name={field.name}
                           value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : 0,
+                            )
+                          }
                           onBlur={field.onBlur}
                           ref={field.ref}
                         />
@@ -169,7 +185,7 @@ export function FeesSection({
                 />
                 <FormField
                   control={form.control}
-                  name="admissionDiscount"
+                  name="payableAdmissionFee"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Admission Discount</FormLabel>
@@ -179,7 +195,11 @@ export function FeesSection({
                           placeholder="0"
                           name={field.name}
                           value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : 0,
+                            )
+                          }
                           onBlur={field.onBlur}
                           ref={field.ref}
                         />
@@ -260,7 +280,7 @@ export function FeesSection({
                 Admission Discount
               </p>
               <p className="font-medium">
-                {data?.admissionDiscount?.toFixed(2) || 0}
+                {data?.payableAdmissionFee?.toFixed(2) || 0}
               </p>
             </div>
             <div className="flex gap-6 pt-2">

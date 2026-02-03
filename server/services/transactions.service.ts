@@ -24,7 +24,6 @@ export const createTransactionLog = async (body: ITransactionLog) => {
     const transactionLog = new TransactionLog(validData.data);
 
     const log = await transactionLog.save();
-    console.log("Log: ", log);
 
     return {
       success: true,

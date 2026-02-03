@@ -42,7 +42,7 @@ export const academicInfoSchema = studentZ.pick({
 
 export const feesSchema = studentZ.pick({
   admissionDate: true,
-  admissionDiscount: true,
+  payableAdmissionFee: true,
   monthlyFee: true,
   residentialFee: true,
   mealFee: true,

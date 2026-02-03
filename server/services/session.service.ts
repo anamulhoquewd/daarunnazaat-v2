@@ -23,15 +23,15 @@ export const register = async (body: ISession) => {
   }
 
   try {
-    // Check if class is already exists
-    const isExistClass = await Session.findOne({
+    // Check if Session is already exists
+    const isExistSession = await Session.findOne({
       sessionName: validData.data.sessionName,
     });
 
-    if (isExistClass) {
+    if (isExistSession) {
       return {
         error: {
-          message: "Sorry! This class already exists.",
+          message: "Sorry! This Session already exists.",
           fields: [
             {
               name: "name",
@@ -97,7 +97,7 @@ export const gets = async (queryParams: {
     }
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "sessionName"].includes(
-      queryParams.sortBy
+      queryParams.sortBy,
     )
       ? queryParams.sortBy
       : "sessionName";
@@ -148,13 +148,13 @@ export const get = async (_id: string) => {
   }
 
   try {
-    // Check if Class exists
+    // Check if Session exists
     const session = await Session.findById(idValidation.data._id);
 
     if (!session) {
       return {
         error: {
-          message: `Class not found with provided ID!`,
+          message: `Session not found with provided ID!`,
         },
       };
     }
@@ -162,7 +162,7 @@ export const get = async (_id: string) => {
     return {
       success: {
         success: true,
-        message: `Class fetched successfully!`,
+        message: `Session fetched successfully!`,
         data: session,
       },
     };
@@ -196,19 +196,19 @@ export const updates = async ({
     return {
       error: schemaValidationError(
         bodyValidation.error,
-        "Invalid request body"
+        "Invalid request body",
       ),
     };
   }
 
   try {
-    // Check if Class exists
+    // Check if Session exists
     const session = await Session.findById(idValidation.data._id);
 
     if (!session) {
       return {
         error: {
-          message: "Class not fount with the provided ID",
+          message: "Session not fount with the provided ID",
         },
       };
     }
@@ -232,7 +232,7 @@ export const updates = async ({
     return {
       success: {
         success: true,
-        message: "Class updated successfully",
+        message: "Session updated successfully",
         data: docs,
       },
     };
