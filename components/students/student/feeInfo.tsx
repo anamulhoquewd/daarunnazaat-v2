@@ -39,7 +39,6 @@ export function FeesSection({
     if (data) {
       form.reset({
         admissionFee: data.admissionFee ?? 0,
-        payableAdmissionFee: data.payableAdmissionFee ?? 0,
         monthlyFee: data.monthlyFee ?? 0,
         residentialFee: data.residentialFee ?? 0,
         mealFee: data.mealFee ?? 0,
@@ -160,10 +159,10 @@ export function FeesSection({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
-                  name="admissionFee"
+                  name="admissionFeeReceived"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Admission Fee</FormLabel>
+                      <FormLabel>Admission Fee Received</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -185,10 +184,10 @@ export function FeesSection({
                 />
                 <FormField
                   control={form.control}
-                  name="payableAdmissionFee"
+                  name="admissionFee"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Admission Discount</FormLabel>
+                      <FormLabel>Admission Fee</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -272,7 +271,7 @@ export function FeesSection({
             <div>
               <p className="text-sm text-muted-foreground">Admission Fee</p>
               <p className="font-medium">
-                {data?.admissionFee?.toFixed(2) || 0}
+                {data?.admissionFeeReceived?.toFixed(2) || 0}
               </p>
             </div>
             <div>
@@ -280,7 +279,7 @@ export function FeesSection({
                 Admission Discount
               </p>
               <p className="font-medium">
-                {data?.payableAdmissionFee?.toFixed(2) || 0}
+                {data?.admissionFee?.toFixed(2) || 0}
               </p>
             </div>
             <div className="flex gap-6 pt-2">

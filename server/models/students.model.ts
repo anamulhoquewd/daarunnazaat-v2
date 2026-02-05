@@ -82,12 +82,11 @@ const StudentSchema = new Schema<IStudent & Document>(
 
     avatar: { type: String },
 
-    admissionDate: { type: Date, required: true },
-    admissionFee: { type: Number, required: true, min: 0 },
-    payableAdmissionFee: { type: Number, required: true, min: 0 },
-
     isResidential: { type: Boolean, default: false },
     isMealIncluded: { type: Boolean, default: false },
+
+    admissionDate: { type: Date, required: true },
+    admissionFee: { type: Number, required: true, min: 0 },
 
     monthlyFee: { type: Number, required: true, min: 0 },
     residentialFee: { type: Number, min: 0 },

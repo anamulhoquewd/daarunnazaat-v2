@@ -18,7 +18,7 @@ const FeeCollectionSchema = new Schema<IFeeCollection & Document>(
     branch: { type: String, enum: Object.values(Branch), required: true },
 
     feeType: { type: String, enum: Object.values(FeeType), required: true },
-    month: { type: Number, min: 1, max: 12 },
+    month: { type: Number, min: 0, max: 11 },
     year: { type: Number, min: 2000 },
 
     baseAmount: { type: Number, required: true },

@@ -1,27 +1,43 @@
-import { PipelineStage } from "mongoose";
 import {
   BatchType,
   Branch,
+  FeeType,
   Gender,
   IStudent,
   IUpdateStudent,
+  IUser,
   mongoIdZ,
   mongoZ,
+  PaymentMethod,
+  PaymentSource,
+  PaymentStatus,
   studentUpdateZ,
   studentZ,
+  TransactionType,
   UserRole,
 } from "@/validations";
-import mongoose, { Types } from "mongoose";
+import mongoose, { PipelineStage, Types } from "mongoose";
 import z from "zod";
 import { schemaValidationError } from "../error";
+import { FeeCollection } from "../models/feeCollections.model";
 import { Guardian } from "../models/guardians.model";
+import { Session } from "../models/sessions.model";
 import { Student } from "../models/students.model";
 import { User } from "../models/users.model";
 import pagination from "../utils/pagination";
-import { generateStudentId } from "../utils/string-generator";
-import { Session } from "../models/sessions.model";
+import {
+  generateFeeReceiptNumber,
+  generateStudentId,
+} from "../utils/string-generator";
+import { createTransactionLog } from "./transactions.service";
 
-export const createStudent = async (body: IStudent) => {
+export const createStudent = async ({
+  body,
+  authUser,
+}: {
+  authUser: IUser;
+  body: IStudent;
+}) => {
   // Safe Parse for better error handling
   const validData = studentZ.safeParse(body);
 
@@ -131,6 +147,27 @@ export const createStudent = async (body: IStudent) => {
     // Save new student with session
     const newStudent = await student.save({ session });
 
+    // 7️⃣ ✅ **CREATE ADMISSION FEE COLLECTION**
+    const admissionFeeResult = await createAdmissionFee({
+      student: newStudent,
+      authUser,
+      session,
+      paymentMethod: validData.data.paymentMethod,
+      receivedAmount: validData.data.receivedAmount,
+      remarks: validData.data.remarks,
+      paymentSource: validData.data.paymentSource,
+    });
+
+    if (!admissionFeeResult.success) {
+      // যদি admission fee collection fail করে তাহলে rollback
+      await session.abortTransaction();
+      return {
+        error: {
+          message: "Failed to create admission fee collection",
+        },
+      };
+    }
+
     // 6️⃣ ✅ Update User profile field
     await User.findByIdAndUpdate(
       validData.data.userId,
@@ -165,6 +202,108 @@ export const createStudent = async (body: IStudent) => {
   } finally {
     // Session end
     session.endSession();
+  }
+};
+
+// Helper Function: Create Admission Fee
+export const createAdmissionFee = async ({
+  student,
+  authUser,
+  session,
+  receivedAmount,
+  paymentMethod,
+  remarks,
+  paymentSource,
+}: {
+  student: IStudent & Document;
+  authUser: IUser;
+  session: any; // mongoose session
+  receivedAmount: number;
+  paymentMethod: PaymentMethod;
+  remarks?: string;
+  paymentSource: PaymentSource;
+}) => {
+  try {
+    const receiptNumber = await generateFeeReceiptNumber();
+
+    // Previous balance 0 student
+    const previousDue = 0;
+    const previousAdvance = 0;
+    const baseAmount = student.admissionFee;
+
+    // payableAmount = baseAmount + previousDue - previousAdvance
+    const payableAmount = baseAmount + previousDue - previousAdvance;
+
+    // ===== CALCULATION =====
+    let dueAmount = 0;
+    let advanceAmount = 0;
+    let paymentStatus = PaymentStatus.PARTIAL;
+
+    if (receivedAmount >= payableAmount) {
+      paymentStatus = PaymentStatus.PAID;
+      advanceAmount = receivedAmount - payableAmount;
+      dueAmount = 0;
+    } else if (receivedAmount === 0) {
+      paymentStatus = PaymentStatus.DUE;
+      dueAmount = payableAmount - receivedAmount;
+      advanceAmount = 0;
+    } else {
+      paymentStatus = PaymentStatus.PARTIAL;
+      dueAmount = payableAmount - receivedAmount;
+      advanceAmount = 0;
+    }
+
+    // Create admission fee collection
+    const admissionFee = new FeeCollection({
+      studentId: student._id,
+      feeType: FeeType.ADMISSION,
+      sessionId: student.currentSessionId,
+      branch: student.branch,
+      collectedBy: authUser._id,
+      paymentDate: student.admissionDate,
+
+      receiptNumber,
+      baseAmount,
+      payableAmount,
+      receivedAmount,
+      dueAmount,
+      advanceAmount,
+      paymentStatus,
+
+      paymentMethod,
+      remarks,
+      paymentSource,
+    });
+
+    // Save with session (with transaction)
+    const savedFee = await admissionFee.save({ session });
+
+    // Update student feeBalance
+    await Student.findByIdAndUpdate(
+      student._id,
+      {
+        $set: {
+          "feeBalance.admissionFee.due": dueAmount,
+          "feeBalance.admissionFee.advance": advanceAmount,
+        },
+      },
+      { session, new: true },
+    );
+
+    // Create Transaction Log (always - even if receivedAmount is 0)
+    await createTransactionLog({
+      transactionType: TransactionType.INCOME,
+      referenceId: savedFee._id,
+      referenceModel: "FeeCollection",
+      amount: receivedAmount,
+      description: `Admission fee collected for student ${student.studentId}`,
+      performedBy: authUser._id,
+      branch: student.branch,
+    });
+
+    return { success: true, data: savedFee };
+  } catch (error: any) {
+    throw new Error(`Admission fee collection failed: ${error.message}`);
   }
 };
 
@@ -521,8 +660,8 @@ export const updateMe = async ({
     .omit({
       classId: true,
       admissionDate: true,
-      payableAdmissionFee: true,
       admissionFee: true,
+      admissionFeeReceived: true,
       batchType: true,
       branch: true,
       currentSessionId: true,

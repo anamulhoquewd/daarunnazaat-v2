@@ -42,13 +42,13 @@ export const academicInfoSchema = studentZ.pick({
 
 export const feesSchema = studentZ.pick({
   admissionDate: true,
-  payableAdmissionFee: true,
+  admissionFee: true,
   monthlyFee: true,
   residentialFee: true,
   mealFee: true,
   isResidential: true,
   isMealIncluded: true,
-  admissionFee: true,
+  admissionFeeReceived: true,
 });
 
 export type PersonalInfo = z.infer<typeof personalInfoSchema>;

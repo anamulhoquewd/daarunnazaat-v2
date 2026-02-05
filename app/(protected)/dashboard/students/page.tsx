@@ -67,6 +67,7 @@ function StudentPage() {
     updateFilter,
     combinedFilters,
   } = useStudentQuery();
+
   const {
     handleDelete,
     loading: { delete: deleteLoading },

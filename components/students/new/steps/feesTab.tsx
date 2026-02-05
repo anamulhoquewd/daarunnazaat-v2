@@ -74,7 +74,7 @@ function FeesTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <FormField
             control={control}
-            name="payableAdmissionFee"
+            name="admissionFee"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Admission Discount</FormLabel>
@@ -87,7 +87,7 @@ function FeesTab() {
           />
           <FormField
             control={control}
-            name="admissionFee"
+            name="admissionFeeReceived"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Admission Fee *</FormLabel>

@@ -30,8 +30,8 @@ export interface Student {
   batchType: string;
   isResidential: boolean;
   isMealIncluded: boolean;
+  admissionFeeReceived: number;
   admissionFee: number;
-  payableAdmissionFee: number;
   monthlyFee: number;
   mealFee: number;
   classId: ClassInfo;

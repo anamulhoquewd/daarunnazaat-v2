@@ -4,7 +4,6 @@ import {
   feeCollectionZ,
   FeeType,
   IFeeCollection,
-  IStudent,
   IUser,
   mongoIdZ,
   PaymentMethod,
@@ -52,40 +51,31 @@ export const register = async ({
       };
     }
 
-    // Fee types that are configured in student schema
-    const configuredFeeTypes: FeeType[] = [
-      FeeType.ADMISSION,
+    if (validData.data.feeType === FeeType.ADMISSION) {
+      return {
+        error: {
+          message:
+            "Admission fee cannot be registered here. Use payAdmissionDue API.",
+        },
+      };
+    }
+
+    // Monthly recurring + balance tracked
+    const monthlyBalancedFees: FeeType[] = [
       FeeType.MONTHLY,
-      FeeType.RESIDENTIAL,
       FeeType.COACHING,
       FeeType.DAYCARE,
       FeeType.MEAL,
-    ];
-
-    // Fee types that are monthly recurring
-    const monthlyFees: FeeType[] = [
-      FeeType.MONTHLY,
-      FeeType.COACHING,
-      FeeType.DAYCARE,
-      FeeType.MEAL,
       FeeType.RESIDENTIAL,
     ];
 
-    // Fee types that don't have balance tracking (one-time or ad-hoc)
+    // No balance, ad-hoc
     const nonBalancedFeeTypes: FeeType[] = [FeeType.UTILITY, FeeType.OTHER];
 
     // Only check duplicate based on fee type rules
     let isFeeExist: IFeeCollection | null = null;
 
-    if (validData.data.feeType === FeeType.ADMISSION) {
-      // Admission → student + session unique
-      isFeeExist = await FeeCollection.findOne({
-        studentId: validData.data.studentId,
-        sessionId: student?.currentSessionId,
-        feeType: FeeType.ADMISSION,
-        isDeleted: false,
-      });
-    } else if (monthlyFees.includes(validData.data.feeType)) {
+    if (monthlyBalancedFees.includes(validData.data.feeType)) {
       // Monthly type → student + session + month + year unique
       if (!validData.data.month || !validData.data.year) {
         return {
@@ -117,11 +107,7 @@ export const register = async ({
           fields: [
             {
               name: "feeType",
-              message: `Fee already collected for ${validData.data.feeType}${
-                validData.data.feeType === FeeType.ADMISSION
-                  ? ""
-                  : ` for ${validData.data.month}/${validData.data.year}`
-              }`,
+              message: `Fee already collected for ${validData.data.feeType} for ${validData.data.month}/${validData.data.year}`,
             },
           ],
         },
@@ -131,7 +117,7 @@ export const register = async ({
     // ===== GET BASE AMOUNT FROM STUDENT =====
     let baseAmount = 0;
 
-    if (configuredFeeTypes.includes(validData.data.feeType)) {
+    if (monthlyBalancedFees.includes(validData.data.feeType)) {
       // For configured fees (admission, monthly, residential, etc.)
       const feeField = validData.data.feeType; // Direct use - no map needed
 
@@ -150,6 +136,12 @@ export const register = async ({
         return {
           error: {
             message: "Payable amount is required for this fee type",
+            fields: [
+              {
+                name: "payableAmount",
+                message: "Payable amount is required",
+              },
+            ],
           },
         };
       }
@@ -166,14 +158,14 @@ export const register = async ({
     let previousDue = 0;
     let previousAdvance = 0;
 
-    if (configuredFeeTypes.includes(validData.data.feeType)) {
+    if (monthlyBalancedFees.includes(validData.data.feeType)) {
       const balanceKey = validData.data
         .feeType as keyof typeof student.feeBalance;
       const feeBalance = (student.feeBalance?.[balanceKey] as any) || {};
+
       previousDue = feeBalance.due || 0;
       previousAdvance = feeBalance.advance || 0;
     }
-    // For UTILITY/OTHER, previousDue and previousAdvance remain 0
 
     // ===== CALCULATE PAYABLE AMOUNT =====
     // payableAmount = baseAmount + previousDue - previousAdvance
@@ -221,7 +213,7 @@ export const register = async ({
 
     // ===== UPDATE STUDENT BALANCE =====
     // Only update balance for configured fee types (not UTILITY/OTHER)
-    if (configuredFeeTypes.includes(validData.data.feeType)) {
+    if (monthlyBalancedFees.includes(validData.data.feeType)) {
       const updatePath = `feeBalance.${validData.data.feeType}`;
 
       await Student.findByIdAndUpdate(
@@ -267,7 +259,6 @@ export const register = async ({
   }
 };
 
-// TODO is there any problem?
 export const updates = async ({
   _id,
   body,

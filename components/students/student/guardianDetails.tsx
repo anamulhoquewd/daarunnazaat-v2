@@ -1,5 +1,6 @@
 "use client";
 
+import CopyToClipboard from "@/components/common/copyToClipboard";
 import {
   Card,
   CardContent,
@@ -24,9 +25,13 @@ export function GuardianDetails({ data }: GuardianDetailsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-muted-foreground">Guardian ref</p>
-            <p className="font-medium">
-              {data?.guardianId?._id ? data?.guardianId?._id : "N/A"}
-            </p>
+            <code className="bg-muted rounded text-xs font-mono truncate">
+              {data?.userId?._id?.substring(0, 10)}...
+            </code>
+            <CopyToClipboard
+              title={"Copy Guardian ID"}
+              text={data?.userId?._id || "N/N"}
+            />
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Guardian ID</p>

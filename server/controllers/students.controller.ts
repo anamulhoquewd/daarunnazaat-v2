@@ -1,12 +1,15 @@
-import type { Context } from "hono";
-import { studentService } from "../services";
-import { badRequestError, serverError } from "../error";
 import { BatchType, Branch, Gender } from "@/validations";
+import type { Context } from "hono";
+import { badRequestError, serverError } from "../error";
+import { studentService } from "../services";
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
 
-  const response = await studentService.createStudent(body);
+  // logged in user
+  const authUser = await c.get("user");
+
+  const response = await studentService.createStudent({ body, authUser });
 
   if (response.error) {
     return badRequestError(c, response.error);

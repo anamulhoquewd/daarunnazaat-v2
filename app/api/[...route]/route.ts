@@ -5,6 +5,7 @@ import blogRoutes from "@/server/routes/blog.route";
 import classRoutes from "@/server/routes/classes.route";
 import feeCollectionRoutes from "@/server/routes/feeCollection.route";
 import guardianRoutes from "@/server/routes/guardian.route";
+import payAdmissionDueRoutes from "@/server/routes/payAdmissionDue.route";
 import salaryPaymentRoutes from "@/server/routes/salary.route";
 import sessionRoute from "@/server/routes/session.route";
 import staffRoutes from "@/server/routes/staff.route";
@@ -50,7 +51,7 @@ app.use(
     credentials: true, // Allow cookies
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Ensure OPTIONS is handled
     allowHeaders: ["Content-Type", "Authorization"], // Allow necessary headers
-  })
+  }),
 );
 
 // Health check
@@ -89,6 +90,9 @@ app.route("/transactions", transactionRoutes);
 // blogs routes
 app.route("/blogs", blogRoutes);
 
+// blogs routes
+app.route("/pay-admission-due", payAdmissionDueRoutes);
+
 // Global Error Handler
 app.onError((error: any, c) => {
   console.error("error: ", error);
@@ -98,7 +102,7 @@ app.onError((error: any, c) => {
       message: error.message,
       stack: process.env.NODE_ENV === "production" ? null : error.stack,
     },
-    500
+    500,
   );
 });
 

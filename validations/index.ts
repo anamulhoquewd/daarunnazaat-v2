@@ -287,90 +287,114 @@ const personBaseZ = z.object({
 });
 
 // Student Schema
-export const studentZ = personBaseZ.extend({
-  _id: mongoZ.optional(),
-  userId: mongoZ,
-  studentId: z.string().optional(),
-  guardianId: mongoZ,
-  currentSessionId: mongoZ,
-  sessionHistory: z
-    .array(
-      z.object({
-        sessionId: mongoZ,
-        classId: mongoZ,
-        enrollmentDate: z.coerce.date(),
-        completionDate: z.coerce.date().nullable(),
-        status: z.enum(["ongoing", "completed", "dropped"]).default("ongoing"),
+export const studentZ = personBaseZ
+  .extend({
+    _id: mongoZ.optional(),
+    userId: mongoZ,
+    studentId: z.string().optional(),
+    guardianId: mongoZ,
+    currentSessionId: mongoZ,
+    sessionHistory: z
+      .array(
+        z.object({
+          sessionId: mongoZ,
+          classId: mongoZ,
+          enrollmentDate: z.coerce.date(),
+          completionDate: z.coerce.date().nullable(),
+          status: z
+            .enum(["ongoing", "completed", "dropped"])
+            .default("ongoing"),
+        }),
+      )
+      .optional(),
+    guardianRelation: z
+      .string()
+      .transform((val) => val.trim().toLowerCase())
+      .refine(
+        (val) =>
+          Object.values(GuardianRelation)
+            .map((v) => v.toLowerCase())
+            .includes(val),
+        {
+          message: "Invalid guardian relation",
+        },
+      )
+      .transform((val) => {
+        const entry = Object.values(GuardianRelation).find(
+          (v) => v.toLowerCase() === val,
+        );
+        return entry as GuardianRelation;
       }),
-    )
-    .optional(),
-  guardianRelation: z
-    .string()
-    .transform((val) => val.trim().toLowerCase())
-    .refine(
-      (val) =>
-        Object.values(GuardianRelation)
-          .map((v) => v.toLowerCase())
-          .includes(val),
-      {
-        message: "Invalid guardian relation",
-      },
-    )
-    .transform((val) => {
-      const entry = Object.values(GuardianRelation).find(
-        (v) => v.toLowerCase() === val,
-      );
-      return entry as GuardianRelation;
-    }),
-  classId: mongoZ,
-  branch: z.nativeEnum(Branch),
-  batchType: z.nativeEnum(BatchType),
+    classId: mongoZ,
+    branch: z.nativeEnum(Branch),
+    batchType: z.nativeEnum(BatchType),
 
-  payableAdmissionFee: moneyZ.min(0),
-  admissionFee: moneyZ.min(0),
-  admissionDate: z.coerce.date(),
+    isResidential: z.boolean().default(false),
+    isMealIncluded: z.boolean().default(false),
 
-  isResidential: z.boolean().default(false),
-  isMealIncluded: z.boolean().default(false),
+    admissionDate: z.coerce.date(),
 
-  monthlyFee: moneyZ.min(0),
-  residentialFee: moneyZ.min(0).optional(),
-  mealFee: moneyZ.min(0).optional(),
-  daycareFee: moneyZ.min(0).optional(),
-  coachingFee: moneyZ.min(0).optional(),
+    admissionFee: moneyZ.min(0),
+    receivedAmount: moneyZ.min(0),
 
-  feeBalance: z
-    .object({
-      monthlyFee: z.object({
-        due: moneyZ.min(0).default(0),
-        advance: moneyZ.min(0).default(0),
-      }),
-      residentialFee: z.object({
-        due: moneyZ.min(0).default(0),
-        advance: moneyZ.min(0).default(0),
-      }),
-      mealFee: z.object({
-        due: moneyZ.min(0).default(0),
-        advance: moneyZ.min(0).default(0),
-      }),
-      coachingFee: z.object({
-        due: moneyZ.min(0).default(0),
-        advance: moneyZ.min(0).default(0),
-      }),
-      daycareFee: z.object({
-        due: moneyZ.min(0).default(0),
-        advance: moneyZ.min(0).default(0),
-      }),
-      admissionFee: z.object({
-        due: moneyZ.min(0).default(0),
-        advance: moneyZ.min(0).default(0),
-      }),
-    })
-    .optional(),
+    monthlyFee: moneyZ.min(0),
+    residentialFee: moneyZ.min(0).optional(),
+    mealFee: moneyZ.min(0).optional(),
+    daycareFee: moneyZ.min(0).optional(),
+    coachingFee: moneyZ.min(0).optional(),
 
-  passoutDate: z.coerce.date().optional(),
-  avatar: z.string().optional(),
-});
+    feeBalance: z
+      .object({
+        monthlyFee: z.object({
+          due: moneyZ.min(0).default(0),
+          advance: moneyZ.min(0).default(0),
+        }),
+        residentialFee: z.object({
+          due: moneyZ.min(0).default(0),
+          advance: moneyZ.min(0).default(0),
+        }),
+        mealFee: z.object({
+          due: moneyZ.min(0).default(0),
+          advance: moneyZ.min(0).default(0),
+        }),
+        coachingFee: z.object({
+          due: moneyZ.min(0).default(0),
+          advance: moneyZ.min(0).default(0),
+        }),
+        daycareFee: z.object({
+          due: moneyZ.min(0).default(0),
+          advance: moneyZ.min(0).default(0),
+        }),
+        admissionFee: z.object({
+          due: moneyZ.min(0).default(0),
+          advance: moneyZ.min(0).default(0),
+        }),
+      })
+      .optional(),
+
+    passoutDate: z.coerce.date().optional(),
+    avatar: z.string().optional(),
+
+    paymentMethod: z.nativeEnum(PaymentMethod),
+    paymentSource: z.nativeEnum(PaymentSource),
+    remarks: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.isMealIncluded && !data.mealFee) {
+      ctx.addIssue({
+        path: ["mealFee"],
+        message: "Meal fee is required for including meal",
+        code: z.ZodIssueCode.custom,
+      });
+    }
+    if (data.isResidential && !data.residentialFee) {
+      ctx.addIssue({
+        path: ["residentialFee"],
+        message: "Residential fee is required for including residential",
+        code: z.ZodIssueCode.custom,
+      });
+    }
+  });
 
 // If you want a separate update  where fields can be optional:
 export const studentUpdateZ = studentZ.partial().refine(
@@ -520,9 +544,7 @@ export const feeCollectionZ = z
       }
     }
 
-    if (
-      [FeeType.UTILITY, FeeType.OTHER, FeeType.ADMISSION].includes(data.feeType)
-    ) {
+    if ([FeeType.UTILITY, FeeType.OTHER].includes(data.feeType)) {
       if (!data.payableAmount || data.payableAmount <= 0) {
         ctx.addIssue({
           path: ["payableAmount"],
@@ -541,6 +563,11 @@ export const feeCollectionsUpdateZ = feeCollectionZ.partial().refine(
   },
   { message: "At least one field must be provided for update" },
 );
+
+export const payAdmissionDueZ = z.object({
+  studentId: mongoZ,
+  receivedAmount: moneyZ,
+});
 
 // Salary Payment Schema
 export const salaryPaymentZ = z.object({
@@ -838,6 +865,7 @@ export type IUpdateClass = z.infer<typeof classUpdateZ>;
 export type ISession = z.infer<typeof sessionZ>;
 export type IUpdateSession = z.infer<typeof sessionUpdateZ>;
 export type IFeeCollection = z.infer<typeof feeCollectionZ>;
+export type IPayAdmissionDue = z.infer<typeof payAdmissionDueZ>;
 export type IFeeCollectionUpdate = z.infer<typeof feeCollectionsUpdateZ>;
 export type ISalaryPayment = z.infer<typeof salaryPaymentZ>;
 export type ISalaryPaymentUpdate = z.infer<typeof salaryPaymentUpdateZ>;

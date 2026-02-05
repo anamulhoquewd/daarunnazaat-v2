@@ -8,6 +8,7 @@ import * as staffController from "./staffs.controller";
 import * as studentController from "./students.controller";
 import * as usersController from "./users.controller";
 import * as transactionController from "./transaction.controller";
+import * as payAdmissionDueController from "./payAdmissionDue";
 
 export {
   blogController,
@@ -20,4 +21,5 @@ export {
   studentController,
   transactionController,
   usersController,
+  payAdmissionDueController,
 };
