@@ -8,11 +8,14 @@ import {
   PaymentSource,
 } from "@/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export function useFeeReceiveCenter() {
+export function useFeeCenter() {
+  const router = useRouter();
+
   const [students, setStudents] = useState<IStudent[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -29,9 +32,6 @@ export function useFeeReceiveCenter() {
       remarks: "",
     },
   });
-
-  console.log("Form values: ", form.getValues());
-  console.log("Errors: ", form.formState.errors);
 
   /* ---------------- SEARCH ---------------- */
   const searchStudents = async (search: string) => {
@@ -89,6 +89,11 @@ export function useFeeReceiveCenter() {
 
       console.log("Res: ", res);
       toast.success(res.data.message);
+
+      const feeId = res.data.data._id;
+
+      // 🔥 Redirect to invoice page
+      router.push(`/dashboard/fees/${feeId}`);
     } catch (error: any) {
       handleAxiosError(error);
 

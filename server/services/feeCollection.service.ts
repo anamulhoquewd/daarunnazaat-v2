@@ -6,6 +6,7 @@ import {
   IFeeCollection,
   IUser,
   mongoIdZ,
+  monthlyFees,
   PaymentMethod,
   PaymentSource,
   PaymentStatus,
@@ -60,22 +61,13 @@ export const register = async ({
       };
     }
 
-    // Monthly recurring + balance tracked
-    const monthlyBalancedFees: FeeType[] = [
-      FeeType.MONTHLY,
-      FeeType.COACHING,
-      FeeType.DAYCARE,
-      FeeType.MEAL,
-      FeeType.RESIDENTIAL,
-    ];
-
     // No balance, ad-hoc
     const nonBalancedFeeTypes: FeeType[] = [FeeType.UTILITY, FeeType.OTHER];
 
     // Only check duplicate based on fee type rules
     let isFeeExist: IFeeCollection | null = null;
 
-    if (monthlyBalancedFees.includes(validData.data.feeType)) {
+    if (monthlyFees.includes(validData.data.feeType)) {
       // Monthly type → student + session + month + year unique
       if (!validData.data.month || !validData.data.year) {
         return {
@@ -117,7 +109,7 @@ export const register = async ({
     // ===== GET BASE AMOUNT FROM STUDENT =====
     let baseAmount = 0;
 
-    if (monthlyBalancedFees.includes(validData.data.feeType)) {
+    if (monthlyFees.includes(validData.data.feeType)) {
       // For configured fees (admission, monthly, residential, etc.)
       const feeField = validData.data.feeType; // Direct use - no map needed
 
@@ -158,7 +150,7 @@ export const register = async ({
     let previousDue = 0;
     let previousAdvance = 0;
 
-    if (monthlyBalancedFees.includes(validData.data.feeType)) {
+    if (monthlyFees.includes(validData.data.feeType)) {
       const balanceKey = validData.data
         .feeType as keyof typeof student.feeBalance;
       const feeBalance = (student.feeBalance?.[balanceKey] as any) || {};
@@ -213,7 +205,7 @@ export const register = async ({
 
     // ===== UPDATE STUDENT BALANCE =====
     // Only update balance for configured fee types (not UTILITY/OTHER)
-    if (monthlyBalancedFees.includes(validData.data.feeType)) {
+    if (monthlyFees.includes(validData.data.feeType)) {
       const updatePath = `feeBalance.${validData.data.feeType}`;
 
       await Student.findByIdAndUpdate(
@@ -531,17 +523,12 @@ export const gets = async (queryParams: {
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
         .limit(queryParams.limit)
-        .populate(
-          "studentId",
-          "studentId branch firstName lastName gender monthlyFee mealFee",
-        )
+        .populate("studentId")
         .populate("sessionId", "sessionName isActive")
         .populate("collectedBy", "phone role")
         .exec(),
       FeeCollection.countDocuments(query),
     ]);
-
-    console.log("Query: ", query);
 
     // Pagination helper
     const createPagination = pagination({
@@ -578,7 +565,11 @@ export const get = async (_id: string) => {
 
   try {
     // Check if Fee exists
-    const fee = await FeeCollection.findById(idValidation.data._id);
+    const fee = await FeeCollection.findById(idValidation.data._id)
+      .populate("studentId")
+      .populate("sessionId", "sessionName isActive")
+      .populate("collectedBy", "phone role")
+      .exec();
 
     if (!fee) {
       return {

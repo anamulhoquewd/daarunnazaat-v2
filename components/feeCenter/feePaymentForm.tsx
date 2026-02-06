@@ -27,7 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { MONTHS } from "@/lib/utils";
 import { FeeType, IStudent } from "@/validations";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -46,15 +45,12 @@ export function FeePaymentForm({
   selectedStudent,
   onSubmit,
   form,
-  loading,
 }: FeePaymentFormProps) {
   const feeType = form.watch("feeType");
   const balance =
     selectedStudent && feeType ? selectedStudent?.feeBalance?.[feeType] : null;
 
-  const isSpecial = ["admissionFee", "utilityFee", "otherFee"].includes(
-    feeType,
-  );
+  const isSpecial = ["utilityFee", "otherFee"].includes(feeType);
 
   return (
     <Card>
@@ -73,19 +69,46 @@ export function FeePaymentForm({
             {selectedStudent && (
               <>
                 <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Student ID</p>
-                    <p className="font-semibold">{selectedStudent.studentId}</p>
+                  <div className="flex flex-col gap-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Student Name
+                      </p>
+                      <p className="font-semibold">
+                        {`${selectedStudent.firstName} ${selectedStudent?.lastName}`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Student ID
+                      </p>
+                      <p className="font-semibold">
+                        {selectedStudent.studentId}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Contact</p>
-                    <p className="text-sm">{selectedStudent?.user.phone}</p>
+                  <div className="flex flex-col gap-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Contact</p>
+                      <p className="text-sm">{selectedStudent?.user.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="text-sm">{selectedStudent?.user.email}</p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Fee Summary */}
                 {balance && (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="p-3 bg-green-50 border rounded">
+                      <p className="text-xs capitalize">{feeType}</p>
+                      <p className="font-semibold">
+                        {selectedStudent[feeType as keyof IStudent] ??
+                          "Unconfigured"}
+                      </p>
+                    </div>
                     <div className="p-3 bg-green-50 border rounded">
                       <p className="text-xs">Advance</p>
                       <p className="font-semibold">{balance.advance}</p>
@@ -97,13 +120,6 @@ export function FeePaymentForm({
                   </div>
                 )}
               </>
-            )}
-
-            {loading && (
-              <Alert>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <AlertDescription>Loading student details...</AlertDescription>
-              </Alert>
             )}
 
             {/* Payment Details */}
@@ -121,11 +137,13 @@ export function FeePaymentForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.values(FeeType).map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type.charAt(0).toUpperCase() + type.slice(1)}
-                          </SelectItem>
-                        ))}
+                        {Object.values(FeeType)
+                          .filter((type) => type !== FeeType.ADMISSION)
+                          .map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type.charAt(0).toUpperCase() + type.slice(1)}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </FormItem>
@@ -140,7 +158,12 @@ export function FeePaymentForm({
                     <FormItem>
                       <FormLabel>Payable Amount</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input
+                          type="number"
+                          min={0}
+                          defaultValue={0}
+                          {...field}
+                        />
                       </FormControl>
                     </FormItem>
                   )}

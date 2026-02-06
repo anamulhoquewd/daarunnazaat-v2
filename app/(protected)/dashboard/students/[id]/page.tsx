@@ -34,8 +34,9 @@ export default function StudentProfilePage() {
 
       <div className="container max-w-6xl mx-auto px-4 py-8">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:w-fit">
+          <TabsList className="grid w-full grid-cols-4 lg:w-fit">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="financial">Financial</TabsTrigger>
             <TabsTrigger value="academic">Academic</TabsTrigger>
             <TabsTrigger value="additional">More Info</TabsTrigger>
           </TabsList>
@@ -72,6 +73,9 @@ export default function StudentProfilePage() {
                   data={student ?? undefined}
                   onSave={handleUpdate}
                 />
+              </TabsContent>
+
+              <TabsContent value="financial" className="space-y-6 mt-6">
                 <FeesSection
                   isEditing={editingSection === "fees"}
                   onEditChange={(isEditing) =>

@@ -1,6 +1,14 @@
 "use client";
 
-import { CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -17,6 +25,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { EditableSection } from "./editableSection";
+import { formatMony } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 interface FeesSectionProps {
   isEditing: boolean;
@@ -62,6 +73,7 @@ export function FeesSection({
     }
   };
 
+  // TODO Form update korte hobe.
   return (
     <EditableSection
       title="Fees Information"
@@ -159,7 +171,7 @@ export function FeesSection({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
-                  name="admissionFeeReceived"
+                  name="admissionFee"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Admission Fee Received</FormLabel>
@@ -184,7 +196,7 @@ export function FeesSection({
                 />
                 <FormField
                   control={form.control}
-                  name="admissionFee"
+                  name="cochingFee"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Admission Fee</FormLabel>
@@ -249,53 +261,283 @@ export function FeesSection({
           </Form>
         </CardContent>
       ) : (
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Monthly Fee</p>
-              <p className="font-medium">{data?.monthlyFee?.toFixed(2) || 0}</p>
+        <CardContent className="max-w-7xl mx-auto space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="space-y-2">
+              <p className="text-sm text-gray-500">Admission Fee</p>
+              <p className="font-medium">{formatMony(data?.admissionFee)}</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Residential Fee</p>
-              <p className="font-medium">
-                {data?.residentialFee?.toFixed(2) || 0}
+            {data?.monthlyFee && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500">Monthly Fee</p>
+                <p className="font-medium">{formatMony(data?.monthlyFee)}</p>
+              </div>
+            )}
+            {data?.daycareFee && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500">Coaching Fee</p>
+                <p className="font-medium">{formatMony(data?.daycareFee)}</p>
+              </div>
+            )}
+            {data?.coachingFee && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500">Coaching Fee</p>
+                <p className="font-medium">{formatMony(data?.coachingFee)}</p>
+              </div>
+            )}
+            {data?.mealFee && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500">Meal Fee</p>
+                <p className="font-medium">{formatMony(data?.mealFee)}</p>
+              </div>
+            )}
+            {data?.residentialFee && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500">Residential Fee</p>
+                <p className="font-medium">
+                  {formatMony(data?.residentialFee)}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Additional Info Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-1">
+              <p className="text-sm text-gray-500">Residential</p>
+              <p className="text-lg font-semibold text-black">
+                {data?.isResidential ? "Yes" : "No"}
               </p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Meal Fee</p>
-              <p className="font-medium">{data?.mealFee?.toFixed(2) || 0}</p>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-500">Meal Included</p>
+              <p className="text-lg font-semibold text-black">
+                {data?.isMealIncluded ? "Yes" : "No"}
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Admission Fee</p>
-              <p className="font-medium">
-                {data?.admissionFeeReceived?.toFixed(2) || 0}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Admission Discount
-              </p>
-              <p className="font-medium">
-                {data?.admissionFee?.toFixed(2) || 0}
-              </p>
-            </div>
-            <div className="flex gap-6 pt-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Residential</p>
-                <p className="font-medium">
-                  {data?.isResidential ? "Yes" : "No"}
-                </p>
+          <Separator />
+
+          {/* Main Balances Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {(data?.feeBalance?.admissionFee.advance > 0 ||
+              data?.feeBalance?.admissionFee.due > 0) && (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-black">Admission balance</h4>
+
+                <div className="space-y-2">
+                  {/* Advance */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.admissionFee.advance > 0
+                        ? "bg-green-50 border-green-300 text-green-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Advance</span>
+                    <span>
+                      {formatMony(data?.feeBalance?.admissionFee.advance)}
+                    </span>
+                  </div>
+
+                  {/* Due */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.admissionFee.due > 0
+                        ? "bg-red-50 border-red-300 text-red-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Due</span>
+                    <span>
+                      {formatMony(data?.feeBalance?.admissionFee.due)}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Meal Included</p>
-                <p className="font-medium">
-                  {data?.isMealIncluded ? "Yes" : "No"}
-                </p>
+            )}
+
+            {(data?.feeBalance?.monthlyFee.advance > 0 ||
+              data?.feeBalance?.monthlyFee.due > 0) && (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-black">Monthly balance</h4>
+
+                <div className="space-y-2">
+                  {/* Advance */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.monthlyFee.advance > 0
+                        ? "bg-green-50 border-green-300 text-green-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Advance</span>
+                    <span>
+                      {formatMony(data?.feeBalance?.monthlyFee.advance)}
+                    </span>
+                  </div>
+
+                  {/* Due */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.monthlyFee.due > 0
+                        ? "bg-red-50 border-red-300 text-red-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Due</span>
+                    <span>{formatMony(data?.feeBalance?.monthlyFee.due)}</span>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {(data?.feeBalance?.coachingFee.advance > 0 ||
+              data?.feeBalance?.coachingFee.due > 0) && (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-black">Coaching balance</h4>
+
+                <div className="space-y-2">
+                  {/* Advance */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.coachingFee.advance > 0
+                        ? "bg-green-50 border-green-300 text-green-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Advance</span>
+                    <span>
+                      {formatMony(data?.feeBalance?.coachingFee.advance)}
+                    </span>
+                  </div>
+
+                  {/* Due */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.coachingFee.due > 0
+                        ? "bg-red-50 border-red-300 text-red-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Due</span>
+                    <span>
+                      {formatMony(data?.feeBalance?.coachingFee.advance)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {(data?.feeBalance?.daycareFee.advance > 0 ||
+              data?.feeBalance?.daycareFee.due > 0) && (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-black">Daycare balance</h4>
+
+                <div className="space-y-2">
+                  {/* Advance */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.daycareFee.advance > 0
+                        ? "bg-green-50 border-green-300 text-green-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Advance</span>
+                    <span>
+                      {formatMony(data?.feeBalance?.daycareFee.advance)}
+                    </span>
+                  </div>
+
+                  {/* Due */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.daycareFee.due > 0
+                        ? "bg-red-50 border-red-300 text-red-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Due</span>
+                    <span>{formatMony(data?.feeBalance?.daycareFee.due)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {(data?.feeBalance?.residentialFee.advance > 0 ||
+              data?.feeBalance?.residentialFee.due > 0) && (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-black">
+                  Residential balance
+                </h4>
+
+                <div className="space-y-2">
+                  {/* Advance */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.residentialFee.advance > 0
+                        ? "bg-green-50 border-green-300 text-green-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Advance</span>
+                    <span>
+                      {formatMony(data?.feeBalance?.residentialFee.advance)}
+                    </span>
+                  </div>
+
+                  {/* Due */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.residentialFee.due > 0
+                        ? "bg-red-50 border-red-300 text-red-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Due</span>
+                    <span>
+                      {formatMony(data?.feeBalance?.residentialFee.due)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {(data?.feeBalance?.mealFee.advance > 0 ||
+              data?.feeBalance?.mealFee.due > 0) && (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-black">Meal balance</h4>
+
+                <div className="space-y-2">
+                  {/* Advance */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.mealFee.advance > 0
+                        ? "bg-green-50 border-green-300 text-green-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Advance</span>
+                    <span>{formatMony(data?.feeBalance?.mealFee.advance)}</span>
+                  </div>
+
+                  {/* Due */}
+                  <div
+                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
+                      data?.feeBalance?.mealFee.due > 0
+                        ? "bg-red-50 border-red-300 text-red-700"
+                        : "bg-gray-50 border-gray-200 text-black"
+                    }`}
+                  >
+                    <span className="text-sm">Due</span>
+                    <span>{formatMony(data?.feeBalance?.mealFee.due)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       )}

@@ -8,6 +8,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 // Define Props Interface
 interface ColumnsProps {
@@ -24,7 +25,19 @@ export const FeesColumns = ({
 }: ColumnsProps): ColumnDef<any>[] => [
   {
     header: "Receipt number",
-    cell: ({ row }) => row.original.receiptNumber || "-",
+    cell: ({ row }) => {
+      const { _id, receiptNumber } = row.original;
+
+      return (
+        <Link
+          href={`/dashboard/fees/${_id}`}
+          target="_blank"
+          className="text-blue-600 hover:underline font-medium"
+        >
+          {receiptNumber ?? "-"}
+        </Link>
+      );
+    },
   },
   {
     header: "Student Id",

@@ -3,12 +3,12 @@
 import { FeePaymentForm } from "@/components/feeCenter/feePaymentForm";
 import { FeeStudentSearch } from "@/components/feeCenter/studentSearch";
 import { Button } from "@/components/ui/button";
-import { useFeeReceiveCenter } from "@/hooks/fees/useFee";
+import { useFeeCenter } from "@/hooks/fees/useFeeCenter";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function FeeReceiveCenterPage() {
-  const fee = useFeeReceiveCenter();
+  const fee = useFeeCenter();
 
   return (
     <main className="min-h-screen bg-background">

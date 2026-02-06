@@ -89,7 +89,7 @@ export function AdministrationSection({ data }: AdministrationSectionProps) {
           <div>
             <p className="text-sm text-muted-foreground">Block status</p>
             <p className="font-medium capitalize">
-              {data?.userId?.blockedAt ? "Blocked" : "Not Blocked"}
+              {data?.userId?.blockedAt ? "Blocked" : "Unblocked"}
             </p>
           </div>
           <div>

@@ -45,6 +45,7 @@ const FeeCollectionSchema = new Schema<IFeeCollection & Document>(
       required: true,
     },
 
+    paymentDate: { type: Date, required: true },
     remarks: String,
 
     collectedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },

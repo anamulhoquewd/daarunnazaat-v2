@@ -52,11 +52,11 @@ export enum BatchType {
 export enum FeeType {
   ADMISSION = "admissionFee",
   MONTHLY = "monthlyFee",
-  RESIDENTIAL = "residentialFee",
   COACHING = "coachingFee",
   DAYCARE = "daycareFee",
-  UTILITY = "utilityFee",
+  RESIDENTIAL = "residentialFee",
   MEAL = "mealFee",
+  UTILITY = "utilityFee",
   OTHER = "otherFee",
 }
 
@@ -494,7 +494,7 @@ export const feeCollectionZ = z
     branch: z.nativeEnum(Branch).optional(),
 
     feeType: z.nativeEnum(FeeType),
-    month: moneyZ.min(1).max(12).optional(),
+    month: moneyZ.min(0).max(11).optional(),
     year: moneyZ.min(2000).optional(),
 
     payableAmount: moneyZ.min(0).optional(),
@@ -574,7 +574,7 @@ export const salaryPaymentZ = z.object({
   _id: mongoZ.optional(),
   receiptNumber: z.string().optional(),
   staffId: mongoZ,
-  month: moneyZ.min(1).max(12),
+  month: moneyZ.min(0).max(11),
   year: moneyZ.min(2000),
   basicSalary: moneyZ.min(0),
   bonus: moneyZ.min(0).default(0),
@@ -893,6 +893,15 @@ export interface IPagination {
   nextPage: number | null;
   prevPage: number | null;
 }
+
+// Monthly recurring + balance tracked
+export const monthlyFees: FeeType[] = [
+  FeeType.MONTHLY,
+  FeeType.COACHING,
+  FeeType.DAYCARE,
+  FeeType.MEAL,
+  FeeType.RESIDENTIAL,
+];
 // ==================== MONGODB SCHEMAS & MODELS ====================
 
 // Book Model
