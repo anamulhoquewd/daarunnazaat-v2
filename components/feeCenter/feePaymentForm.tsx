@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FeeType, IStudent } from "@/validations";
+import { FeeType, IStudent, PaymentMethod } from "@/validations";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -212,10 +212,9 @@ export function FeePaymentForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="cash">Cash</SelectItem>
-                        <SelectItem value="cheque">Cheque</SelectItem>
-                        <SelectItem value="online">Online Transfer</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        {Object.values(PaymentMethod).map((key) => (
+                          <SelectItem value={key}>{key}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

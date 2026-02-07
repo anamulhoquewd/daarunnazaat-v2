@@ -77,19 +77,6 @@ function FeesTab() {
             name="admissionFee"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Admission Discount</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="0" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="admissionFeeReceived"
-            render={({ field }) => (
-              <FormItem>
                 <FormLabel>Admission Fee *</FormLabel>
                 <FormControl>
                   <Input type="number" placeholder="0" {...field} />

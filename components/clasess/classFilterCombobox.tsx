@@ -52,7 +52,7 @@ export function ClassFilterCombobox({ value, onChange }: Props) {
 
     setLoading(true);
 
-    const res = await api(`/classes?search=${search}&page=${page}`);
+    const res = await api.get(`/classes?search=${search}&page=${page}`);
     if (!res.data.success) {
       throw new Error(res.data.error.message);
     }

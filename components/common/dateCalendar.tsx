@@ -24,6 +24,10 @@ export function DateField({ name, label }: { name: string; label: string }) {
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState<Date | undefined>(new Date());
 
+  if (!control) {
+    throw new Error("DateField must be used inside a <Form> provider");
+  }
+
   return (
     <Controller
       name={name}

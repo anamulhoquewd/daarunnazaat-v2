@@ -17,10 +17,8 @@ export default function StudentRegistrationPage() {
   return (
     <main className="w-full flex flex-col overflow-hidden gap-8">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-          Student Registration
-        </h1>
-        <p className="text-gray-600 text-sm sm:text-base">
+        <h1 className="text-3xl sm:text-4xl font-bold">Student Registration</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           Complete all sections to register for the upcoming session
         </p>
       </div>

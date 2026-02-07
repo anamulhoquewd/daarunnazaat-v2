@@ -33,17 +33,13 @@ export function ContactInfoSection({
 }: ContactInfoSectionProps) {
   const form = useForm<ContactInfo>({
     resolver: zodResolver(contactInfoSchema),
-    defaultValues: {
-      alternativePhone: "",
-      whatsApp: "",
-    },
   });
 
   useEffect(() => {
     if (data) {
       form.reset({
-        alternativePhone: data?.alternativePhone ?? "",
-        whatsApp: data?.whatsApp ?? "",
+        alternativePhone: data?.alternativePhone,
+        whatsApp: data?.whatsApp,
       });
     }
   }, [data, form.reset]);
@@ -58,6 +54,9 @@ export function ContactInfoSection({
       console.error("Error saving contact info:", error);
     }
   };
+
+  console.log("Form values: ", form.getValues());
+  console.log("Form errors: ", form.formState.errors);
 
   return (
     <EditableSection

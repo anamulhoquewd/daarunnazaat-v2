@@ -46,15 +46,15 @@ export function PersonalInfoSection({
   useEffect(() => {
     if (data) {
       form.reset({
-        firstName: data.firstName ?? "",
-        lastName: data.lastName ?? "",
-        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : new Date(),
-        gender: data.gender ?? "",
-        fatherName: data.fatherName ?? "",
-        motherName: data.motherName ?? "",
+        firstName: data.firstName,
+        lastName: data.lastName,
+        dateOfBirth: data.dateOfBirth ?? new Date(data?.dateOfBirth),
+        gender: data.gender,
+        fatherName: data.fatherName,
+        motherName: data.motherName,
         bloodGroup: data.bloodGroup ?? BloodGroup.NON,
-        nid: data.nid ?? "",
-        birthCertificateNumber: data.birthCertificateNumber ?? "",
+        nid: data.nid,
+        birthCertificateNumber: data.birthCertificateNumber,
       });
     }
   }, [data, form.reset]);

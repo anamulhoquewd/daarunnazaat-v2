@@ -106,8 +106,23 @@ export const getCurrentYear = () => new Date().getFullYear();
 
 export const getYearOptions = () => {
   const currentYear = getCurrentYear();
-  return Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
+  return Array.from({ length: 5 }, (_, i) => String(currentYear - 2 + i));
 };
 
 export const formatMony = (price: number = 0) =>
   `BDT ${price.toLocaleString()}`;
+
+export const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];

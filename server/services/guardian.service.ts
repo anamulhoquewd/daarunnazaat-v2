@@ -261,13 +261,10 @@ export const updates = async ({
   }
 
   // Validate Body
-  const bodyValidation = guardianUpdateZ.safeParse(body);
-  if (!bodyValidation.success) {
+  const validData = guardianUpdateZ.safeParse(body);
+  if (!validData.success) {
     return {
-      error: schemaValidationError(
-        bodyValidation.error,
-        "Invalid request body",
-      ),
+      error: schemaValidationError(validData.error, "Invalid request body"),
     };
   }
 
@@ -284,7 +281,7 @@ export const updates = async ({
     }
 
     // Check if all fields are empty
-    if (Object.keys(bodyValidation.data).length === 0) {
+    if (Object.keys(validData.data).length === 0) {
       return {
         success: {
           success: true,
@@ -296,7 +293,7 @@ export const updates = async ({
     }
 
     // Update only provided fields
-    Object.assign(guardian, bodyValidation.data);
+    Object.assign(guardian, validData.data);
 
     const docs = await guardian.save();
 
@@ -332,17 +329,14 @@ export const updateMe = async ({
   }
 
   // Validate Body
-  const bodyValidation = guardianUpdateZ
+  const validData = guardianUpdateZ
     .omit({
       userId: true,
     })
     .safeParse(body);
-  if (!bodyValidation.success) {
+  if (!validData.success) {
     return {
-      error: schemaValidationError(
-        bodyValidation.error,
-        "Invalid request body",
-      ),
+      error: schemaValidationError(validData.error, "Invalid request body"),
     };
   }
 
@@ -359,7 +353,7 @@ export const updateMe = async ({
     }
 
     // Check if all fields are empty
-    if (Object.keys(bodyValidation.data).length === 0) {
+    if (Object.keys(validData.data).length === 0) {
       return {
         success: {
           success: true,
@@ -371,7 +365,7 @@ export const updateMe = async ({
     }
 
     // Update only provided fields
-    Object.assign(guardian, bodyValidation.data);
+    Object.assign(guardian, validData.data);
 
     const docs = await guardian.save();
 

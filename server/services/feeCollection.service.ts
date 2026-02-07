@@ -20,6 +20,7 @@ import { Student } from "../models/students.model";
 import pagination from "../utils/pagination";
 import { generateFeeReceiptNumber } from "../utils/string-generator";
 import { createTransactionLog } from "./transactions.service";
+import { feeUpdateSchema } from "@/validations/student";
 
 export const register = async ({
   body,
@@ -277,7 +278,7 @@ export const updates = async ({
     };
   }
 
-  const validData = feeCollectionsUpdateZ.safeParse(body);
+  const validData = feeUpdateSchema.safeParse(body);
   if (!validData.success) {
     return {
       error: schemaValidationError(validData.error, "Invalid request body"),
@@ -290,21 +291,57 @@ export const updates = async ({
     if (!fee) {
       return { error: { message: "Fee not found with the provided ID" } };
     }
-    if (fee.payableAmount == null) {
-      return { error: { message: "Payable amount is missing for this fee" } };
+
+    if (fee.isDeleted) {
+      return {
+        error: {
+          message: "This fee record has been deleted and cannot be updated.",
+        },
+      };
+    }
+
+    if (validData.data && !validData.data.remarks) {
+      return {
+        error: {
+          message: "Remarks is required when correcting month/year or amount",
+        },
+      };
+    }
+
+    const isMonthOrYearChanged =
+      (validData.data.month && validData.data.month !== fee.month) ||
+      (validData.data.year && validData.data.year !== fee.year);
+
+    if (monthlyFees.includes(fee.feeType as FeeType) && isMonthOrYearChanged) {
+      const targetMonth = validData.data.month ?? fee.month;
+      const targetYear = validData.data.year ?? fee.year;
+
+      const duplicateFee = await FeeCollection.findOne({
+        _id: { $ne: fee._id }, // exclude current fee
+        studentId: fee.studentId,
+        sessionId: fee.sessionId,
+        feeType: fee.feeType,
+        month: targetMonth,
+        year: targetYear,
+        isDeleted: false,
+      });
+
+      if (duplicateFee) {
+        return {
+          error: {
+            message: "Fee already exists for the selected month and year.",
+            fields: [
+              {
+                name: "month",
+                message: `A ${fee.feeType} fee already exists for ${targetMonth}/${targetYear}`,
+              },
+            ],
+          },
+        };
+      }
     }
 
     const oldReceived = fee.receivedAmount;
-
-    // Update received amount if provided
-    if (validData.data.receivedAmount != null) {
-      fee.receivedAmount = validData.data.receivedAmount;
-    }
-
-    // Update remarks if provided
-    if (validData.data.remarks != null) {
-      fee.remarks = validData.data.remarks;
-    }
 
     // ===== RECALCULATE =====
     let dueAmount = 0;
@@ -329,6 +366,8 @@ export const updates = async ({
     fee.advanceAmount = advanceAmount;
     fee.paymentStatus = paymentStatus;
     fee.updatedBy = updatedByUserId;
+
+    Object.assign(fee, validData.data);
 
     const updatedFee = await fee.save();
 

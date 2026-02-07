@@ -81,7 +81,7 @@ function useFeesQuery() {
         page: currentPage,
         search: search.global,
         paidBy: search.collectedBy,
-        staffId: search.studentId,
+        studentId: search.studentId,
         paymentMethod:
           filters?.paymentMethod === "all" ? undefined : filters?.paymentMethod,
         feeType: filters?.feeType === "all" ? undefined : filters?.feeType,

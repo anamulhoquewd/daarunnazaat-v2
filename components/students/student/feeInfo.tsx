@@ -49,15 +49,14 @@ export function FeesSection({
   useEffect(() => {
     if (data) {
       form.reset({
-        admissionFee: data.admissionFee ?? 0,
-        monthlyFee: data.monthlyFee ?? 0,
-        residentialFee: data.residentialFee ?? 0,
-        mealFee: data.mealFee ?? 0,
+        admissionFee: data.admissionFee,
+        monthlyFee: data.monthlyFee,
+        daycareFee: data.daycareFee,
+        coachingFee: data.coachingFee,
+        residentialFee: data.residentialFee,
+        mealFee: data.mealFee,
         isResidential: data.isResidential ?? false,
         isMealIncluded: data.isMealIncluded ?? false,
-        admissionDate: data.admissionDate
-          ? new Date(data.admissionDate)
-          : new Date(),
       });
     }
   }, [data, form]);
@@ -73,7 +72,6 @@ export function FeesSection({
     }
   };
 
-  // TODO Form update korte hobe.
   return (
     <EditableSection
       title="Fees Information"
@@ -93,6 +91,31 @@ export function FeesSection({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
+                  name="admissionFee"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Admission Fee</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          name={field.name}
+                          value={field.value != null ? String(field.value) : ""}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ?? Number(e.target.value),
+                            )
+                          }
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="monthlyFee"
                   render={({ field }) => (
                     <FormItem>
@@ -105,7 +128,57 @@ export function FeesSection({
                           value={field.value != null ? String(field.value) : ""}
                           onChange={(e) =>
                             field.onChange(
-                              e.target.value ? Number(e.target.value) : 0,
+                              e.target.value ?? Number(e.target.value),
+                            )
+                          }
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="coachingFee"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Coaching Fee</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          name={field.name}
+                          value={field.value != null ? String(field.value) : ""}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ?? Number(e.target.value),
+                            )
+                          }
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="daycareFee"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Daycare Fee</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          name={field.name}
+                          value={field.value != null ? String(field.value) : ""}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ?? Number(e.target.value),
                             )
                           }
                           onBlur={field.onBlur}
@@ -130,7 +203,7 @@ export function FeesSection({
                           value={field.value != null ? String(field.value) : ""}
                           onChange={(e) =>
                             field.onChange(
-                              e.target.value ? Number(e.target.value) : 0,
+                              e.target.value ?? Number(e.target.value),
                             )
                           }
                           onBlur={field.onBlur}
@@ -155,7 +228,7 @@ export function FeesSection({
                           value={field.value != null ? String(field.value) : ""}
                           onChange={(e) =>
                             field.onChange(
-                              e.target.value ? Number(e.target.value) : 0,
+                              e.target.value ?? Number(e.target.value),
                             )
                           }
                           onBlur={field.onBlur}
@@ -168,94 +241,41 @@ export function FeesSection({
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <FormField
                   control={form.control}
-                  name="admissionFee"
+                  name="isResidential"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Admission Fee Received</FormLabel>
+                    <FormItem className="flex items-center space-x-2">
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          name={field.name}
-                          value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ? Number(e.target.value) : 0,
-                            )
-                          }
-                          onBlur={field.onBlur}
-                          ref={field.ref}
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormLabel className="font-normal cursor-pointer">
+                        Is Residential Student
+                      </FormLabel>
                     </FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
-                  name="cochingFee"
+                  name="isMealIncluded"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Admission Fee</FormLabel>
+                    <FormItem className="flex items-center space-x-2">
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          name={field.name}
-                          value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ? Number(e.target.value) : 0,
-                            )
-                          }
-                          onBlur={field.onBlur}
-                          ref={field.ref}
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormLabel className="font-normal cursor-pointer">
+                        Meal Included
+                      </FormLabel>
                     </FormItem>
                   )}
                 />
-
-                <div className="flex items-center gap-4 pt-2">
-                  <FormField
-                    control={form.control}
-                    name="isResidential"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">
-                          Is Residential Student
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="isMealIncluded"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">
-                          Meal Included
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                </div>
               </div>
             </form>
           </Form>
@@ -273,25 +293,25 @@ export function FeesSection({
                 <p className="font-medium">{formatMony(data?.monthlyFee)}</p>
               </div>
             )}
-            {data?.daycareFee && (
+            {data?.daycareFee > 0 && (
               <div className="space-y-2">
-                <p className="text-sm text-gray-500">Coaching Fee</p>
+                <p className="text-sm text-gray-500">Daycare Fee</p>
                 <p className="font-medium">{formatMony(data?.daycareFee)}</p>
               </div>
             )}
-            {data?.coachingFee && (
+            {data?.coachingFee > 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-gray-500">Coaching Fee</p>
                 <p className="font-medium">{formatMony(data?.coachingFee)}</p>
               </div>
             )}
-            {data?.mealFee && (
+            {data?.mealFee > 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-gray-500">Meal Fee</p>
                 <p className="font-medium">{formatMony(data?.mealFee)}</p>
               </div>
             )}
-            {data?.residentialFee && (
+            {data?.residentialFee > 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-gray-500">Residential Fee</p>
                 <p className="font-medium">

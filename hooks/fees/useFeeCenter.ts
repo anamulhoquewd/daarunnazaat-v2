@@ -46,7 +46,7 @@ export function useFeeCenter() {
 
     setSearchLoading(true);
     try {
-      const res = await api(`/students?search=${search}`);
+      const res = await api.get(`/students?search=${search}`);
       if (!res.data.success) throw new Error(res.data.error.message);
       setStudents(res.data.data);
     } catch (e: any) {

@@ -56,7 +56,7 @@ export default function InvoicePage() {
         setIsLoading(true);
         setError(null);
 
-        const response = await api(`/fees/${id}`);
+        const response = await api.get(`/fees/${id}`);
 
         if (!response.data.success) {
           throw new Error(response.data.error.message);
