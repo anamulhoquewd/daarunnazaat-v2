@@ -123,6 +123,7 @@ const StudentSchema = new Schema<IStudent & Document>(
     },
 
     passoutDate: { type: Date },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

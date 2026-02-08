@@ -94,7 +94,7 @@ export const gets = async (queryParams: {
     }
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "className"].includes(
-      queryParams.sortBy
+      queryParams.sortBy,
     )
       ? queryParams.sortBy
       : "createdAt";
@@ -195,7 +195,7 @@ export const updates = async ({
     return {
       error: schemaValidationError(
         bodyValidation.error,
-        "Invalid request body"
+        "Invalid request body",
       ),
     };
   }
@@ -265,7 +265,10 @@ export const deletes = async (_id: string) => {
     }
 
     // Delete Class
-    await classData.deleteOne();
+    // Inactive inside delete
+    // await classData.deleteOne();
+    classData.isActive = false;
+    await classData.save();
 
     // Response
     return {

@@ -23,8 +23,11 @@ const TransactionLogSchema = new Schema<ITransactionLog & Document>(
     description: { type: String, required: true },
     performedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     branch: { type: String, enum: Object.values(Branch), required: true },
+
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 TransactionLogSchema.index({ transactionType: 1, createdAt: -1 });

@@ -41,6 +41,7 @@ const StaffSchema = new Schema<IStaff & Document>(
     basicSalary: { type: Number, required: true, min: 0 },
     branch: { type: String, enum: Object.values(Branch), required: true },
     resignationDate: { type: Date },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

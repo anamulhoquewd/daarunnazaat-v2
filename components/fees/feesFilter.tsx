@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
+import { StaffFilterCombobox } from "../staffs/staffFilterCombobox";
+import { SttudentFilterCombobox } from "../students/studentFilterCombobox";
 
 interface FeesFiltersProps {
   filters: Record<string, string | boolean | undefined>;
@@ -120,25 +122,15 @@ export default function FeesFilters({
               </Select>
             </div>
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">Staff ID</label>
-              <Input
-                placeholder="Search class by id..."
-                value={(filters.collectedBy as string) || ""}
-                onChange={(e) => onChange("collectedBy", e.target.value)}
-              />
-            </div>
+            <StaffFilterCombobox
+              value={filters.collectedBy as string}
+              onChange={onChange}
+            />
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Student ID
-              </label>
-              <Input
-                placeholder="Search guardian by id..."
-                value={(filters.studentId as string) || ""}
-                onChange={(e) => onChange("studentId", e.target.value)}
-              />
-            </div>
+            <SttudentFilterCombobox
+              value={filters.studentId as string}
+              onChange={onChange}
+            />
           </div>
         </CardContent>
       )}

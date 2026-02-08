@@ -36,7 +36,6 @@ import Link from "next/link";
 import { useState } from "react";
 
 function FeesPage() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [selectId, setSelectedId] = useState<string | null>(null);
 
@@ -48,19 +47,15 @@ function FeesPage() {
     year: false,
     paymentMethod: false,
     dueAmount: false,
-    discount: false,
-    amount: false,
+    baseAmount: false,
+    payableAmount: false,
     session: false,
-    residentialFee: false,
-    monthlyFee: false,
-    mealFee: false,
     source: false,
   });
 
   const {
     pagination,
     fees,
-    setValues,
     setPagination,
     search,
     setSearch,
@@ -73,9 +68,7 @@ function FeesPage() {
   } = useFeesQuery();
 
   const columns = FeesColumns({
-    setIsEditing,
     setIsDelOpen,
-    setValues,
     setSelectedId,
   });
 
@@ -135,7 +128,7 @@ function FeesPage() {
               </span>
             )}
             <Link href={"/dashboard/fee-center"}>
-              <Button className="cursor-pointer">Add One</Button>
+              <Button className="cursor-pointer">Fee Center</Button>
             </Link>
           </div>
         </div>

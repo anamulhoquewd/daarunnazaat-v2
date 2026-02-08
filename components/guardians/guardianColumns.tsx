@@ -32,7 +32,7 @@ export const GuardianColumns = ({
   },
   {
     header: "Phone",
-    cell: ({ row }) => row.original?.userId?.phone || "-",
+    cell: ({ row }) => row.original?.user?.phone || "-",
   },
   {
     header: "Whats App",
@@ -41,7 +41,7 @@ export const GuardianColumns = ({
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.original?.userId?.email || "-",
+    cell: ({ row }) => row.original?.user?.email || "-",
   },
   {
     accessorKey: "gender",

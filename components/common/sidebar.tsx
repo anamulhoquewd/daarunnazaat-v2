@@ -156,8 +156,8 @@ const data = {
       icon: SquareTerminal,
       items: [
         {
-          title: "Registration",
-          url: null,
+          title: "Fee Center",
+          url: "/dashboard/fee-center",
         },
         {
           title: "Starred",

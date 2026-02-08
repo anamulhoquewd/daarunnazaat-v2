@@ -321,6 +321,18 @@ export default function InvoicePage() {
 
             <Separator className="bg-neutral-200" />
 
+            {fee.remarks && (
+              <>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Remarks
+                  </h3>
+                  <p className="text-gray-700">{fee.remarks}</p>
+                </div>
+                <Separator className="bg-neutral-200" />
+              </>
+            )}
+
             {/* Footer Information */}
             <div className="grid grid-cols-3 gap-4 text-xs text-gray-500">
               <div>
@@ -340,18 +352,6 @@ export default function InvoicePage() {
                 <p>{format(new Date(fee.updatedAt), "cc LLL yyyy")}</p>
               </div>
             </div>
-
-            {fee.remarks && (
-              <>
-                <Separator />
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Remarks
-                  </h3>
-                  <p className="text-gray-700">{fee.remarks}</p>
-                </div>
-              </>
-            )}
           </CardContent>
         </Card>
       </div>

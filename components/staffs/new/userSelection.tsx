@@ -22,7 +22,7 @@ function StaffUserSelection() {
       <CardHeader>
         <CardTitle className="text-xl sm:text-2xl">User Selection</CardTitle>
         <CardDescription>
-          Select the user associated with this student
+          Select the user associated with this staff
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

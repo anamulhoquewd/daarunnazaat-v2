@@ -466,11 +466,10 @@ export const deletes = async (_id: string) => {
     }
 
     // Delete Staff
-    await staff.deleteOne();
-
-    // TODO staff delete korle user delete korbo ki korbo na.
-    // Also delete associated user
-    // await User.findByIdAndDelete(staff.userId);
+    // Inactive inside of delete
+    // await staff.deleteOne();
+    staff.isActive = false;
+    await staff.save();
 
     // Response
     return {

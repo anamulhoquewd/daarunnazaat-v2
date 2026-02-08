@@ -36,8 +36,9 @@ const GuardianSchema = new Schema<IGuardian & Document>(
     avatar: { type: String },
     occupation: { type: String },
     monthlyIncome: { type: Number },
+    isActive: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Guardian: Model<IGuardian & Document> =

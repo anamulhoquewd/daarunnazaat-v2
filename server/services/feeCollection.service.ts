@@ -655,7 +655,12 @@ export const deletes = async (_id: string) => {
     }
 
     // Delete fee
-    await fee.deleteOne();
+    // isDeleted flag is on inside delete
+    // await fee.deleteOne();
+    fee.isDeleted = true;
+    fee.deletedAt = new Date();
+
+    await fee.save();
 
     // Response
     return {

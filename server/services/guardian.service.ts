@@ -406,11 +406,10 @@ export const deletes = async (_id: string) => {
     }
 
     // Delete Guardian
-    await guardian.deleteOne();
-
-    // TODO guardian delete korle user delete korbo ki korbo na.
-    // Also delete associated user
-    // await User.findByIdAndDelete(guardian.userId);
+    // Inactive inside delete
+    // await guardian.deleteOne();
+    guardian.isActive = true;
+    await guardian.save();
 
     // Response
     return {

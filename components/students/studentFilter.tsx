@@ -17,6 +17,7 @@ import {
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
 import { ClassFilterCombobox } from "../clasess/classFilterCombobox";
+import { GuardianFilterCombobox } from "../guardians/guardianFilterCombobox";
 
 interface StudentFiltersProps {
   filters: Record<string, string | boolean | undefined>;
@@ -146,17 +147,10 @@ export default function StudentFilters({
               value={filters.classId as string}
               onChange={onChange}
             />
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Guardian ID
-              </label>
-              <Input
-                placeholder="Search guardian by id..."
-                value={(filters.guardianId as string) || ""}
-                onChange={(e) => onChange("guardianId", e.target.value)}
-              />
-            </div>
+            <GuardianFilterCombobox
+              value={filters.guardianId as string}
+              onChange={onChange}
+            />
           </div>
         </CardContent>
       )}

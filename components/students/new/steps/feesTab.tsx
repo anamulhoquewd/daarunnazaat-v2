@@ -29,73 +29,94 @@ function FeesTab() {
         <CardDescription>Enter all applicable fees</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <h3 className="font-semibold text-sm sm:text-base">
-            Additional Options
-          </h3>
-          <div className="space-y-3">
-            <FormField
-              control={control}
-              name="isResidential"
-              render={({ field }) => (
-                <FormItem className="flex items-center space-x-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">
-                    Is Residential Student
-                  </FormLabel>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="isMealIncluded"
-              render={({ field }) => (
-                <FormItem className="flex items-center space-x-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">
-                    Meal Included
-                  </FormLabel>
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={control}
             name="admissionFee"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Admission Fee *</FormLabel>
+                <FormLabel>Admission Fee</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="0" {...field} />
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    name={field.name}
+                    value={field.value != null ? String(field.value) : ""}
+                    onChange={(e) =>
+                      field.onChange(e.target.value ?? Number(e.target.value))
+                    }
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <FormField
             control={control}
             name="monthlyFee"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Monthly Fee *</FormLabel>
+                <FormLabel>Monthly Fee</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="0" {...field} />
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    name={field.name}
+                    value={field.value != null ? String(field.value) : ""}
+                    onChange={(e) =>
+                      field.onChange(e.target.value ?? Number(e.target.value))
+                    }
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="coachingFee"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Coaching Fee</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    name={field.name}
+                    value={field.value != null ? String(field.value) : ""}
+                    onChange={(e) =>
+                      field.onChange(e.target.value ?? Number(e.target.value))
+                    }
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="daycareFee"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Daycare Fee</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    name={field.name}
+                    value={field.value != null ? String(field.value) : ""}
+                    onChange={(e) =>
+                      field.onChange(e.target.value ?? Number(e.target.value))
+                    }
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -109,7 +130,43 @@ function FeesTab() {
                 <FormItem>
                   <FormLabel>Residential Fee</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="0" {...field} />
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      name={field.name}
+                      value={field.value != null ? String(field.value) : ""}
+                      onChange={(e) =>
+                        field.onChange(e.target.value ?? Number(e.target.value))
+                      }
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {isMealIncluded && (
+            <FormField
+              control={control}
+              name="mealFee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Meal Fee</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      name={field.name}
+                      value={field.value != null ? String(field.value) : ""}
+                      onChange={(e) =>
+                        field.onChange(e.target.value ?? Number(e.target.value))
+                      }
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -118,21 +175,42 @@ function FeesTab() {
           )}
         </div>
 
-        {isMealIncluded && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <FormField
             control={control}
-            name="mealFee"
+            name="isResidential"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Meal Fee</FormLabel>
+              <FormItem className="flex items-center space-x-2">
                 <FormControl>
-                  <Input type="number" placeholder="0" {...field} />
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormLabel className="font-normal cursor-pointer">
+                  Is Residential Student
+                </FormLabel>
               </FormItem>
             )}
           />
-        )}
+          <FormField
+            control={control}
+            name="isMealIncluded"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="font-normal cursor-pointer">
+                  Meal Included
+                </FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
       </CardContent>
     </Card>
   );

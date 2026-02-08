@@ -120,7 +120,7 @@ export const updates = async ({
     return {
       error: schemaValidationError(
         bodyValidation.error,
-        "Invalid request body"
+        "Invalid request body",
       ),
     };
   }
@@ -171,7 +171,7 @@ export const updates = async ({
           description: `Salary adjusted for ${docs.month}/${docs.year}`,
           performedBy: updatedByUserId,
           branch: docs.branch,
-        })
+        }),
       );
     }
 
@@ -187,7 +187,7 @@ export const updates = async ({
             description: `Salary reversed for ${docs.month}/${docs.year}`,
             performedBy: updatedByUserId,
             branch: docs.branch,
-          })
+          }),
         );
       } else if (docs.status === "paid") {
         logs.push(
@@ -199,7 +199,7 @@ export const updates = async ({
             description: `Salary marked as paid for ${docs.month}/${docs.year}`,
             performedBy: updatedByUserId,
             branch: docs.branch,
-          })
+          }),
         );
       } else if (docs.status === "adjusted") {
         logs.push(
@@ -211,7 +211,7 @@ export const updates = async ({
             description: `Salary manually adjusted for ${docs.month}/${docs.year}`,
             performedBy: updatedByUserId,
             branch: docs.branch,
-          })
+          }),
         );
       }
     }
@@ -350,7 +350,7 @@ export const gets = async (queryParams: {
         .limit(queryParams.limit)
         .populate(
           "staffId",
-          "firstName lastName gender designation basicSalary branch staffId whtasApp"
+          "firstName lastName gender designation basicSalary branch staffId whtasApp",
         )
         .populate("paidBy", "phone role")
         .exec(),
@@ -439,7 +439,10 @@ export const deletes = async (_id: string) => {
     }
 
     // Delete salary
-    await salary.deleteOne();
+    // is deleted flaf is on inside of delete
+    // await salary.deleteOne();
+    salary.isDeleted = true;
+    salary.deletedAt = new Date();
 
     // Response
     return {

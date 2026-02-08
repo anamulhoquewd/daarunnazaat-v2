@@ -221,7 +221,12 @@ export const deletes = async (_id: string) => {
     }
 
     // Delete transaction
-    await transaction.deleteOne();
+    // is deleted flag is on. inside of delete
+    // await transaction.deleteOne();
+    transaction.isDeleted = true;
+    transaction.deletedAt = new Date();
+
+    await transaction.save();
 
     // Response
     return {

@@ -52,7 +52,7 @@ export const createStudent = async ({
   session.startTransaction();
 
   try {
-    // 1️⃣ Check user exists
+    // Check user exists
     const user = await User.findById(validData.data.userId).session(session);
     if (!user) {
       await session.abortTransaction();
@@ -63,7 +63,16 @@ export const createStudent = async ({
       };
     }
 
-    // 2️⃣ Ensure role is student
+    if (user.profile) {
+      await session.abortTransaction();
+      return {
+        error: {
+          message: "User already has a profile",
+        },
+      };
+    }
+
+    // Ensure role is student
     if (user.role !== UserRole.STUDENT) {
       await session.abortTransaction();
       return {
@@ -73,7 +82,7 @@ export const createStudent = async ({
       };
     }
 
-    // 3️⃣ Check student already exists
+    // Check student already exists
     const existingStudent = await Student.findOne({
       userId: validData.data.userId,
     }).session(session);
@@ -93,7 +102,7 @@ export const createStudent = async ({
       };
     }
 
-    // 4️⃣ Validate guardian
+    // Validate guardian
     const guardian = await Guardian.findById(validData.data.guardianId).session(
       session,
     );
@@ -106,7 +115,7 @@ export const createStudent = async ({
       };
     }
 
-    // 4️⃣ Validate currentSession
+    // Validate currentSession
     const currentSession = await Session.findOne({
       _id: validData.data.currentSessionId,
       isActive: true,
@@ -124,7 +133,7 @@ export const createStudent = async ({
 
     const studentId = await generateStudentId();
 
-    // 5️⃣ Create student
+    // Create student
     const student = new Student({
       ...validData.data,
       studentId,
@@ -147,7 +156,7 @@ export const createStudent = async ({
     // Save new student with session
     const newStudent = await student.save({ session });
 
-    // 7️⃣ ✅ **CREATE ADMISSION FEE COLLECTION**
+    // ✅ **CREATE ADMISSION FEE COLLECTION**
     const admissionFeeResult = await createAdmissionFee({
       student: newStudent,
       authUser,
@@ -168,7 +177,7 @@ export const createStudent = async ({
       };
     }
 
-    // 6️⃣ ✅ Update User profile field
+    // ✅ Update User profile field
     await User.findByIdAndUpdate(
       validData.data.userId,
       {

@@ -213,6 +213,9 @@ export const userZ = z.object({
   isBlocked: z.boolean().optional(),
   blockedAt: z.coerce.date().optional(),
 
+  isDeleted: z.boolean().optional(),
+  deletedAt: z.coerce.date().optional(),
+
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
 });
@@ -378,6 +381,7 @@ export const studentZ = personBaseZ
     paymentMethod: z.nativeEnum(PaymentMethod),
     paymentSource: z.nativeEnum(PaymentSource),
     remarks: z.string().optional(),
+    isActive: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.isMealIncluded && !data.mealFee) {
@@ -412,6 +416,7 @@ export const guardianZ = personBaseZ.omit({ dateOfBirth: true }).extend({
   guardianId: z.string().optional(),
   occupation: z.string().optional(),
   monthlyIncome: moneyZ.optional(),
+  isActive: z.boolean().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -435,6 +440,7 @@ export const staffZ = personBaseZ.extend({
   branch: z.nativeEnum(Branch),
   resignationDate: z.coerce.date().optional(),
   avatar: z.string().optional(),
+  isActive: z.boolean().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -585,6 +591,8 @@ export const salaryPaymentZ = z.object({
   paidBy: mongoZ.optional(),
   remarks: z.string().optional(),
   status: z.enum(["paid", "reversed", "adjusted"]).optional(),
+  isDeleted: z.boolean().optional(),
+  deletedAt: z.coerce.date().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -630,6 +638,8 @@ export const transactionLogZ = z.object({
   description: z.string(),
   performedBy: mongoZ.optional(),
   branch: z.nativeEnum(Branch),
+  isDeleted: z.boolean().optional(),
+  deletedAt: z.coerce.date().optional(),
 });
 
 // Attendance Schema

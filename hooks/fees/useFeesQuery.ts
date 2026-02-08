@@ -47,7 +47,6 @@ function useFeesQuery() {
     global: "",
     sessionId: "",
   });
-  const [values, setValues] = useState<IFeeCollection | null>(null);
   const [filterBy, setFilterBy] = useState<IFilter>({
     dateRange: { from: undefined, to: undefined },
     feeRange: { min: undefined, max: undefined },
@@ -80,7 +79,7 @@ function useFeesQuery() {
       const query = buildQuery({
         page: currentPage,
         search: search.global,
-        paidBy: search.collectedBy,
+        collectedBy: search.collectedBy,
         studentId: search.studentId,
         paymentMethod:
           filters?.paymentMethod === "all" ? undefined : filters?.paymentMethod,
@@ -215,7 +214,6 @@ function useFeesQuery() {
     pagination,
     setPagination,
     refetch: getFees,
-    setValues,
     setSearch,
     search,
     filterBy,

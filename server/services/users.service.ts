@@ -16,8 +16,6 @@ import { User } from "../models/users.model";
 import { generateAccessToken, generateRefreshToken } from "../utils";
 import pagination from "../utils/pagination";
 import { stringGenerator } from "../utils/string-generator";
-import { transporter } from "../config/email";
-import { fi } from "zod/v4/locales";
 
 export const register = async (body: IUser) => {
   // Safe Parse for better error handling
@@ -46,6 +44,25 @@ export const register = async (body: IUser) => {
     const isUserExist = await User.findOne({
       $or: [{ email: validData.data.email }, { phone: validData.data.phone }],
     });
+
+    if (isUserExist?.isDeleted || isUserExist?.isBlocked) {
+      return {
+        error: {
+          message:
+            "Your account was previously deactivated. Please contact admin.",
+          fields: [
+            {
+              name: "email",
+              message: "Email must be unique",
+            },
+            {
+              name: "phone",
+              message: "Phone number must be unique",
+            },
+          ],
+        },
+      };
+    }
 
     if (isUserExist) {
       return {
@@ -488,7 +505,11 @@ export const deleteUser = async (_id: string) => {
     }
 
     // Delete user
-    await user.deleteOne();
+    // is deleted flag is on inside of delete
+    // await user.deleteOne();
+    user.isDeleted = true;
+    user.deletedAt = new Date();
+    await user.save();
 
     // Response
     return {

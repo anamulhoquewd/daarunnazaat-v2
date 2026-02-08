@@ -33,6 +33,9 @@ const UserSchema = new Schema<IUser & Document>(
     refreshTokens: [{ type: String, required: false }],
     passwordResetToken: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
+
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: Date,
   },
   { timestamps: true },
 );

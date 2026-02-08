@@ -30,6 +30,9 @@ const SalaryPaymentSchema = new Schema<ISalaryPayment & Document>(
     },
     paidBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     remarks: { type: String },
+
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: Date,
   },
   { timestamps: true },
 );

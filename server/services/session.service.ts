@@ -266,7 +266,10 @@ export const deletes = async (_id: string) => {
     }
 
     // Delete Session
-    await session.deleteOne();
+    // Inactive inside of delete
+    // await session.deleteOne();
+    session.isActive = false;
+    await session.save();
 
     // Response
     return {

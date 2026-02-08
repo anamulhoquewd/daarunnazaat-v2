@@ -39,7 +39,9 @@ export function StudentUserCombobox({ value, onChange }: Props) {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/users?search=${search}&role=student`);
+        const res = await api.get(
+          `/users?search=${search}&role=student&profile=null`,
+        );
         setUsers(res.data.data);
       } catch (error) {
         console.error("Failed to fetch users:", error);

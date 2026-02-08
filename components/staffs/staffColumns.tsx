@@ -35,6 +35,7 @@ export const StaffColumns = ({
       return (
         <Link
           href={`/dashboard/staffs/${_id}`}
+          target="_blank"
           className="text-blue-600 hover:underline font-medium"
         >
           {firstName ?? ""} {lastName ?? ""}

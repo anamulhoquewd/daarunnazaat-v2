@@ -5,6 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { MONTHS } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
@@ -12,15 +13,11 @@ import Link from "next/link";
 
 // Define Props Interface
 interface ColumnsProps {
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setValues: (values: any) => void;
 }
 export const FeesColumns = ({
-  setIsEditing,
   setIsDelOpen,
-  setValues,
   setSelectedId,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
@@ -56,21 +53,6 @@ export const FeesColumns = ({
     cell: ({ row }) => row.original?.branch || "-",
   },
   {
-    accessorKey: "monthlyFee",
-    header: "Monthly Fee",
-    cell: ({ row }) => row.original?.studentId?.monthlyFee || "-",
-  },
-  {
-    accessorKey: "mealFee",
-    header: "Meal Fee",
-    cell: ({ row }) => row.original?.studentId?.mealFee || "-",
-  },
-  {
-    accessorKey: "residentialFee",
-    header: "Residential Fee",
-    cell: ({ row }) => row.original?.studentId?.residentialFee || "-",
-  },
-  {
     accessorKey: "session",
     header: "Session",
     cell: ({ row }) => row.original?.sessionId?.sessionName || "-",
@@ -81,23 +63,23 @@ export const FeesColumns = ({
     cell: ({ row }) => row.original?.feeType || "-",
   },
   {
-    accessorKey: "amount",
-    header: "Amount",
-    cell: ({ row }) => row.original?.amount || "-",
+    accessorKey: "baseAmount",
+    header: "Base",
+    cell: ({ row }) => row.original?.baseAmount || "-",
   },
   {
-    accessorKey: "discount",
-    header: "Discount",
-    cell: ({ row }) => row.original?.discount || "-",
+    accessorKey: "payableAmount",
+    header: "Payable",
+    cell: ({ row }) => row.original?.payableAmount || "-",
   },
   {
-    accessorKey: "paidAmount",
-    header: "Paid amount",
-    cell: ({ row }) => row.original?.paidAmount || "-",
+    accessorKey: "received",
+    header: "Received",
+    cell: ({ row }) => row.original?.receivedAmount || "-",
   },
   {
     accessorKey: "dueAmount",
-    header: "Due amount",
+    header: "Due",
     cell: ({ row }) => row.original?.dueAmount || "-",
   },
   {
@@ -115,7 +97,11 @@ export const FeesColumns = ({
   },
   {
     header: "Month",
-    cell: ({ row }) => row.original?.month || "-",
+    cell: ({ row }) => {
+      const { month } = row.original;
+
+      return <div>{MONTHS[month] ?? "-"}</div>;
+    },
   },
   {
     accessorKey: "year",
@@ -154,16 +140,21 @@ export const FeesColumns = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onClick={() => {
-              setValues(row.original);
-              setSelectedId(row.original._id);
-              setIsEditing(true);
-            }}
+          <Link
+            target="_blank"
+            href={`/dashboard/fees/edit/${row.original._id}`}
           >
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
+            <DropdownMenuItem
+            // onClick={() => {
+            //   setValues(row.original);
+            //   setSelectedId(row.original._id);
+            //   setIsEditing(true);
+            // }}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+          </Link>
 
           <DropdownMenuItem
             className="text-destructive"

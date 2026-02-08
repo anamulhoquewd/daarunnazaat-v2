@@ -11,7 +11,9 @@ import { FeeNotFound } from "@/components/fees/updates/feeNotFound";
 import { FeeInfoCard } from "@/components/fees/updates/feeInfoCard";
 import { FeeFormFields } from "@/components/fees/updates/feeInfoFIelds";
 import { ChangesSummary } from "@/components/fees/updates/changeSummary";
+import { useRouter } from "next/navigation";
 export default function FeeUpdatePage() {
+  const router = useRouter();
   const {
     fee,
     changes,
@@ -100,7 +102,7 @@ export default function FeeUpdatePage() {
           <Button
             variant="outline"
             className="flex-1"
-            onClick={() => window.history.back()}
+            onClick={() => router.back()}
             disabled={isSubmitting}
           >
             Cancel

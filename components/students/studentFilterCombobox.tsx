@@ -19,45 +19,45 @@ import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useEffect, useState } from "react";
 
-type ClassItem = {
+type StudentItem = {
   _id: string;
-  className: string;
+  studentId: string;
 };
 
 interface Props {
-  value?: string; // classId
-  onChange: (key: "classId", value: string) => void;
+  value?: string; // studentId
+  onChange: (key: "studentId", value: string) => void;
 }
 
-export function ClassFilterCombobox({ value, onChange }: Props) {
+export function SttudentFilterCombobox({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [students, setStudents] = useState<StudentItem[]>([]);
   const [page, setPage] = useState(1);
   const [nextPage, setNextPage] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   // 🔄 search change হলে reset
   useEffect(() => {
-    setClasses([]);
+    setStudents([]);
     setPage(1);
     setNextPage(null);
   }, [search]);
 
   // 🔥 fetch function (infinite)
-  const fetchClasses = async () => {
+  const fetchStudents = async () => {
     if (loading) return;
     if (page !== 1 && nextPage === null) return;
 
     setLoading(true);
 
-    const res = await api.get(`/classes?search=${search}&page=${page}`);
+    const res = await api.get(`/students?search=${search}&page=${page}`);
     if (!res.data.success) {
       throw new Error(res.data.error.message);
     }
 
-    setClasses(res.data.data);
+    setStudents(res.data.data);
     setNextPage(res.data.pagination?.nextPage);
     setPage(res.data.pagination?.nextPage ?? page);
 
@@ -66,15 +66,17 @@ export function ClassFilterCombobox({ value, onChange }: Props) {
 
   // initial + search trigger
   useEffect(() => {
-    fetchClasses();
+    fetchStudents();
     // eslint-disable-next-line hooks/exhaustive-deps
   }, [search]);
 
-  const selectedClass = classes.find((c) => c._id === value);
+  const selectedStudent: StudentItem | undefined = students.find(
+    (c) => c._id === value,
+  );
 
   return (
     <div>
-      <label className="text-sm font-medium mb-2 block">Classes</label>
+      <label className="text-sm font-medium mb-2 block">Student</label>
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -83,14 +85,15 @@ export function ClassFilterCombobox({ value, onChange }: Props) {
             role="combobox"
             className="w-full justify-between"
           >
-            {selectedClass?.className || "Select class..."}
+            {selectedStudent?.studentId || "Select class..."}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
 
         <p className="text-xs text-muted-foreground ml-2.5">
-          {selectedClass?._id}
+          {selectedStudent?._id}
         </p>
+
         <PopoverContent className="w-full p-0">
           <Command>
             <CommandInput
@@ -104,20 +107,20 @@ export function ClassFilterCombobox({ value, onChange }: Props) {
               onScroll={(e) => {
                 const el = e.currentTarget;
                 if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
-                  fetchClasses(); // 🔥 next page
+                  fetchStudents(); // 🔥 next page
                 }
               }}
             >
               <CommandEmpty>
-                {loading ? "Loading..." : "No class found"}
+                {loading ? "Loading..." : "No Student found"}
               </CommandEmpty>
               <CommandGroup>
-                {classes.map((item) => (
+                {students.map((item) => (
                   <CommandItem
                     key={item._id}
-                    value={item.className}
+                    value={item.studentId}
                     onSelect={() => {
-                      onChange("classId", item._id);
+                      onChange("studentId", item._id);
                       setOpen(false);
                     }}
                   >
@@ -127,7 +130,7 @@ export function ClassFilterCombobox({ value, onChange }: Props) {
                         value === item._id ? "opacity-100" : "opacity-0",
                       )}
                     />
-                    {item.className}
+                    {item.studentId}
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -138,9 +141,9 @@ export function ClassFilterCombobox({ value, onChange }: Props) {
                 </div>
               )}
 
-              {nextPage === null && classes.length > 0 && (
+              {nextPage === null && students.length > 0 && (
                 <div className="p-2 text-xs text-center text-muted-foreground">
-                  No more classes
+                  No more students
                 </div>
               )}
             </CommandList>
