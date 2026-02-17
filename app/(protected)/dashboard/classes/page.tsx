@@ -2,8 +2,10 @@
 
 import { ClassBottomFilter } from "@/components/clasess/classBottomFilter";
 import { ClassColumns } from "@/components/clasess/classColumns";
+import ClassRegistrationForm from "@/components/clasess/classRegistrationForm";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
+import { AlertDialogHeader } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,12 +15,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -27,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useClassQuery from "@/hooks/classes/useCLassQuery";
+import { useClassForm } from "@/hooks/classes/useClassForm";
 import {
   ColumnFiltersState,
   SortingState,
@@ -36,15 +47,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Filter, X } from "lucide-react";
-import Link from "next/link";
+import { ChevronDown, Filter, Plus, X } from "lucide-react";
 import { useState } from "react";
 
 function ClassesPage() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
-  const [selectId, setSelectedId] = useState<string | null>(null);
-
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
@@ -55,7 +61,6 @@ function ClassesPage() {
   const {
     pagination,
     classes,
-    setValues,
     setPagination,
     search,
     setSearch,
@@ -65,13 +70,24 @@ function ClassesPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    setSelectedId,
+    handleUpdate,
+    values,
+    setValues,
+    isEditing,
+    setIsEditing,
+    isAddOpen,
+    setIsAddOpen,
   } = useClassQuery();
+
+  const { form, handleSubmit, isLoading, setIsDelOpen } = useClassForm();
 
   const columns = ClassColumns({
     setIsEditing,
     setIsDelOpen,
     setValues,
     setSelectedId,
+    setIsAddOpen,
   });
 
   const table = useReactTable({
@@ -129,9 +145,53 @@ function ClassesPage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
-            <Link href={"#"}>
-              <Button className="cursor-pointer">Add One</Button>
-            </Link>
+            <Dialog
+              open={isAddOpen}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setValues(null);
+                  setSelectedId("");
+                  setIsEditing(false);
+                  form.reset({
+                    className: "",
+                    description: "",
+                    monthlyFee: 0,
+                    capacity: 0,
+                    isActive: true,
+                  });
+                }
+                setIsAddOpen(open);
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  onChange={() => setIsAddOpen(true)}
+                  className="w-full sm:w-auto cursor-pointer"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add One
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <AlertDialogHeader>
+                  <DialogTitle>Customer Registration Form</DialogTitle>
+                  <DialogDescription>
+                    Fill out the form below to complete new customer
+                    registration.
+                  </DialogDescription>
+                </AlertDialogHeader>
+                <ScrollArea className="sm:max-w-[525px] h-[65dvh] overflow-hidden pr-2 md:px-4">
+                  <ClassRegistrationForm
+                    values={values}
+                    handleSubmit={isEditing ? handleUpdate : handleSubmit}
+                    isLoading={isLoading}
+                    form={form}
+                  />
+                  <ScrollBar orientation="vertical" className="w-2.5" />
+                  <ScrollBar orientation="horizontal" className="w-2.5" />
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </CardHeader>

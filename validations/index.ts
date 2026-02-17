@@ -455,7 +455,7 @@ export const staffUpdateZ = staffZ.partial().refine(
 // Class Schema
 export const classZ = z.object({
   _id: mongoZ.optional(),
-  className: z.string(),
+  className: z.string().min(3),
   description: z.string().optional(),
   monthlyFee: moneyZ.min(0),
   capacity: moneyZ.min(1).optional(),

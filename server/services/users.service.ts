@@ -190,6 +190,7 @@ export const gets = async (queryParams: {
     from: string | Date | undefined;
     to: string | Date | undefined;
   };
+  nullProfile: string | null;
 }) => {
   try {
     const {
@@ -203,9 +204,11 @@ export const gets = async (queryParams: {
       createdDateRange,
       role,
     } = queryParams;
+    let { nullProfile } = queryParams;
 
     // Build query
     const query: any = {};
+
     if (typeof isActive === "boolean") {
       query.isActive = isActive;
     }
@@ -213,6 +216,13 @@ export const gets = async (queryParams: {
       query.isBlocked = isBlocked;
     }
     if (role) query.role = role;
+
+    if (nullProfile === "null") nullProfile = null;
+
+    if (nullProfile === null) {
+      query.profile = nullProfile;
+    }
+
     if (search) {
       query.$or = [
         { email: { $regex: search, $options: "i" } },
@@ -239,6 +249,8 @@ export const gets = async (queryParams: {
     // Allowable sort fields
     const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
     const sortDirection = sortType?.toLocaleLowerCase() === "asc" ? 1 : -1;
+
+    console.log("Query: ", query);
 
     // Fetch users
     const [users, total] = await Promise.all([

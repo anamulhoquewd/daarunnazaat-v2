@@ -12,6 +12,7 @@ import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 // Define Props Interface
 interface ColumnsProps {
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsAddOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
@@ -20,6 +21,7 @@ export const SessionColumns = ({
   setIsEditing,
   setIsDelOpen,
   setValues,
+  setIsAddOpen,
   setSelectedId,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
@@ -72,7 +74,8 @@ export const SessionColumns = ({
             onClick={() => {
               setValues(row.original);
               setSelectedId(row.original._id);
-              setIsEditing(true);
+              setIsAddOpen!(true);
+              setIsEditing!(true);
             }}
           >
             <Pencil className="mr-2 h-4 w-4" />

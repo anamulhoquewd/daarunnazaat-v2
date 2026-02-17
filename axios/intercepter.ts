@@ -9,40 +9,42 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest: any = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes("/auth/refresh")
+    ) {
       originalRequest._retry = true;
 
       try {
         await refreshToken();
-
         return api(originalRequest);
-      } catch (refreshError: any) {
+      } catch (refreshError) {
         return Promise.reject(
-          new Error(
-            refreshError?.response?.data?.error?.message ||
-              "Session expired. Please login again."
-          )
+          new Error("Session expired. Please login again."),
         );
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 const refreshToken = async () => {
   try {
     const refreshInstance = axios.create({ withCredentials: true });
     await refreshInstance.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
     );
-
-    return null;
   } catch (error) {
     console.error("Failed to refresh token: ", error);
-    return null;
+    throw error; // 🔥 MUST throw
   }
 };
 

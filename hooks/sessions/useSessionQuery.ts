@@ -1,8 +1,14 @@
 import api from "@/axios/intercepter";
 import { buildQuery, defaultPagination, handleAxiosError } from "@/lib/utils";
-import { BatchType, IClass, IPagination } from "@/validations";
+import {
+  BatchType,
+  ISession,
+  IPagination,
+  IUpdateSession,
+} from "@/validations";
 import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "../common/useDebounce";
+import { toast } from "sonner";
 
 interface IFilter {
   isActive: "all" | boolean;
@@ -20,12 +26,16 @@ type SortType = "asc" | "desc";
 
 function useSessionQuery() {
   const [isLoading, setIsLoading] = useState(false);
-  const [sessions, setSessions] = useState<IClass[]>([]);
+
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isAddOpen, setIsAddOpen] = useState<boolean>(false);
+  const [values, setValues] = useState<ISession | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<ISession[]>([]);
   const [pagination, setPagination] = useState<IPagination>(defaultPagination);
   const [search, setSearch] = useState<ISearch>({
     global: "",
   });
-  const [values, setValues] = useState<IClass | null>(null);
   const [filterBy, setFilterBy] = useState<IFilter>({
     isActive: "all",
     sortBy: "createdAt",
@@ -82,6 +92,35 @@ function useSessionQuery() {
     if (filterBy.batchType !== "all") count++;
 
     return count;
+  };
+
+  const handleUpdate = async (data: IUpdateSession) => {
+    setIsLoading(true);
+
+    console.log("Updating session with data:", data, "and ID:", selectedId);
+
+    try {
+      const response = await api.patch(`/sessions/${selectedId}`, data);
+      if (!response.data.success) {
+        toast.error("Update failed");
+        throw new Error(response.data.error.message || "Failed to update user");
+      }
+
+      getClasses({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+      toast.success("Updated successfully");
+    } catch (e) {
+      toast.error("Update failed");
+    } finally {
+      setIsLoading(false);
+      setIsEditing(false);
+      setIsAddOpen(false);
+    }
   };
 
   const handleClearFilters = () => {
@@ -149,6 +188,13 @@ function useSessionQuery() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    isAddOpen,
+    setIsAddOpen,
+    setIsEditing,
+    setSelectedId,
+    values,
+    isEditing,
+    handleUpdate,
   };
 }
 

@@ -8,7 +8,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { IStaff, IStudent, IUpdateStaff, IUpdateStudent } from "@/validations";
+import {
+  IGuardian,
+  IStaff,
+  IStudent,
+  IUpdateStaff,
+  IUpdateStudent,
+} from "@/validations";
 import { ContactInfo, contactInfoSchema } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -21,7 +27,7 @@ import { Input } from "@/components/ui/input";
 interface ContactInfoSectionProps {
   isEditing: boolean;
   onEditChange: (value: boolean) => void;
-  data?: IStudent | IStaff;
+  data?: IStudent | IStaff | IGuardian;
   onSave?: (data: IUpdateStudent | IUpdateStaff) => Promise<void>;
 }
 
@@ -34,6 +40,8 @@ export function ContactInfoSection({
   const form = useForm<ContactInfo>({
     resolver: zodResolver(contactInfoSchema),
   });
+
+  console.log("Guardian: ", data);
 
   useEffect(() => {
     if (data) {

@@ -1,0 +1,154 @@
+import api from "@/axios/intercepter";
+import {
+  clearStorage,
+  getFromStorage,
+  handleAxiosError,
+  saveToStorage,
+  scrollToFirstError,
+} from "@/lib/utils";
+import { guardianZ, IGuardian } from "@/validations";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+export const useGuardianForm = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const isResettingRef = useRef(false);
+
+  const savedData = getFromStorage();
+
+  const form = useForm({
+    resolver: zodResolver(guardianZ),
+    shouldUnregister: false,
+    defaultValues: savedData ?? {
+      presentAddress: {
+        village: "",
+        postOffice: "",
+        upazila: "",
+        district: "",
+        division: "",
+      },
+      permanentAddress: {
+        village: "",
+        postOffice: "",
+        upazila: "",
+        district: "",
+        division: "",
+      },
+    },
+  });
+
+  const watchedValues = form.watch();
+
+  useEffect(() => {
+    if (isResettingRef.current) return;
+
+    const timeout = setTimeout(() => {
+      saveToStorage(watchedValues);
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [watchedValues]);
+
+  const handleSubmit = async (data: IGuardian) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.post("/guardians/register", data);
+
+      if (!response.data.success) {
+        throw new Error(
+          response.data.error.message || "Failed to create guardian",
+        );
+      }
+
+      toast.success("Guardian created successfully!");
+
+      isResettingRef.current = true;
+      clearForm();
+      clearStorage();
+
+      setTimeout(() => {
+        isResettingRef.current = false;
+      }, 0);
+    } catch (error: any) {
+      handleAxiosError(error);
+
+      // 🔥 AUTO SCROLL TO FIRST ERROR
+      const firstErrorField = scrollToFirstError(form.formState.errors);
+
+      if (firstErrorField) {
+        setTimeout(() => {
+          const el = document.querySelector(
+            `[name="${firstErrorField}"]`,
+          ) as HTMLElement | null;
+
+          el?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+
+          el?.focus();
+        }, 100);
+      }
+
+      if (error.response?.data?.fields?.length) {
+        error.response.data.fields.forEach((f: any) => {
+          form.setError(f.name as any, {
+            message: f.message,
+          });
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const clearForm = () => {
+    isResettingRef.current = true;
+
+    form.reset({
+      presentAddress: {
+        village: "",
+        postOffice: "",
+        upazila: "",
+        district: "",
+        division: "",
+      },
+      permanentAddress: {
+        village: "",
+        postOffice: "",
+        upazila: "",
+        district: "",
+        division: "",
+      },
+      userId: "",
+      auternativePhone: "",
+      whatsApp: "",
+      firstName: "",
+      lastName: "",
+      dateOfBirth: null,
+      gender: "",
+      bloodGroup: "",
+      nid: "",
+      birthCertificateNumber: "",
+      monthlyIncome: undefined,
+      occupation: "",
+    });
+
+    clearStorage();
+
+    // next tick এ আবার auto-save চালু
+    setTimeout(() => {
+      isResettingRef.current = false;
+    }, 0);
+  };
+
+  return {
+    form,
+    isLoading,
+    handleSubmit,
+    clearForm,
+  };
+};

@@ -68,6 +68,8 @@ export const updates = async (c: Context) => {
 
   const body = await c.req.json();
 
+  console.log("Body: ", body);
+
   const response = await classService.updates({ _id, body });
 
   if (response.error) {

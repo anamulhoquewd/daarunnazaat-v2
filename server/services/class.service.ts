@@ -190,13 +190,11 @@ export const updates = async ({
   }
 
   // Validate Body
-  const bodyValidation = classUpdateZ.safeParse(body);
-  if (!bodyValidation.success) {
+  const validData = classUpdateZ.safeParse(body);
+
+  if (!validData.success) {
     return {
-      error: schemaValidationError(
-        bodyValidation.error,
-        "Invalid request body",
-      ),
+      error: schemaValidationError(validData.error, "Invalid request body"),
     };
   }
 
@@ -213,7 +211,7 @@ export const updates = async ({
     }
 
     // Check if all fields are empty
-    if (Object.keys(bodyValidation.data).length === 0) {
+    if (Object.keys(validData.data).length === 0) {
       return {
         success: {
           success: true,
@@ -225,7 +223,7 @@ export const updates = async ({
     }
 
     // Update only provided fields
-    Object.assign(classData, bodyValidation.data);
+    Object.assign(classData, validData.data);
     const docs = await classData.save();
 
     return {

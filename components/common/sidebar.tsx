@@ -1,9 +1,19 @@
 "use client";
 
 import {
+  ArrowRightLeft,
   AudioWaveform,
+  BadgeDollarSign,
+  BookAudio,
+  BriefcaseBusiness,
+  CirclePercent,
   GalleryVerticalEnd,
+  School,
+  School2,
+  ShieldCheck,
+  ShieldPlus,
   SquareTerminal,
+  Users,
 } from "lucide-react";
 import * as React from "react";
 
@@ -38,7 +48,7 @@ const data = {
     {
       title: "Students",
       url: "/dashboard/students",
-      icon: SquareTerminal,
+      icon: BookAudio,
       isActive: true,
       items: [
         {
@@ -58,7 +68,7 @@ const data = {
     {
       title: "Users",
       url: "/dashboard/users",
-      icon: SquareTerminal,
+      icon: Users,
       items: [
         {
           title: "Registration",
@@ -77,7 +87,7 @@ const data = {
     {
       title: "Staffs",
       url: "/dashboard/staffs",
-      icon: SquareTerminal,
+      icon: BriefcaseBusiness,
       items: [
         {
           title: "Registration",
@@ -96,7 +106,7 @@ const data = {
     {
       title: "Classes",
       url: "/dashboard/classes",
-      icon: SquareTerminal,
+      icon: School2,
       items: [
         {
           title: "Registration",
@@ -115,7 +125,7 @@ const data = {
     {
       title: "Sessions",
       url: "/dashboard/sessions",
-      icon: SquareTerminal,
+      icon: ShieldPlus,
       items: [
         {
           title: "Registration",
@@ -134,11 +144,11 @@ const data = {
     {
       title: "Guardians",
       url: "/dashboard/guardians",
-      icon: SquareTerminal,
+      icon: ShieldCheck,
       items: [
         {
           title: "Registration",
-          url: null,
+          url: "/dashboard/guardians/new",
         },
         {
           title: "Starred",
@@ -153,7 +163,7 @@ const data = {
     {
       title: "Fees ",
       url: "/dashboard/fees ",
-      icon: SquareTerminal,
+      icon: BadgeDollarSign,
       items: [
         {
           title: "Fee Center",
@@ -170,9 +180,9 @@ const data = {
       ],
     },
     {
-      title: "Transactions ",
-      url: "/dashboard/transactions ",
-      icon: SquareTerminal,
+      title: "Salaries ",
+      url: "/dashboard/salaries ",
+      icon: CirclePercent,
       items: [
         {
           title: "Registration",
@@ -189,9 +199,9 @@ const data = {
       ],
     },
     {
-      title: "Salaries ",
-      url: "/dashboard/salaries ",
-      icon: SquareTerminal,
+      title: "Transactions ",
+      url: "/dashboard/transactions ",
+      icon: ArrowRightLeft,
       items: [
         {
           title: "Registration",

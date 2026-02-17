@@ -105,17 +105,6 @@ export const StaffColumns = ({
 
         <DropdownMenuContent align="end">
           <DropdownMenuItem
-            onClick={() => {
-              setValues(row.original);
-              setSelectedId(row.original._id);
-              setIsEditing(true);
-            }}
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-
-          <DropdownMenuItem
             className="text-destructive"
             onClick={() => {
               setSelectedId(row.original._id);

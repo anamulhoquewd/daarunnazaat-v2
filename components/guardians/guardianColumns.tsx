@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 // Define Props Interface
 interface ColumnsProps {
@@ -27,8 +28,19 @@ export const GuardianColumns = ({
   },
   {
     header: "Name",
-    cell: ({ row }) =>
-      `${row.original.firstName || ""} ${row.original.lastName || ""}`,
+    cell: ({ row }) => {
+      const { _id, firstName, lastName } = row.original;
+
+      return (
+        <Link
+          href={`/dashboard/guardians/${_id}`}
+          target="_blank"
+          className="text-blue-600 hover:underline font-medium"
+        >
+          {firstName ?? ""} {lastName ?? ""}
+        </Link>
+      );
+    },
   },
   {
     header: "Phone",
@@ -70,17 +82,6 @@ export const GuardianColumns = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onClick={() => {
-              setValues(row.original);
-              setSelectedId(row.original._id);
-              setIsEditing(true);
-            }}
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-
           <DropdownMenuItem
             className="text-destructive"
             onClick={() => {

@@ -26,6 +26,7 @@ export const gets = async (c: Context) => {
   const sortType = c.req.query("sortType") || "desc";
   const search = c.req.query("search") as string;
   const gender = c.req.query("gender") as Gender;
+  const profile = c.req.query("profile");
 
   const response = await guardanService.gets({
     page,
@@ -34,6 +35,7 @@ export const gets = async (c: Context) => {
     sortType,
     gender,
     search,
+    profile,
   });
 
   if (response.serverError) {

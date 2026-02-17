@@ -13,6 +13,7 @@ interface ColumnsProps {
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsAddOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
 }
 export const ClassColumns = ({
@@ -20,6 +21,7 @@ export const ClassColumns = ({
   setIsDelOpen,
   setValues,
   setSelectedId,
+  setIsAddOpen,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
     header: "Class ID",
@@ -59,7 +61,8 @@ export const ClassColumns = ({
             onClick={() => {
               setValues(row.original);
               setSelectedId(row.original._id);
-              setIsEditing(true);
+              setIsAddOpen!(true);
+              setIsEditing!(true);
             }}
           >
             <Pencil className="mr-2 h-4 w-4" />

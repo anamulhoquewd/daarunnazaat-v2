@@ -29,7 +29,7 @@ type Props = {
   onChange: (value: string) => void;
 };
 
-export function StudentUserCombobox({ value, onChange }: Props) {
+export function GuardianUserCombobox({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<UserItem[]>([]);
@@ -40,7 +40,7 @@ export function StudentUserCombobox({ value, onChange }: Props) {
       setLoading(true);
       try {
         const res = await api.get(
-          `/users?search=${search}&role=student&profile=null=null`,
+          `/users?search=${search}&role=guardian&nullProfile=null`,
         );
         setUsers(res.data.data);
       } catch (error) {

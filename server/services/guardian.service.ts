@@ -219,7 +219,9 @@ export const get = async (_id: string) => {
 
   try {
     // Check if guardian exists
-    const guardian = await Guardian.findById(idValidation.data._id);
+    const guardian = await Guardian.findById(idValidation.data._id).populate(
+      "userId",
+    );
 
     if (!guardian) {
       return {

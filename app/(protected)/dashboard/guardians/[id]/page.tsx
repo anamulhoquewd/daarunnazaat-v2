@@ -1,31 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { StaffProfileHeader } from "@/components/staffs/staff/header";
-import { StaffNotFound } from "@/components/staffs/staff/notFound";
+import { GuardianProfileHeader } from "@/components/guardians/guardian/header";
+import { GuardianNotFound } from "@/components/guardians/guardian/notFound";
+import { PersonalInfoSection } from "@/components/guardians/guardian/personalInfo";
+import { AddressSection } from "@/components/students/student/addressInfo";
+import { ContactInfoSection } from "@/components/students/student/contactInfo";
 import { ProfileHeaderSkeleton } from "@/components/students/student/headerSkeleton";
 import { InfoSectionSkeleton } from "@/components/students/student/InfoSectionSkeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useStaffActions } from "@/hooks/staff/useStaffActions";
-import { ContactInfoSection } from "@/components/students/student/contactInfo";
-import { PersonalInfoSection } from "@/components/staffs/staff/personalInfo";
-import { AddressSection } from "@/components/students/student/addressInfo";
-import StaffInformation from "@/components/staffs/new/staffInfo";
-import { StaffInfoSection } from "@/components/staffs/staff/staffInfo";
+import { useGuardianActions } from "@/hooks/guardians/useGuardianActions";
+import { useState } from "react";
 
 export default function StaffProfilePage() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
-  const { staff, loading, handleUpdate } = useStaffActions();
+  const { guardian, loading, handleUpdate } = useGuardianActions();
 
-  if (!staff && !loading.fetch) return <StaffNotFound />;
+  if (!guardian && !loading.fetch) return <GuardianNotFound />;
 
   return (
     <main className="min-h-screen bg-background">
       {loading.fetch ? (
         <ProfileHeaderSkeleton />
       ) : (
-        staff && <StaffProfileHeader data={staff} />
+        guardian && <GuardianProfileHeader data={guardian} />
       )}
 
       <div className="container max-w-6xl mx-auto px-4 py-8">
@@ -47,16 +45,20 @@ export default function StaffProfilePage() {
                     onEditChange={(isEditing) =>
                       setEditingSection(isEditing ? "personal" : null)
                     }
-                    data={staff ?? undefined}
-                    onSave={handleUpdate}
+                    data={guardian ?? undefined}
+                    onSave={(data) =>
+                      handleUpdate(data as Parameters<typeof handleUpdate>[0])
+                    }
                   />
                   <ContactInfoSection
                     isEditing={editingSection === "contact"}
                     onEditChange={(isEditing) =>
                       setEditingSection(isEditing ? "contact" : null)
                     }
-                    data={staff ?? undefined}
-                    onSave={handleUpdate}
+                    data={guardian ?? undefined}
+                    onSave={(data) =>
+                      handleUpdate(data as Parameters<typeof handleUpdate>[0])
+                    }
                   />
                 </div>
                 <AddressSection
@@ -64,19 +66,10 @@ export default function StaffProfilePage() {
                   onEditChange={(isEditing) =>
                     setEditingSection(isEditing ? "address" : null)
                   }
-                  data={staff ?? undefined}
-                  onSave={handleUpdate}
-                />
-              </TabsContent>
-
-              <TabsContent value="staffInfo" className="space-y-6 mt-6">
-                <StaffInfoSection
-                  isEditing={editingSection === "staffInfo"}
-                  onEditChange={(isEditing) =>
-                    setEditingSection(isEditing ? "staffInfo" : null)
+                  data={guardian ?? undefined}
+                  onSave={(data) =>
+                    handleUpdate(data as Parameters<typeof handleUpdate>[0])
                   }
-                  data={staff ?? undefined}
-                  onSave={handleUpdate}
                 />
               </TabsContent>
             </>

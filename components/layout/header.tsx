@@ -87,7 +87,7 @@ function Header() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <Link className="flex items-center gap-2" href="/teachers/me">
+              <Link className="flex items-center gap-2" href="/me">
                 <DropdownMenuItem className="cursor-pointer w-full">
                   <CircleUser className="mr-2 h-4 w-4" />
                   <span>Profile</span>

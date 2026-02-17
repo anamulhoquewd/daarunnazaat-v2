@@ -1,8 +1,9 @@
 import api from "@/axios/intercepter";
 import { buildQuery, defaultPagination, handleAxiosError } from "@/lib/utils";
-import { IClass, IPagination } from "@/validations";
+import { IClass, IPagination, IUpdateClass } from "@/validations";
 import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "../common/useDebounce";
+import { toast } from "sonner";
 
 interface IFilter {
   isActive: "all" | boolean;
@@ -24,7 +25,10 @@ function useClassQuery() {
   const [search, setSearch] = useState<ISearch>({
     global: "",
   });
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isAddOpen, setIsAddOpen] = useState<boolean>(false);
   const [values, setValues] = useState<IClass | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filterBy, setFilterBy] = useState<IFilter>({
     isActive: "all",
     sortBy: "createdAt",
@@ -107,6 +111,35 @@ function useClassQuery() {
     }));
   };
 
+  const handleUpdate = async (data: IUpdateClass) => {
+    setIsLoading(true);
+
+    console.log("Updating user with data:", data, "and ID:", selectedId);
+
+    try {
+      const response = await api.patch(`/classes/${selectedId}`, data);
+      if (!response.data.success) {
+        toast.error("Update failed");
+        throw new Error(response.data.error.message || "Failed to update user");
+      }
+
+      getClasses({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+      toast.success("Updated successfully");
+    } catch (e) {
+      toast.error("Update failed");
+    } finally {
+      setIsLoading(false);
+      setIsEditing(false);
+      setIsAddOpen(false);
+    }
+  };
+
   // 🔥 API call only when debounced search OR page/limit changes
   useEffect(() => {
     getClasses({
@@ -143,6 +176,13 @@ function useClassQuery() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    values,
+    isAddOpen,
+    setIsAddOpen,
+    isEditing,
+    setIsEditing,
+    setSelectedId,
+    handleUpdate,
   };
 }
 

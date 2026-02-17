@@ -4,6 +4,8 @@ import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
 import { SessionBottomFilter } from "@/components/sessions/sessionBottomFilter";
 import { SessionColumns } from "@/components/sessions/sessionColumns";
+import SessionRegistrationForm from "@/components/sessions/sessionRegistrationForm";
+import { AlertDialogHeader } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,12 +15,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -26,7 +36,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import useSessionQuery from "@/hooks/sessions/useCLassQuery";
+import { useClassForm } from "@/hooks/classes/useClassForm";
+import { useSessionForm } from "@/hooks/sessions/useSessionForm";
+import useSessionQuery from "@/hooks/sessions/useSessionQuery";
 import {
   ColumnFiltersState,
   SortingState,
@@ -36,15 +48,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Filter, X } from "lucide-react";
-import Link from "next/link";
+import { ChevronDown, Filter, Plus, X } from "lucide-react";
 import { useState } from "react";
 
 function SessionsPage() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
-  const [selectId, setSelectedId] = useState<string | null>(null);
-
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
@@ -54,6 +61,8 @@ function SessionsPage() {
     endDate: false,
   });
 
+  const { form, handleSubmit, isLoading, setIsDelOpen } = useSessionForm();
+
   const {
     pagination,
     sessions,
@@ -62,11 +71,17 @@ function SessionsPage() {
     search,
     setSearch,
     filterBy,
-    setFilterBy,
     activeFilterCount,
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    isAddOpen,
+    setIsAddOpen,
+    setIsEditing,
+    setSelectedId,
+    values,
+    isEditing,
+    handleUpdate,
   } = useSessionQuery();
 
   const columns = SessionColumns({
@@ -74,6 +89,7 @@ function SessionsPage() {
     setIsDelOpen,
     setValues,
     setSelectedId,
+    setIsAddOpen,
   });
 
   const table = useReactTable({
@@ -131,9 +147,53 @@ function SessionsPage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
-            <Link href={"#"}>
-              <Button className="cursor-pointer">Add One</Button>
-            </Link>
+            <Dialog
+              open={isAddOpen}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setValues(null);
+                  setSelectedId("");
+                  setIsEditing(false);
+                  form.reset({
+                    sessionName: "",
+                    isActive: true,
+                    startDate: undefined,
+                    endDate: undefined,
+                    batchType: undefined,
+                  });
+                }
+                setIsAddOpen(open);
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  onChange={() => setIsAddOpen(true)}
+                  className="w-full sm:w-auto cursor-pointer"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add One
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <AlertDialogHeader>
+                  <DialogTitle>Customer Registration Form</DialogTitle>
+                  <DialogDescription>
+                    Fill out the form below to complete new customer
+                    registration.
+                  </DialogDescription>
+                </AlertDialogHeader>
+                <ScrollArea className="sm:max-w-[525px] h-[65dvh] overflow-hidden pr-2 md:px-4">
+                  <SessionRegistrationForm
+                    values={values}
+                    handleSubmit={isEditing ? handleUpdate : handleSubmit}
+                    isLoading={isLoading}
+                    form={form}
+                  />
+                  <ScrollBar orientation="vertical" className="w-2.5" />
+                  <ScrollBar orientation="horizontal" className="w-2.5" />
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </CardHeader>
@@ -141,10 +201,10 @@ function SessionsPage() {
         <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
           <div className="flex-1">
             <label className="text-sm font-medium mb-2 block">
-              Search by Class name
+              Search by Session name
             </label>
             <Input
-              placeholder="Search class..."
+              placeholder="Search session..."
               value={search.global}
               onChange={(e) =>
                 setSearch((prev) => ({

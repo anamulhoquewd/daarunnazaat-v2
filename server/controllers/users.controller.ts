@@ -41,6 +41,7 @@ export const getUsers = async (c: Context) => {
   const isActiveRaw = c.req.query("isActive") as string;
   const isBlockedRaw = c.req.query("isBlocked") as string;
   const role = c.req.query("role") as UserRole;
+  const nullProfile = c.req.query("nullProfile") as string | null;
 
   const createdDateRange = { from: fromDate, to: toDate };
 
@@ -63,6 +64,7 @@ export const getUsers = async (c: Context) => {
     createdDateRange,
     isActive,
     isBlocked,
+    nullProfile,
   });
 
   if (response.serverError) {
@@ -200,7 +202,7 @@ export const signIn = async (c: Context) => {
           process.env.NODE_ENV === "production"
             ? process.env.DOMAIN_NAME
             : undefined,
-        maxAge: 60 * 15,
+        // maxAge: 60 * 15,
       },
     );
 
@@ -217,7 +219,7 @@ export const signIn = async (c: Context) => {
           process.env.NODE_ENV === "production"
             ? process.env.DOMAIN_NAME
             : undefined,
-        maxAge: 7 * 24 * 60 * 60, // 7d
+        // maxAge: 7 * 24 * 60 * 60, // 7d
       },
     );
   }
@@ -347,7 +349,7 @@ export const refreshToken = async (c: Context) => {
           process.env.NODE_ENV === "production"
             ? process.env.DOMAIN_NAME
             : undefined,
-        maxAge: 60 * 15,
+        // maxAge: 60 * 15,
       },
     );
 

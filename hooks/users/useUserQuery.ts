@@ -35,7 +35,7 @@ function useUserQuery() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [isAddOpen, setIsAddOpen] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [users, setUsers] = useState<IUser[]>([]);
   const [pagination, setPagination] = useState<IPagination>(defaultPagination);
   const [search, setSearch] = useState<ISearch>({
@@ -51,6 +51,7 @@ function useUserQuery() {
     limit: "10",
     role: "all",
   });
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // debounce only search
