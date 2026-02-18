@@ -1,5 +1,3 @@
-"use client";
-
 import { DateField } from "@/components/common/dateCalendar";
 import {
   Card,
@@ -120,4 +118,4 @@ function StaffInformation() {
   );
 }
 
-export default StaffInformation;
+export { StaffInformation };

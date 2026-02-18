@@ -1,5 +1,3 @@
-"use client";
-
 import api from "@/axios/intercepter";
 import { Button } from "@/components/ui/button";
 import {

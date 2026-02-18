@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Card,
   CardContent,
@@ -51,4 +49,4 @@ function StaffUserSelection() {
   );
 }
 
-export default StaffUserSelection;
+export { StaffUserSelection };
