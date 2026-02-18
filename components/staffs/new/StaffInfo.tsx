@@ -1,3 +1,5 @@
+"use client";
+
 import { DateField } from "@/components/common/dateCalendar";
 import {
   Card,

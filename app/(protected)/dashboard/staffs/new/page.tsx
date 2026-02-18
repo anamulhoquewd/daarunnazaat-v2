@@ -1,7 +1,7 @@
 "use client";
 
 import StaffInformation from "@/components/staffs/new/staffInfo";
-import StaffPersonalInformation from "@/components/staffs/new/StaffPersonalInfo";
+import StaffPersonalInformation from "@/components/staffs/new/staffPersonalInfo";
 import StaffUserSelection from "@/components/staffs/new/userSelection";
 import AddressInformation from "@/components/students/new/steps/addressInformation";
 import ContactInformation from "@/components/students/new/steps/contactInformation";
