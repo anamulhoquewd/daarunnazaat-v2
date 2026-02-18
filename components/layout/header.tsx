@@ -66,7 +66,7 @@ function Header() {
           <DropdownMenuTrigger className="h-9 w-9 rounded-full cursor-pointer">
             <Avatar className="h-9 w-9">
               <AvatarFallback>
-                {me?.profile.firstName
+                {me?.profile?.firstName
                   .split(" ")
                   .map((ch: string) => ch[0])
                   .join("")
@@ -78,7 +78,7 @@ function Header() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {me?.profile.firstName || "Darunnazat"}
+                  {me?.profile?.firstName || "Darunnazat"}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {me?.email || "info@darunnazat.com"}
