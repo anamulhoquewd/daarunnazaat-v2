@@ -14,6 +14,9 @@ import { FormProvider } from "react-hook-form";
 export default function StudentRegistrationPage() {
   const { form, handleSubmit, isLoading, clearForm } = useStudentForm();
 
+  console.log("Form values: ", form.getValues());
+  console.log("Errors: ", form.formState.errors);
+
   return (
     <main className="w-full flex flex-col overflow-hidden gap-8">
       <div className="text-center space-y-2">

@@ -48,7 +48,8 @@ export function PersonalInfoSection({
       form.reset({
         firstName: data.firstName,
         lastName: data.lastName,
-        dateOfBirth: data.dateOfBirth ?? new Date(data?.dateOfBirth),
+        dateOfBirth:
+          data.dateOfBirth ?? new Date(data?.dateOfBirth ?? new Date()),
         gender: data.gender,
         fatherName: data.fatherName,
         motherName: data.motherName,

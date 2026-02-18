@@ -121,6 +121,13 @@ export const createStudent = async ({
       isActive: true,
       batchType: validData.data.batchType,
     }).session(session);
+
+    console.log("Session: ", currentSession);
+    console.log("Values: ", {
+      _id: validData.data.currentSessionId,
+      batchType: validData.data.batchType,
+    });
+
     if (!currentSession) {
       await session.abortTransaction();
       return {

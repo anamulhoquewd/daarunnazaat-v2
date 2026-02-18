@@ -1,5 +1,5 @@
 import api from "@/axios/intercepter";
-import { changePasswordZ, TChangePassowrd } from "@/validations/zod";
+import { changePasswordZ, TChangePassword } from "@/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,7 +10,7 @@ const useChangePassword = (onClose: () => void) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<TChangePassowrd>({
+  const form = useForm<TChangePassword>({
     resolver: zodResolver(changePasswordZ),
     defaultValues: {
       currentPassword: "",
@@ -19,7 +19,7 @@ const useChangePassword = (onClose: () => void) => {
     },
   });
 
-  const onSubmit = async (data: TChangePassowrd) => {
+  const onSubmit = async (data: TChangePassword) => {
     setIsLoading(true);
 
     try {

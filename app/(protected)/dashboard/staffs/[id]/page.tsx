@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { StaffProfileHeader } from "@/components/staffs/staff/header";
 import { StaffNotFound } from "@/components/staffs/staff/notFound";
+import { PersonalInfoSection } from "@/components/staffs/staff/personalInfo";
+import { StaffInfoSection } from "@/components/staffs/staff/staffInfo";
+import { AddressSection } from "@/components/students/student/addressInfo";
+import { ContactInfoSection } from "@/components/students/student/contactInfo";
 import { ProfileHeaderSkeleton } from "@/components/students/student/headerSkeleton";
 import { InfoSectionSkeleton } from "@/components/students/student/InfoSectionSkeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStaffActions } from "@/hooks/staff/useStaffActions";
-import { ContactInfoSection } from "@/components/students/student/contactInfo";
-import { PersonalInfoSection } from "@/components/staffs/staff/personalInfo";
-import { AddressSection } from "@/components/students/student/addressInfo";
-import StaffInformation from "@/components/staffs/new/staffInfo";
-import { StaffInfoSection } from "@/components/staffs/staff/staffInfo";
+import { useState } from "react";
 
 export default function StaffProfilePage() {
   const [editingSection, setEditingSection] = useState<string | null>(null);

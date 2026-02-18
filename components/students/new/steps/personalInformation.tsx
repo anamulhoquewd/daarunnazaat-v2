@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BloodGroup, GuardianRelation } from "@/validations";
+import { BloodGroup, Gender, GuardianRelation } from "@/validations";
 import { useFormContext } from "react-hook-form";
 import { GuardianCombobox } from "../guardianCombobox";
 
@@ -147,7 +147,7 @@ function PersonalInformation() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.entries(BloodGroup).map(([_, value]) => (
+                      {Object.entries(Gender).map(([_, value]) => (
                         <SelectItem key={value} value={value}>
                           {value}
                         </SelectItem>

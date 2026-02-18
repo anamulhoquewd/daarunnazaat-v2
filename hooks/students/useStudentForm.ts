@@ -6,7 +6,7 @@ import {
   saveToStorage,
   scrollToFirstError,
 } from "@/lib/utils";
-import { IStudent, studentZ } from "@/validations";
+import { IStudent, PaymentMethod, studentZ } from "@/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";

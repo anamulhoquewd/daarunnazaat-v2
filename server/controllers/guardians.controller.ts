@@ -35,7 +35,6 @@ export const gets = async (c: Context) => {
     sortType,
     gender,
     search,
-    profile,
   });
 
   if (response.serverError) {

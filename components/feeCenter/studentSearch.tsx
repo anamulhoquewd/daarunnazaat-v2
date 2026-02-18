@@ -19,7 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { IStudent } from "@/validations";
+import { IStudentPopulated } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle, Loader2, Search, User } from "lucide-react";
 import { useEffect } from "react";
@@ -33,11 +33,11 @@ const searchSchema = z.object({
 type SearchFormValues = z.infer<typeof searchSchema>;
 
 interface FeeStudentSearchProps {
-  students: IStudent[];
+  students: IStudentPopulated[];
   loading: boolean;
   onSearch: (value: string) => void;
-  onSelect: (student: IStudent) => void;
-  selectedStudent: IStudent | null;
+  onSelect: (student: IStudentPopulated) => void;
+  selectedStudent: IStudentPopulated | null;
 }
 
 export function FeeStudentSearch({

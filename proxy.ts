@@ -7,31 +7,30 @@ const AUTH_ROUTES = [
   "/auth/reset-password",
 ];
 
-const isProtectedPath = (pathname: string) => {
-  return PROTECTED_PREFIXES.some(
+const isProtectedPath = (pathname: string) =>
+  PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
-};
 
-const isAuthPath = (pathname: string) => {
-  return AUTH_ROUTES.some(
+const isAuthPath = (pathname: string) =>
+  AUTH_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
-};
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const accessToken = request.cookies.get("accessToken")?.value;
-  const isAuthenticated = Boolean(accessToken);
 
-  if (!isAuthenticated && isProtectedPath(pathname)) {
+  const refreshToken = request.cookies.get("refreshToken")?.value;
+
+  const hasSession = Boolean(refreshToken);
+
+  if (!hasSession && isProtectedPath(pathname)) {
     const signInUrl = new URL("/auth/sign-in", request.url);
     signInUrl.searchParams.set("from", `${pathname}${search}`);
-
     return NextResponse.redirect(signInUrl);
   }
 
-  if (isAuthenticated && isAuthPath(pathname)) {
+  if (hasSession && isAuthPath(pathname)) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

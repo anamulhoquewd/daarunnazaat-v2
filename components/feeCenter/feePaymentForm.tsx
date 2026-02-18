@@ -27,15 +27,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FeeType, IStudent, PaymentMethod } from "@/validations";
+import { FeeType, IStudent, IUser, PaymentMethod } from "@/validations";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "../ui/calendar";
 import { DateField } from "@/components/common/dateCalendar";
+import { IStudentPopulated } from "@/validations/student";
 
 interface FeePaymentFormProps {
-  selectedStudent: IStudent | null;
+  selectedStudent: IStudentPopulated | null;
   form: any;
   onSubmit: (data: any) => void;
   loading: boolean;
@@ -48,7 +49,11 @@ export function FeePaymentForm({
 }: FeePaymentFormProps) {
   const feeType = form.watch("feeType");
   const balance =
-    selectedStudent && feeType ? selectedStudent?.feeBalance?.[feeType] : null;
+    selectedStudent && feeType
+      ? selectedStudent?.feeBalance?.[
+          feeType as keyof typeof selectedStudent.feeBalance
+        ]
+      : null;
 
   const isSpecial = ["utilityFee", "otherFee"].includes(feeType);
 

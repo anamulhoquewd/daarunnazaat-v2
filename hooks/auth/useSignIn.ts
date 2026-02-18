@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 const useLogin = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("from") || "/";
+  const redirectTo = searchParams.get("from") || "/dashboard";
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ISignIn>({

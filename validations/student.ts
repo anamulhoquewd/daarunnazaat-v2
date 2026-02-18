@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { feeCollectionZ, studentZ } from "@/validations";
+import {
+  feeCollectionZ,
+  IClass,
+  IGuardian,
+  IStudent,
+  IUser,
+  studentZ,
+} from "@/validations";
 
 export const personalInfoSchema = studentZ.pick({
   firstName: true,
@@ -68,3 +75,9 @@ export type Addresses = z.infer<typeof presentAddress> &
 export type GuardianInfo = z.infer<typeof guardianInfoSchema>;
 export type AcademicInfo = z.infer<typeof academicInfoSchema>;
 export type Fees = z.infer<typeof feesSchema>;
+
+export interface IStudentPopulated extends IStudent {
+  user: IUser;
+  class: IClass;
+  guardian: IGuardian;
+}

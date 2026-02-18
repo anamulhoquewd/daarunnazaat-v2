@@ -11,6 +11,7 @@ import {
 } from "@/validations";
 import mongoose from "mongoose";
 import z from "zod";
+import { transporter } from "../config/email";
 import { schemaValidationError } from "../error";
 import { User } from "../models/users.model";
 import { generateAccessToken, generateRefreshToken } from "../utils";
@@ -104,7 +105,7 @@ export const register = async (body: IUser) => {
     };
 
     // Send Email
-    // await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
 
     return {
       success: {

@@ -247,7 +247,10 @@ const personBaseZ = z.object({
     .string()
     .min(1, "First name is required")
     .min(2, "First name must be at least 2 characters"),
-  lastName: z.string().optional(),
+  lastName: z
+    .string()
+    .min(1, "First name is required")
+    .min(2, "First name must be at least 2 characters"),
   fatherName: z.string().optional(),
   motherName: z.string().optional(),
   dateOfBirth: z.coerce.date().optional(),
@@ -521,6 +524,9 @@ export const feeCollectionZ = z
 
     isDeleted: z.boolean().optional(),
     deletedAt: z.coerce.date().optional(),
+
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
 
     remarks: z.string().optional(),
   })

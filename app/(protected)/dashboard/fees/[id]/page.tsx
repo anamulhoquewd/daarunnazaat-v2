@@ -229,7 +229,7 @@ export default function InvoicePage() {
                   <div className="flex justify-between items-center py-2">
                     <span className="text-neutral-700">Payment for</span>
                     <span className="font-medium text-neutral-900 capitalize">
-                      {`${format(new Date(fee.year, fee.month, 1), "MMMM yyyy")}`}
+                      {`${format(new Date(fee.year ?? new Date().getFullYear(), fee.month ?? new Date().getMonth(), 1), "MMMM yyyy")}`}
                     </span>
                   </div>
                 )}
@@ -345,11 +345,15 @@ export default function InvoicePage() {
               </div>
               <div>
                 <p>Receipt Created</p>
-                <p>{format(new Date(fee.createdAt), "cc LLL yyyy")}</p>
+                <p>
+                  {format(new Date(fee.createdAt ?? new Date()), "cc LLL yyyy")}
+                </p>
               </div>
               <div>
                 <p>Last Updated</p>
-                <p>{format(new Date(fee.updatedAt), "cc LLL yyyy")}</p>
+                <p>
+                  {format(new Date(fee.updatedAt ?? new Date()), "cc LLL yyyy")}
+                </p>
               </div>
             </div>
           </CardContent>

@@ -14,6 +14,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PaymentMethod, PaymentSource } from "@/validations";
 import { useFormContext } from "react-hook-form";
 
 function FeesTab() {
@@ -36,6 +44,29 @@ function FeesTab() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Admission Fee</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    name={field.name}
+                    value={field.value != null ? String(field.value) : ""}
+                    onChange={(e) =>
+                      field.onChange(e.target.value ?? Number(e.target.value))
+                    }
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="receivedAmount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Received Amount</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -211,6 +242,55 @@ function FeesTab() {
             )}
           />
         </div>
+
+        <FormField
+          control={control}
+          name="paymentMethod"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Payment method *</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={"cash"}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {Object.entries(PaymentMethod).map(([key, value]) => (
+                    <SelectItem key={value} value={value}>
+                      {key}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="paymentSource"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Payment Source</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={"office"}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {Object.entries(PaymentSource).map(([key, value]) => (
+                    <SelectItem key={value} value={value}>
+                      {key}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </CardContent>
     </Card>
   );

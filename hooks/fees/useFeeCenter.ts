@@ -3,10 +3,10 @@ import { handleAxiosError } from "@/lib/utils";
 import {
   feeCollectionsUpdateZ,
   IFeeCollection,
-  IStudent,
   PaymentMethod,
   PaymentSource,
 } from "@/validations";
+import { IStudentPopulated } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -16,8 +16,9 @@ import { toast } from "sonner";
 export function useFeeCenter() {
   const router = useRouter();
 
-  const [students, setStudents] = useState<IStudent[]>([]);
-  const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
+  const [students, setStudents] = useState<IStudentPopulated[]>([]);
+  const [selectedStudent, setSelectedStudent] =
+    useState<IStudentPopulated | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
@@ -57,7 +58,7 @@ export function useFeeCenter() {
   };
 
   /* ---------------- SELECT ---------------- */
-  const selectStudent = (student: IStudent) => {
+  const selectStudent = (student: IStudentPopulated) => {
     setSelectedStudent(student);
 
     form.reset({

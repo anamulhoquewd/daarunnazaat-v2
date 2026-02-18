@@ -40,7 +40,7 @@ export function StudentUserCombobox({ value, onChange }: Props) {
       setLoading(true);
       try {
         const res = await api.get(
-          `/users?search=${search}&role=student&profile=null=null`,
+          `/users?search=${search}&role=student&nullProfile=null`,
         );
         setUsers(res.data.data);
       } catch (error) {

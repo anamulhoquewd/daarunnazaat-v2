@@ -202,7 +202,7 @@ export const signIn = async (c: Context) => {
           process.env.NODE_ENV === "production"
             ? process.env.DOMAIN_NAME
             : undefined,
-        // maxAge: 60 * 15,
+        maxAge: 60 * 15,
       },
     );
 
@@ -219,7 +219,7 @@ export const signIn = async (c: Context) => {
           process.env.NODE_ENV === "production"
             ? process.env.DOMAIN_NAME
             : undefined,
-        // maxAge: 7 * 24 * 60 * 60, // 7d
+        maxAge: 7 * 24 * 60 * 60, // 7d
       },
     );
   }
@@ -323,6 +323,14 @@ export const refreshToken = async (c: Context) => {
     });
 
     if (!user) {
+      deleteCookie(c, "refreshToken", {
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        domain:
+          process.env.NODE_ENV === "production"
+            ? process.env.DOMAIN_NAME
+            : undefined,
+      });
       return authenticationError(c);
     }
 
@@ -349,7 +357,7 @@ export const refreshToken = async (c: Context) => {
           process.env.NODE_ENV === "production"
             ? process.env.DOMAIN_NAME
             : undefined,
-        // maxAge: 60 * 15,
+        maxAge: 60 * 15,
       },
     );
 
