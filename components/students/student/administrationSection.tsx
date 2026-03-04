@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/tooltip";
 import { copyToClipboard } from "@/lib/utils";
 import { IStudent } from "@/validations";
+import { format } from "date-fns";
 import { Clipboard, Copy } from "lucide-react";
 
 interface AdministrationSectionProps {
@@ -58,7 +59,7 @@ export function AdministrationSection({ data }: AdministrationSectionProps) {
             <p className="text-sm text-muted-foreground">Created At</p>
             <p className="font-medium">
               {data?.userId.createdAt
-                ? new Date(data?.userId.createdAt).toLocaleDateString()
+                ? format(data?.userId.createdAt, "cc LLL yyyy")
                 : "N/A"}
             </p>
           </div>
@@ -66,7 +67,7 @@ export function AdministrationSection({ data }: AdministrationSectionProps) {
             <p className="text-sm text-muted-foreground">Last Login</p>
             <p className="font-medium">
               {data?.userId?.lastLogin
-                ? new Date(data?.userId?.lastLogin).toLocaleDateString()
+                ? format(data?.userId?.lastLogin, "cc LLL yyyy")
                 : "N/A"}
             </p>
           </div>
@@ -74,7 +75,7 @@ export function AdministrationSection({ data }: AdministrationSectionProps) {
             <p className="text-sm text-muted-foreground">Passout Date</p>
             <p className="font-medium">
               {data?.userId?.passoutDate
-                ? new Date(data?.userId?.passoutDate).toLocaleDateString()
+                ? format(data?.userId?.passoutDate, "cc LLL yyyy")
                 : "N/A"}
             </p>
           </div>
@@ -96,7 +97,7 @@ export function AdministrationSection({ data }: AdministrationSectionProps) {
             <p className="text-sm text-muted-foreground">Blocked At</p>
             <p className="font-medium">
               {data?.userId?.blockedAt
-                ? new Date(data?.userId?.blockedAt).toLocaleDateString()
+                ? format(data?.userId?.blockedAt, "cc LLL yyyy")
                 : "N/A"}
             </p>
           </div>

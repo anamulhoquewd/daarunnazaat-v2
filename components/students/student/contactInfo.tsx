@@ -121,7 +121,9 @@ export function ContactInfoSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{data?.userId?.email || "N/A"}</p>
+              <p className="font-medium wrap-break-word">
+                {data?.userId?.email || "N/A"}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Phone</p>

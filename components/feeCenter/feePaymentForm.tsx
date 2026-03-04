@@ -301,7 +301,7 @@ function MonthYearPicker({ form }: { form: any }) {
             mode="single"
             captionLayout="dropdown"
             startMonth={new Date(2020, 0)}
-            endMonth={new Date(2035, 11)}
+            endMonth={new Date(new Date().getFullYear() + 10, 11)}
             onSelect={(date) => {
               if (!date) return;
 

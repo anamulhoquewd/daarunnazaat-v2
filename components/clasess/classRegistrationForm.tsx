@@ -23,11 +23,13 @@ export default function ClassRegistrationForm({
   handleSubmit,
   isLoading,
   values,
+  setIsAddOpen,
 }: {
   isLoading: boolean;
   handleSubmit: (data: IClass) => Promise<void>;
   form: any;
   values: IClass | null;
+  setIsAddOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   useEffect(() => {
     if (values) {
@@ -133,15 +135,16 @@ export default function ClassRegistrationForm({
               type="button"
               variant="outline"
               className="cursor-pointer"
-              onClick={() =>
+              onClick={() => {
+                setIsAddOpen(false);
                 form.reset({
                   className: "",
                   description: "",
                   monthlyFee: 0,
                   capacity: 0,
                   isActive: true,
-                })
-              }
+                });
+              }}
             >
               <DialogClose>Cancel</DialogClose>
             </Button>

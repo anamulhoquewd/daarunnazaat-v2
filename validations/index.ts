@@ -258,14 +258,17 @@ const personBaseZ = z.object({
   bloodGroup: z.nativeEnum(BloodGroup).optional(),
   nid: z
     .string()
-    .refine((val) => /^\d{10}$|^\d{17}$/.test(val), {
+    .trim()
+    .transform((val) => (val === "" ? undefined : val))
+    .refine((val) => !val || /^\d{10}$|^\d{17}$/.test(val), {
       message: "NID must be either 10 or 17 digits",
     })
-    .trim()
     .optional(),
   birthCertificateNumber: z
     .string()
-    .refine((val) => /^\d{17}$/.test(val), {
+    .trim()
+    .transform((val) => (val === "" ? undefined : val))
+    .refine((val) => !val || /^\d{17}$/.test(val), {
       message: "Birth certificate number must be 17 digits",
     })
     .optional(),

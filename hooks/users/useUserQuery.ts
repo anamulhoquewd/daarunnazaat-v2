@@ -75,6 +75,16 @@ function useUserQuery() {
         throw new Error(response.data.error.message || "Failed to create user");
       }
 
+      getUsers({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+
+      setIsAddOpen(false);
+
       toast.success("User created successfully!");
     } catch (error: any) {
       toast.error("User creation failed!");
@@ -89,7 +99,6 @@ function useUserQuery() {
       }
     } finally {
       setIsLoading(false);
-      setIsAddOpen(false);
     }
   };
 

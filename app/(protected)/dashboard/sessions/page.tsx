@@ -36,8 +36,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useClassForm } from "@/hooks/classes/useClassForm";
-import { useSessionForm } from "@/hooks/sessions/useSessionForm";
 import useSessionQuery from "@/hooks/sessions/useSessionQuery";
 import {
   ColumnFiltersState,
@@ -54,14 +52,7 @@ import { useState } from "react";
 function SessionsPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    batchType: false,
-    status: false,
-    startDate: false,
-    endDate: false,
-  });
-
-  const { form, handleSubmit, isLoading, setIsDelOpen } = useSessionForm();
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const {
     pagination,
@@ -82,6 +73,10 @@ function SessionsPage() {
     values,
     isEditing,
     handleUpdate,
+    form,
+    handleSubmit,
+    isLoading,
+    setIsDelOpen,
   } = useSessionQuery();
 
   const columns = SessionColumns({
@@ -185,6 +180,7 @@ function SessionsPage() {
                 <ScrollArea className="sm:max-w-[525px] h-[65dvh] overflow-hidden pr-2 md:px-4">
                   <SessionRegistrationForm
                     values={values}
+                    setIsAddOpen={setIsAddOpen}
                     handleSubmit={isEditing ? handleUpdate : handleSubmit}
                     isLoading={isLoading}
                     form={form}

@@ -28,12 +28,14 @@ export default function UserRegistrationForm({
   isLoading,
   clearForm,
   values,
+  setIsAddOpen,
 }: {
   isLoading: boolean;
   clearForm: () => void;
   handleSubmit: (data: IUser) => Promise<void>;
   form: any;
   values: IUser | null;
+  setIsAddOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   useEffect(() => {
     if (values) {
@@ -114,7 +116,10 @@ export default function UserRegistrationForm({
             <Button
               type="button"
               variant="outline"
-              onClick={clearForm}
+              onClick={() => {
+                clearForm();
+                setIsAddOpen(false);
+              }}
               className="cursor-pointer"
             >
               Clear

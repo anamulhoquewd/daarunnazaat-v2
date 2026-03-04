@@ -26,6 +26,7 @@ import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { SessionCombobox } from "../new/sessionCombobox";
 import { EditableSection } from "./editableSection";
+import { format } from "date-fns";
 
 interface AcademicInfoSectionProps {
   isEditing: boolean;
@@ -231,7 +232,7 @@ export function AcademicInfoSection({
               <p className="text-sm text-muted-foreground">Admission Date</p>
               <p className="font-medium">
                 {data?.admissionDate
-                  ? new Date(data?.admissionDate).toLocaleDateString()
+                  ? format(data?.admissionDate, "cc LLL yyyy")
                   : "N/A"}
               </p>
             </div>

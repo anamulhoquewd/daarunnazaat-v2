@@ -22,6 +22,7 @@ import {
 import { Branch, IStaff, IUpdateStaff } from "@/validations";
 import { StaffInfo, staffInfoSchema } from "@/validations/staff";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
 import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
@@ -194,8 +195,7 @@ export function StaffInfoSection({
             <div>
               <p className="text-sm text-muted-foreground">Join Date</p>
               <p className="font-medium">
-                {data?.joinDate &&
-                  new Date(data?.joinDate).toLocaleDateString()}
+                {data?.joinDate && format(data?.joinDate, "cc LLL yyyy")}
               </p>
             </div>
             <div>

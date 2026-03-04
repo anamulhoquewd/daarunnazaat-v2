@@ -131,7 +131,7 @@ export default function InvoicePage() {
                 <p className="text-sm text-neutral-600 font-medium">
                   {format(
                     new Date(fee?.paymentDate ?? new Date()),
-                    "dd MMMM yyyy",
+                    "cc LLL yyyy",
                   )}
                 </p>
               </div>

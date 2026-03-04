@@ -23,6 +23,7 @@ import {
 import { BloodGroup, Gender, IStaff, IUpdateStaff } from "@/validations";
 import { PersonalInfo, personalInfoSchema } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
@@ -261,7 +262,7 @@ export function PersonalInfoSection({
               <p className="text-sm text-muted-foreground">Date of Birth</p>
               <p className="font-medium">
                 {data?.dateOfBirth
-                  ? new Date(data.dateOfBirth).toLocaleDateString()
+                  ? format(data.dateOfBirth, "cc LLL yyyy")
                   : "N/A"}
               </p>
             </div>

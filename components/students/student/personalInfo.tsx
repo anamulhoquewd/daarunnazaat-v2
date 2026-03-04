@@ -25,6 +25,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { EditableSection } from "./editableSection";
+import { format } from "date-fns";
 
 interface PersonalInfoSectionProps {
   isEditing: boolean;
@@ -42,6 +43,9 @@ export function PersonalInfoSection({
   const form = useForm({
     resolver: zodResolver(personalInfoSchema),
   });
+
+  console.log("form errors", form.formState.errors);
+  console.log("values: ", form.getValues());
 
   useEffect(() => {
     if (data) {
@@ -291,7 +295,7 @@ export function PersonalInfoSection({
               <p className="text-sm text-muted-foreground">Date of Birth</p>
               <p className="font-medium">
                 {data?.dateOfBirth
-                  ? new Date(data.dateOfBirth).toLocaleDateString()
+                  ? format(data.dateOfBirth, "cc LLL yyyy")
                   : "N/A"}
               </p>
             </div>

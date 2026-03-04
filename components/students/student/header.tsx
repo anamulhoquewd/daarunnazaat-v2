@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { IStudent } from "@/validations";
+import { format } from "date-fns";
 import { ArrowLeft, Expand, MoreVertical } from "lucide-react";
 import Link from "next/link";
 
@@ -56,8 +57,7 @@ export function StudentProfileHeader({ data }: { data: IStudent }) {
               </p>
               <p className="text-sm text-muted-foreground">
                 Date of Birth:{" "}
-                {data?.dateOfBirth &&
-                  new Date(data?.dateOfBirth).toLocaleDateString()}
+                {data?.dateOfBirth && format(data?.dateOfBirth, "cc LLL yyyy")}
               </p>
             </div>
           </div>

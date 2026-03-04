@@ -179,6 +179,7 @@ function UsersPage() {
                 <ScrollArea className="sm:max-w-[525px] h-[65dvh] overflow-hidden pr-2 md:px-4">
                   <UserRegistrationForm
                     values={values}
+                    setIsAddOpen={setIsAddOpen}
                     handleSubmit={isEditing ? handleUpdate : handleSubmit}
                     isLoading={isLoading}
                     form={form}
