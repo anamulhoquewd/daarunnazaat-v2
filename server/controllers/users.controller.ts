@@ -1,4 +1,3 @@
-import { UserRole } from "@/validations";
 import axios from "axios";
 import { Context } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
@@ -40,8 +39,7 @@ export const getUsers = async (c: Context) => {
   const toDate = c.req.query("toDate") as string;
   const isActiveRaw = c.req.query("isActive") as string;
   const isBlockedRaw = c.req.query("isBlocked") as string;
-  const role = c.req.query("role") as UserRole;
-  const nullProfile = c.req.query("nullProfile") as string | null;
+  const roles = c.req.query("roles") as string;
 
   const createdDateRange = { from: fromDate, to: toDate };
 
@@ -59,12 +57,11 @@ export const getUsers = async (c: Context) => {
     limit,
     sortBy,
     sortType,
-    role,
+    roles,
     search,
     createdDateRange,
     isActive,
     isBlocked,
-    nullProfile,
   });
 
   if (response.serverError) {
@@ -155,11 +152,48 @@ export const updateUser = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
+export const updateRoles = async (c: Context) => {
+  const _id = c.req.param("_id");
+  const body = await c.req.json();
+
+  const response = await userServices.updateRoles({
+    _id,
+    body: { roles: body.roles },
+  });
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
 // Delete user
 export const deleteUser = async (c: Context) => {
   const _id = c.req.param("_id");
 
   const response = await userServices.deleteUser(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// Restore user
+export const restoreUser = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await userServices.restoreUser(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);
@@ -390,6 +424,40 @@ export const refreshToken = async (c: Context) => {
       500,
     );
   }
+};
+
+// inactivate
+export const inactivateUser = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await userServices.inactivateUser(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// activate
+export const activateUser = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await userServices.activateUser(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
 };
 
 // block

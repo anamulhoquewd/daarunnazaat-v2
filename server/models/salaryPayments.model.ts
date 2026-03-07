@@ -7,8 +7,7 @@ const SalaryPaymentSchema = new Schema<ISalaryPayment & Document>(
     receiptNumber: { type: String, required: true, unique: true },
     staffId: { type: Schema.Types.ObjectId, ref: "Staff", required: true },
     branch: { type: String, enum: Object.values(Branch), required: true },
-    month: { type: Number, required: true, min: 0, max: 11 },
-    year: { type: Number, required: true, min: 2000 },
+    period: { type: String, required: true }, // e.g. "2020-03", "2020-12", etc.
     basicSalary: { type: Number, required: true, min: 0 },
     bonus: { type: Number, default: 0, min: 0 },
     netSalary: {

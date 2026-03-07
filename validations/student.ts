@@ -9,8 +9,7 @@ import {
 } from "@/validations";
 
 export const personalInfoSchema = studentZ.pick({
-  firstName: true,
-  lastName: true,
+  fullName: true,
   dateOfBirth: true,
   gender: true,
   bloodGroup: true,

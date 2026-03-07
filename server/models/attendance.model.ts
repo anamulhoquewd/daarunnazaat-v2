@@ -21,7 +21,7 @@ const AttendanceSchema = new Schema<IAttendance & Document>(
     remarks: { type: String },
     markedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 AttendanceSchema.index({ studentId: 1, date: -1 });

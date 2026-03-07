@@ -30,18 +30,7 @@ app.get("/hello", (c) => {
 });
 
 // Config MongoDB
-connectDB()
-  .then(async () => {
-    // Call the Super Admin Service function after connecting to MongoDB
-    const result = await userServices.registerSuperAdmin();
-
-    if (result.success) {
-      console.log(result.message || "Super admin created successfully!");
-    }
-  })
-  .catch((error) => {
-    console.error("Failed to initialize super admin:", error);
-  });
+connectDB();
 
 app.use(
   logger(),

@@ -5,10 +5,16 @@ interface PaginationProps {
   page: number;
   limit: number;
   total: number;
+  totalDocs: number;
 }
 
 // Pagination
-const pagination = ({ page, limit, total }: PaginationProps): IPagination => {
+const pagination = ({
+  page,
+  limit,
+  total,
+  totalDocs,
+}: PaginationProps): IPagination => {
   const totalPages = Math.ceil(total / limit);
 
   // Always include nextPage and prevPage; use null when not applicable
@@ -19,6 +25,7 @@ const pagination = ({ page, limit, total }: PaginationProps): IPagination => {
     totalPages,
     nextPage: null,
     prevPage: null,
+    totalDocs,
   };
 
   if (page < totalPages) {

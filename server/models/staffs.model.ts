@@ -13,8 +13,7 @@ const StaffSchema = new Schema<IStaff & Document>(
     alternativePhone: { type: String },
     whatsApp: { type: String },
     staffId: { type: String, required: true, unique: true },
-    firstName: { type: String, required: true },
-    lastName: { type: String },
+    fullName: { type: String, required: true },
     dateOfBirth: { type: Date },
     gender: { type: String, enum: Object.values(Gender), required: true },
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },
@@ -41,7 +40,15 @@ const StaffSchema = new Schema<IStaff & Document>(
     basicSalary: { type: Number, required: true, min: 0 },
     branch: { type: String, enum: Object.values(Branch), required: true },
     resignationDate: { type: Date },
-    isActive: { type: Boolean, default: true },
+    qualifications: [
+      {
+        degree: { type: String, required: true },
+        subject: { type: String },
+        institution: { type: String },
+        year: { type: Number },
+        grade: { type: String },
+      },
+    ],
   },
   { timestamps: true },
 );

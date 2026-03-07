@@ -13,8 +13,7 @@ const GuardianSchema = new Schema<IGuardian & Document>(
     alternativePhone: { type: String },
     whatsApp: { type: String },
     guardianId: { type: String, required: true, unique: true },
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    fullName: { type: String, required: true },
     gender: { type: String, enum: Object.values(Gender), required: true },
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },
     nid: { type: String, unique: true, required: false, sparse: true },
@@ -36,7 +35,6 @@ const GuardianSchema = new Schema<IGuardian & Document>(
     avatar: { type: String },
     occupation: { type: String },
     monthlyIncome: { type: Number },
-    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
