@@ -1,12 +1,11 @@
-import { decode, verify } from "hono/jwt";
-import { deleteCookie, getSignedCookie } from "hono/cookie";
-import type { Context, Next } from "hono";
-import { authenticationError, authorizationError } from "../error";
-import { User } from "../models/users.model";
 import { IUser, UserRole } from "@/validations";
-import { Student } from "../models/students.model";
+import type { Context, Next } from "hono";
+import { deleteCookie, getSignedCookie } from "hono/cookie";
+import { verify } from "hono/jwt";
+import { authenticationError, authorizationError } from "../error";
 import { Guardian } from "../models/guardians.model";
 import { Staff } from "../models/staffs.model";
+import { User } from "../models/users.model";
 
 //  Check if user is authenticate
 export const authenticate = async (c: Context, next: Next) => {
@@ -14,7 +13,7 @@ export const authenticate = async (c: Context, next: Next) => {
     const token = await getSignedCookie(
       c,
       process.env.JWT_ACCESS_SECRET as string,
-      "accessToken"
+      "accessToken",
     );
 
     if (!token) {
@@ -23,14 +22,14 @@ export const authenticate = async (c: Context, next: Next) => {
 
     const payload = await verify(
       token,
-      process.env.JWT_ACCESS_SECRET as string
+      process.env.JWT_ACCESS_SECRET as string,
     );
 
     if (!payload || typeof payload !== "object" || !payload._id) {
       return authenticationError(c);
     }
 
-    const user = await User.findById(payload._id).populate("profile");
+    const user = await User.findById(payload._id);
 
     if (!user) {
       // Clear cookie using Hono's deleteCookie
@@ -54,11 +53,19 @@ export const authenticate = async (c: Context, next: Next) => {
       return authenticationError(c);
     }
 
-    // 🚫 if user blocked
+    // if user is inactive, return error immediately
+    if (!user.isActive) {
+      return authenticationError(
+        c,
+        "Your account is inactive. Please contact support.",
+      );
+    }
+
+    // if user is blocked, return error immediately
     if (user.isBlocked) {
       return authenticationError(
         c,
-        "Your account has been blocked. Please contact support."
+        "Your account has been blocked. Please contact support.",
       );
     }
 
@@ -74,13 +81,13 @@ export const authenticate = async (c: Context, next: Next) => {
 // Role-based authorization middleware
 export const authorize = (...allowedRoles: UserRole[]) => {
   return async (c: Context, next: Next) => {
-    const user = c.get("user");
+    const user = c.get("user") as IUser;
 
     if (!user) {
       return authenticationError(c);
     }
 
-    if (!allowedRoles.includes(user.role)) {
+    if (!allowedRoles.some((role) => user.roles.includes(role))) {
       return authorizationError(c);
     }
 
@@ -89,36 +96,35 @@ export const authorize = (...allowedRoles: UserRole[]) => {
 };
 
 // Check if user owns the resource
-export const checkOwnership = (
-  resourceType: "student" | "guardian" | "staff"
-) => {
-  return async (c: Context, next: Next) => {
-    const user = c.get("user");
-    const resourceId = c.req.param("_id");
+// export const checkOwnership = (resourceType: "guardian" | "staff") => {
+//   return async (c: Context, next: Next) => {
+//     const user = c.get("user") as IUser;
+//     const resourceId = c.req.param("_id");
 
-    // Super admin and admin can access everything
-    if ([UserRole.SUPER_ADMIN, UserRole.ADMIN].includes(user.role)) {
-      return await next();
-    }
+//     // Super admin and admin can access everything
+//     if (
+//       [UserRole.SUPER_ADMIN, UserRole.ADMIN].some((role) =>
+//         user.roles.includes(role),
+//       )
+//     ) {
+//       return await next();
+//     }
 
-    // Check ownership based on resource type
-    let resource;
-    switch (resourceType) {
-      case "student":
-        resource = await Student.findById(resourceId);
-        break;
-      case "guardian":
-        resource = await Guardian.findById(resourceId);
-        break;
-      case "staff":
-        resource = await Staff.findById(resourceId);
-        break;
-    }
+//     // Check ownership based on resource type
+//     let resource;
+//     switch (resourceType) {
+//       case "guardian":
+//         resource = await Guardian.findById(resourceId);
+//         break;
+//       case "staff":
+//         resource = await Staff.findById(resourceId);
+//         break;
+//     }
 
-    if (!resource || resource.userId.toString() !== user.userId) {
-      return authorizationError(c);
-    }
+//     if (!resource || resource.userId.toString() !== user.userId) {
+//       return authorizationError(c);
+//     }
 
-    await next();
-  };
-};
+//     await next();
+//   };
+// };

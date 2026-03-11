@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import {
   changePasswordZ,
   IUser,
@@ -374,7 +375,7 @@ export const updateRoles = async ({
 
   if (!validData.success) {
     return {
-      error: schemaValidationError(idValidation.error, "Invalid request body"),
+      error: schemaValidationError(validData.error, "Invalid request body"),
     };
   }
 
@@ -390,7 +391,22 @@ export const updateRoles = async ({
       };
     }
 
-    user.roles = validData.data.roles || [];
+    const existingRoles = user.roles;
+    const newRoles = validData.data.roles;
+
+    // prevent removing super_admin
+    if (
+      existingRoles.includes("super_admin" as UserRole) &&
+      !newRoles.includes("super_admin" as UserRole)
+    ) {
+      return {
+        error: {
+          message: "Super admin role cannot be removed",
+        },
+      };
+    }
+
+    user.roles = newRoles;
 
     const docs = await user.save();
 
@@ -564,6 +580,8 @@ export const unblockUser = async (_id: string) => {
 
     user.isBlocked = false;
     user.blockedAt = new Date();
+
+    await user.save();
 
     return {
       success: {
@@ -843,7 +861,7 @@ export const forgotPassword = async (email: string) => {
       text: `Assalamu alikum,\n\nClick the link below to reset your password:\n\n${resetUrl}\n\nIf you didn't request this, please ignore this email. This token will expire in 30 minutes.\n\nJazakallah!`,
     };
 
-    // await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
 
     return {
       success: {
@@ -891,11 +909,20 @@ export const resetPassword = async ({
     };
   }
 
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  console.log("Hashed Token:", hashedToken);
+
   try {
     const data = await User.findOne({
-      resetPasswordToken: resetToken,
-      resetPasswordExpireDate: { $gt: Date.now() },
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
     });
+
+    console.log("Data found for reset token:", data);
 
     if (!data) {
       return {

@@ -38,7 +38,7 @@ authRoutes.patch(
 authRoutes.patch(
   "/:_id/roles",
   authenticate,
-  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  authorize(UserRole.SUPER_ADMIN),
   (c) => usersController.updateRoles(c),
 );
 

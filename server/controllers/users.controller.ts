@@ -310,7 +310,7 @@ export const signOut = async (c: Context) => {
     return c.json(
       {
         success: true,
-        message: "signOut successful",
+        message: "Sign out successful",
       },
       200,
     );

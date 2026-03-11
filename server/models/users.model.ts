@@ -45,7 +45,7 @@ UserSchema.methods.generateResetPasswordToken = function (expMinutes = 30) {
   // 3. Expiration time
   this.passwordResetExpires = new Date(Date.now() + expMinutes * 60 * 1000);
 
-  // 4. Return plain token (email-এ যাবে)
+  // 4. Return plain token (email-friendly)
   return plainToken;
 };
 
