@@ -27,7 +27,7 @@ guardianRoutes.get(
 );
 
 guardianRoutes.patch("/me", authenticate, authorize(UserRole.GUARDIAN), (c) =>
-  guardianController.updateMe(c)
+  guardianController.updateMe(c),
 );
 
 guardianRoutes.patch(
@@ -37,25 +37,14 @@ guardianRoutes.patch(
   (c) => guardianController.updates(c)
 );
 
-guardianRoutes.delete(
-  "/:_id",
-  authenticate,
-  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => guardianController.deletes(c)
-);
+// Guardian deletion is not allowed as it may cause data inconsistency. Instead, we can deactivate the guardian account.
+// guardianRoutes.delete(
+//   "/:_id",
+//   authenticate,
+//   authorize(UserRole.SUPER_ADMIN),
+//   (c) => guardianController.deletes(c)
+// );
 
-guardianRoutes.patch(
-  "/activate/:_id",
-  authenticate,
-  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => guardianController.activate(c)
-);
 
-guardianRoutes.patch(
-  "/deactivate/:_id",
-  authenticate,
-  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => guardianController.deactivate(c)
-);
 
 export default guardianRoutes;

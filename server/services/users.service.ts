@@ -428,7 +428,7 @@ export const updateRoles = async ({
   }
 };
 
-export const inactivateUser = async (_id: string) => {
+export const deactivateUser = async (_id: string) => {
   const idValidation = mongoIdZ.safeParse({ _id });
   if (!idValidation.success) {
     return { error: schemaValidationError(idValidation.error, "Invalid ID") };
@@ -442,11 +442,11 @@ export const inactivateUser = async (_id: string) => {
     }
 
     if (user.roles.includes("super_admin" as UserRole)) {
-      return { error: { message: "Super admin cannot be inactivated." } };
+      return { error: { message: "Super admin cannot be deactivated." } };
     }
 
     if (!user.isActive) {
-      return { error: { message: "User already inactivated." } };
+      return { error: { message: "User already deactivated." } };
     }
 
     user.isActive = false;
@@ -456,7 +456,7 @@ export const inactivateUser = async (_id: string) => {
     return {
       success: {
         success: true,
-        message: "User inactivated successfully",
+        message: "User deactivated successfully",
       },
     };
   } catch (error: any) {
@@ -579,7 +579,7 @@ export const unblockUser = async (_id: string) => {
     }
 
     user.isBlocked = false;
-    user.blockedAt = new Date();
+    user.blockedAt = null;
 
     await user.save();
 
@@ -667,7 +667,7 @@ export const restoreUser = async (_id: string) => {
     }
 
     user.isDeleted = false;
-    user.deletedAt = new Date();
+    user.deletedAt = null;
 
     return {
       success: {
@@ -1048,6 +1048,43 @@ export const login = async (body: {
           accessToken,
           refreshToken,
         },
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+// Permanent delete (hard delete) - use with caution
+export const permanentDelete = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const user = await User.findById(idValidation.data._id);
+
+    if (!user) {
+      return { error: { message: "User not found!" } };
+    }
+
+    if (user.roles.includes("super_admin" as UserRole)) {
+      return { error: { message: "Super admin cannot be deleted." } };
+    }
+
+    await user.deleteOne();
+
+    return {
+      success: {
+        success: true,
+        message: "User deleted successfully",
       },
     };
   } catch (error: any) {

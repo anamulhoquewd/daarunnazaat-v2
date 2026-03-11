@@ -85,27 +85,6 @@ export const get = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
-export const updateMe = async (c: Context) => {
-  const user = await c.get("user");
-
-  const body = await c.req.json();
-
-  const response = await studentService.updateMe({
-    userId: user.profile,
-    body,
-  });
-
-  if (response.error) {
-    return badRequestError(c, response.error);
-  }
-
-  if (response.serverError) {
-    return serverError(c, response.serverError);
-  }
-
-  return c.json(response.success, 200);
-};
-
 export const updates = async (c: Context) => {
   const _id = c.req.param("_id");
 
@@ -142,10 +121,26 @@ export const promote = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
-export const deletes = async (c: Context) => {
+export const deleteStudent = async (c: Context) => {
   const _id = c.req.param("_id");
 
-  const response = await studentService.deletes(_id);
+  const response = await studentService.deleteStudent(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+export const restoreStudent = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await studentService.restoreStudent(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);
@@ -178,6 +173,57 @@ export const activate = async (c: Context) => {
   const _id = c.req.param("_id");
 
   const response = await studentService.activate(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// block
+export const blockStudent = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await studentService.blockStudent(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// unblock
+export const unblockStudent = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await studentService.unblockStudent(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// Delete student
+export const permanentDelete = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await studentService.permanentDelete(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);

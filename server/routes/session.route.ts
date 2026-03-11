@@ -33,11 +33,19 @@ sessionRoute.patch(
   (c) => sessionController.updates(c)
 );
 
-sessionRoute.delete(
-  "/:_id",
+
+sessionRoute.patch(
+  "/:_id/activate",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => sessionController.deletes(c)
+  (c) => sessionController.activate(c),
+);
+
+sessionRoute.patch(
+  "/:_id/deactivate",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => sessionController.deactivate(c),
 );
 
 export default sessionRoute;

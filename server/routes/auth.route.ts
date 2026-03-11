@@ -64,10 +64,10 @@ authRoutes.patch(
 );
 
 authRoutes.patch(
-  "/:_id/inactivate",
+  "/:_id/deactivate",
   authenticate,
   authorize(UserRole.SUPER_ADMIN),
-  (c) => usersController.inactivateUser(c),
+  (c) => usersController.deactivateUser(c),
 );
 
 authRoutes.patch(
@@ -82,6 +82,10 @@ authRoutes.patch(
   authenticate,
   authorize(UserRole.SUPER_ADMIN),
   (c) => usersController.restoreUser(c),
+);
+
+authRoutes.delete("/:_id", authenticate, authorize(UserRole.SUPER_ADMIN), (c) =>
+  usersController.permanentDelete(c),
 );
 
 export default authRoutes;

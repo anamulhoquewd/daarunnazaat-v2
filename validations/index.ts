@@ -196,10 +196,10 @@ export const userZ = z.object({
   isActive: z.boolean().optional(),
 
   isBlocked: z.boolean().optional(),
-  blockedAt: z.coerce.date().optional(),
+  blockedAt: z.coerce.date().nullable().optional(),
 
   isDeleted: z.boolean().optional(),
-  deletedAt: z.coerce.date().optional(),
+  deletedAt: z.coerce.date().nullable().optional(),
 
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
@@ -372,6 +372,14 @@ export const studentZ = personBaseZ
     paymentMethod: z.enum(PaymentMethod),
     paymentSource: z.enum(PaymentSource),
     remarks: z.string().optional(),
+
+    isActive: z.boolean().optional(),
+
+    isBlocked: z.boolean().optional(),
+    blockedAt: z.coerce.date().nullable().optional(),
+
+    isDeleted: z.boolean().optional(),
+    deletedAt: z.coerce.date().nullable().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.isMealIncluded && !data.mealFee) {

@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { badRequestError, serverError } from "../error";
-import { classService } from "../services";
+import { classService, userServices } from "../services";
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
@@ -68,8 +68,6 @@ export const updates = async (c: Context) => {
 
   const body = await c.req.json();
 
-  console.log("Body: ", body);
-
   const response = await classService.updates({ _id, body });
 
   if (response.error) {
@@ -83,10 +81,27 @@ export const updates = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
-export const deletes = async (c: Context) => {
+export const activate = async (c: Context) => {
   const _id = c.req.param("_id");
 
-  const response = await classService.deletes(_id);
+  const response = await classService.activate(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// deactivate
+export const deactivate = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await classService.deactivate(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);

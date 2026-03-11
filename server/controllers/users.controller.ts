@@ -426,11 +426,11 @@ export const refreshToken = async (c: Context) => {
   }
 };
 
-// inactivate
-export const inactivateUser = async (c: Context) => {
+// deactivate
+export const deactivateUser = async (c: Context) => {
   const _id = c.req.param("_id");
 
-  const response = await userServices.inactivateUser(_id);
+  const response = await userServices.deactivateUser(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);
@@ -552,6 +552,23 @@ export const resetPassword = async (c: Context) => {
     password,
     resetToken,
   });
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// Delete user
+export const permanentDelete = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await userServices.permanentDelete(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);

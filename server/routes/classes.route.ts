@@ -33,11 +33,18 @@ classRoutes.patch(
   (c) => classController.updates(c)
 );
 
-classRoutes.delete(
-  "/:_id",
+classRoutes.patch(
+  "/:_id/activate",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => classController.deletes(c)
+  (c) => classController.activate(c),
+);
+
+classRoutes.patch(
+  "/:_id/deactivate",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => classController.deactivate(c),
 );
 
 export default classRoutes;

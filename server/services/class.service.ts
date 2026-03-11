@@ -102,22 +102,22 @@ export const gets = async (queryParams: {
       queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch classes
-    const [classes, total] = await Promise.all([
+    const [classes, total, docsCount] = await Promise.all([
       Class.find(query)
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
         .limit(queryParams.limit)
         .exec(),
       Class.countDocuments(query),
+      Class.countDocuments(),
     ]);
-
-    console.log("Query: ", query);
 
     // Pagination
     const createPagination = pagination({
       page: queryParams.page,
       limit: queryParams.limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {
@@ -244,7 +244,7 @@ export const updates = async ({
   }
 };
 
-export const deletes = async (_id: string) => {
+export const activate = async (_id: string) => {
   // Validate ID
   const idValidation = mongoIdZ.safeParse({ _id: _id });
   if (!idValidation.success) {
@@ -262,17 +262,58 @@ export const deletes = async (_id: string) => {
       };
     }
 
-    // Delete Class
-    // Inactive inside delete
-    // await classData.deleteOne();
-    classData.isActive = false;
+    if (classData.isActive) {
+      return { error: { message: "Class is already active." } };
+    }
+
+    // Activate inside delete
+    classData.isActive = true;
+
     await classData.save();
 
     // Response
     return {
       success: {
         success: true,
-        message: `Class deleted successfully!`,
+        message: `Class activated successfully!`,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const deactivate = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const classData = await Class.findById(idValidation.data._id);
+
+    if (!classData) {
+      return { error: { message: "class not found!" } };
+    }
+
+    if (!classData.isActive) {
+      return { error: { message: "class already deactivated." } };
+    }
+
+    classData.isActive = false;
+
+    await classData.save();
+
+    return {
+      success: {
+        success: true,
+        message: "class deactivated successfully",
       },
     };
   } catch (error: any) {

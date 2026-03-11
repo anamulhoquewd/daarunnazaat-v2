@@ -27,7 +27,10 @@ const UserSchema = new Schema<IUser & Document>(
     passwordResetExpires: { type: Date, select: false },
 
     isDeleted: { type: Boolean, default: false },
-    deletedAt: Date,
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );

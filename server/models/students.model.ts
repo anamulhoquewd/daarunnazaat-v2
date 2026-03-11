@@ -116,6 +116,23 @@ const StudentSchema = new Schema<IStudent & Document>(
     },
 
     passoutDate: { type: Date },
+
+    isActive: { type: Boolean, default: true },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+    blockedAt: {
+      type: Date,
+      default: null,
+    },
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+
+    remarks: { type: String },
   },
   { timestamps: true },
 );

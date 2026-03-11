@@ -2,6 +2,7 @@ import { Gender } from "@/validations";
 import type { Context } from "hono";
 import { badRequestError, serverError } from "../error";
 import { guardanService } from "../services";
+import { Guardian } from "../models/guardians.model";
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
@@ -80,11 +81,18 @@ export const updates = async (c: Context) => {
 
 export const updateMe = async (c: Context) => {
   const user = await c.get("user");
-
   const body = await c.req.json();
 
-  const response = await guardanService.updateMe({
-    userId: user.profile,
+  const guardian = await Guardian.findOne({ userId: user._id });
+
+  if (!guardian) {
+    return badRequestError(c, {
+      message: "Guardian not found for the user",
+    });
+  }
+
+  const response = await guardanService.updates({
+    _id: guardian._id,
     body,
   });
 
@@ -115,34 +123,3 @@ export const deletes = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
-export const deactivate = async (c: Context) => {
-  const _id = c.req.param("_id");
-
-  const response = await guardanService.deactivate(_id);
-
-  if (response.error) {
-    return badRequestError(c, response.error);
-  }
-
-  if (response.serverError) {
-    return serverError(c, response.serverError);
-  }
-
-  return c.json(response.success, 200);
-};
-
-export const activate = async (c: Context) => {
-  const _id = c.req.param("_id");
-
-  const response = await guardanService.activate(_id);
-
-  if (response.error) {
-    return badRequestError(c, response.error);
-  }
-
-  if (response.serverError) {
-    return serverError(c, response.serverError);
-  }
-
-  return c.json(response.success, 200);
-};
