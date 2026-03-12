@@ -656,8 +656,12 @@ export const restoreStudent = async (_id: string) => {
       return { error: { message: "student not deleted." } };
     }
 
+    console.log("Restoring student:", student);
+
     student.isDeleted = false;
     student.deletedAt = null;
+
+    await student.save();
 
     return {
       success: {
@@ -696,6 +700,17 @@ export const deactivate = async (_id: string) => {
       };
     }
 
+    if (!student.isActive) {
+      return {
+        error: {
+          message: "Student already deactivated.",
+        },
+      };
+    }
+
+    student.isActive = false;
+    await student.save();
+
     return {
       success: {
         success: true,
@@ -732,6 +747,17 @@ export const activate = async (_id: string) => {
         },
       };
     }
+
+    if (student.isActive) {
+      return {
+        error: {
+          message: "Student already active.",
+        },
+      };
+    }
+
+    student.isActive = true;
+    await student.save();
 
     return {
       success: {

@@ -112,10 +112,27 @@ export const updates = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
-export const deletes = async (c: Context) => {
+export const deleteFlag = async (c: Context) => {
   const _id = c.req.param("_id");
 
-  const response = await feeCollectionsService.deletes(_id);
+  const response = await feeCollectionsService.deleteFlag(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// Restore fee
+export const restoreFee = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await feeCollectionsService.restoreFee(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);

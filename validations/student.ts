@@ -61,8 +61,7 @@ export const feesSchema = studentZ.pick({
 export const feeUpdateSchema = feeCollectionZ.pick({
   paymentDate: true,
   receivedAmount: true,
-  month: true,
-  year: true,
+  period: true,
   remarks: true,
   paymentMethod: true,
 });

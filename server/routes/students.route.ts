@@ -28,7 +28,7 @@ studentRoutes.patch(
 
 studentRoutes.get("/:_id", authenticate, (c) => studentController.get(c));
 
-studentRoutes.delete(
+studentRoutes.patch(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
@@ -64,14 +64,14 @@ studentRoutes.patch(
 );
 
 studentRoutes.patch(
-  "/activate/:_id",
+  "/:_id/activate",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   (c) => studentController.activate(c),
 );
 
 studentRoutes.patch(
-  "/deactivate/:_id",
+  "/:_id/deactivate",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   (c) => studentController.deactivate(c),
@@ -79,7 +79,7 @@ studentRoutes.patch(
 
 // with coation
 studentRoutes.delete(
-  "/:_id",
+  "/:_id/permanently",
   authenticate,
   authorize(UserRole.SUPER_ADMIN),
   (c) => studentController.permanentDelete(c),

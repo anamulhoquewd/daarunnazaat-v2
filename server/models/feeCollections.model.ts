@@ -19,7 +19,7 @@ const FeeCollectionSchema = new Schema<IFeeCollection & Document>(
 
     feeType: { type: String, enum: Object.values(FeeType), required: true },
 
-    period: { type: String, required: true }, // e.g. "2020-03", "2020-12", etc.
+    period: { type: String }, // e.g. "2020-03", "2020-12", etc.
 
     baseAmount: { type: Number, required: true },
     payableAmount: { type: Number, required: true },
@@ -52,7 +52,10 @@ const FeeCollectionSchema = new Schema<IFeeCollection & Document>(
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
 
     isDeleted: { type: Boolean, default: false },
-    deletedAt: Date,
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );

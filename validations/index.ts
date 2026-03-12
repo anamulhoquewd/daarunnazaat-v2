@@ -12,6 +12,7 @@ export enum UserRole {
 export enum Gender {
   MALE = "male",
   FEMALE = "female",
+  DEFAULT = "non", // for those who don't want to disclose
 }
 
 export enum BloodGroup {
@@ -24,11 +25,13 @@ export enum BloodGroup {
   AB_POSITIVE = "AB+",
   AB_NEGATIVE = "AB-",
   NON = "NON", // for those who don't want to disclose
+  DEFAULT = "NON",
 }
 
 export enum Branch {
   BALIKA_BRANCH = "Balika Branch",
   BALOK_BRANCH = "Balok Branch",
+  DEFAULT = "Balika Branch",
 }
 
 export enum GuardianRelation {
@@ -41,6 +44,7 @@ export enum GuardianRelation {
   GRAND_FATHER = "Grandfather",
   GRAND_MOTHER = "Grandmother",
   OTHER = "Other",
+  DEFAULT = "Father",
 }
 
 export enum BatchType {
@@ -76,6 +80,7 @@ export enum PaymentMethod {
   BANK_TRANSFER = "bank_transfer",
   MOBILE_BANKING = "mobile_banking",
   CHEQUE = "cheque",
+  DEFAULT = "cash",
 }
 
 export enum TransactionType {
@@ -83,6 +88,7 @@ export enum TransactionType {
   EXPENSE = "expense",
   REVERSAL = "reversal",
   ADJUSTMENT = "adjustment",
+  DEFAULT = "default",
 }
 
 export enum ExpenseCategory {
@@ -94,6 +100,7 @@ export enum ExpenseCategory {
   MAINTENANCE = "maintenance",
   SUPPLIES = "supplies",
   OTHER = "other",
+  DEFAULT = "other",
 }
 
 export enum AttendanceStatus {
@@ -110,6 +117,7 @@ export enum ExamType {
   MIDTERM = "midterm",
   FINAL = "final",
   ANNUAL = "annual",
+  DEFAULT = "default",
 }
 
 export enum NoticeType {
@@ -121,6 +129,7 @@ export enum NoticeType {
   EXAM = "exam",
   ADMISSION = "admission",
   RESULT = "result",
+  DEFAULT = "general",
 }
 
 export enum NoticePriority {
@@ -128,6 +137,7 @@ export enum NoticePriority {
   MEDIUM = "medium",
   HIGH = "high",
   URGENT = "urgent",
+  DEFAULT = "medium",
 }
 
 export enum NoticeAudience {
@@ -137,12 +147,14 @@ export enum NoticeAudience {
   GUARDIANS = "guardians",
   SPECIFIC_CLASS = "specific_class",
   SPECIFIC_BRANCH = "specific_branch",
+  DEFAULT = "all",
 }
 
 export enum BlogStatus {
   DRAFT = "draft",
   PUBLISHED = "published",
   ARCHIVED = "archived",
+  DEFAULT = "draft",
 }
 
 // ==================== ZOD SCHEMAS ====================
@@ -526,7 +538,7 @@ export const feeCollectionZ = z
     updatedBy: mongoZ.optional(), // Staff who collected
 
     isDeleted: z.boolean().optional(),
-    deletedAt: z.coerce.date().optional(),
+    deletedAt: z.coerce.date().nullable().optional(),
 
     createdAt: z.coerce.date().optional(),
     updatedAt: z.coerce.date().optional(),
