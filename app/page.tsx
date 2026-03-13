@@ -1,16 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import AboutOnHomePage from "@/components/home/about";
+import ContactForm from "@/components/home/contactForm";
+import Curriculum from "@/components/home/curriculum";
+import Service from "@/components/home/services";
+import { BookOpen, ChevronRight, LogIn, Menu, X } from "lucide-react";
 import Link from "next/link";
-import {
-  Menu,
-  X,
-  ChevronRight,
-  BookOpen,
-  Users,
-  LogIn,
-  HomeIcon,
-} from "lucide-react";
+import { useState } from "react";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,8 +19,10 @@ export default function Home() {
     }
   };
 
+  const currentYear = new Date().getFullYear().toString();
+
   return (
-    <div className="w-full bg-background text-foreground">
+    <div className="w-full bg-background text-foreground font-hind-siliguri">
       {/* Header/Navigation */}
       <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-border z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
@@ -35,7 +33,7 @@ export default function Home() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-lg font-bold text-primary">দারুন নাজাত</h1>
-              <p className="text-xs text-muted-foreground">মাদ্রাসা</p>
+              <p className="text-xs text-muted-foreground">মাদরাসা</p>
             </div>
           </div>
 
@@ -54,7 +52,7 @@ export default function Home() {
               সেবাসমূহ
             </button>
             <button
-              onClick={() => scrollToSection("classes")}
+              onClick={() => scrollToSection("curriculum")}
               className="text-sm font-medium text-foreground hover:text-primary transition"
             >
               ক্লাসগুলি
@@ -147,7 +145,7 @@ export default function Home() {
       >
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-6 leading-tight">
-            দারুন নাজাত মাদ্রাসায় স্বাগতম
+            দারুন নাজাত মাদরাসায় স্বাগতম
           </h2>
           <p className="text-lg sm:text-xl text-muted-foreground mb-8 leading-relaxed">
             ইসলামিক শিক্ষা এবং আধুনিক জ্ঞানের সমন্বয়ে আমরা গড়ে তুলছি দেশের
@@ -171,276 +169,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-primary mb-4">
-            আমাদের সেবাসমূহ
-          </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            আমরা ছাত্র-ছাত্রীদের সর্বাঙ্গীণ উন্নয়নের জন্য বিভিন্ন সুবিধা এবং
-            সেবা প্রদান করি
-          </p>
+      <Service />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Service 1 */}
-            <div className="p-6 rounded-lg bg-secondary/50 hover:shadow-lg transition">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4">
-                <BookOpen className="text-primary-foreground w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-primary mb-2">
-                কুরআন শিক্ষা
-              </h3>
-              <p className="text-muted-foreground">
-                যথাযথ তাজবীদ এবং মাখরাজ সহ কুরআন পাঠের শিক্ষা প্রদান করা হয়।
-              </p>
-            </div>
+      <Curriculum />
 
-            {/* Service 2 */}
-            <div className="p-6 rounded-lg bg-secondary/50 hover:shadow-lg transition">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4">
-                <Users className="text-primary-foreground w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-primary mb-2">
-                হোস্টেল সুবিধা
-              </h3>
-              <p className="text-muted-foreground">
-                আরামদায়ক এবং নিরাপদ হোস্টেল পরিবেশ যেখানে ছাত্ররা পড়াশোনায়
-                মনোনিবেশ করতে পারে।
-              </p>
-            </div>
+      <AboutOnHomePage />
 
-            {/* Service 3 */}
-            <div className="p-6 rounded-lg bg-secondary/50 hover:shadow-lg transition">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4">
-                <HomeIcon className="text-primary-foreground w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-primary mb-2">
-                নন-রেসিডেনশিয়াল
-              </h3>
-              <p className="text-muted-foreground">
-                যারা বাড়িতে থেকে পড়তে চান তাদের জন্য নন-রেসিডেনশিয়াল সুবিধা
-                রয়েছে।
-              </p>
-            </div>
-
-            {/* Service 4 */}
-            <div className="p-6 rounded-lg bg-secondary/50 hover:shadow-lg transition">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4">
-                <BookOpen className="text-primary-foreground w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-primary mb-2">
-                হাদিস শিক্ষা
-              </h3>
-              <p className="text-muted-foreground">
-                সহিহ হাদিস এবং সুন্নাহ অনুযায়ী জীবনযাপনের শিক্ষা দেওয়া হয়।
-              </p>
-            </div>
-
-            {/* Service 5 */}
-            <div className="p-6 rounded-lg bg-secondary/50 hover:shadow-lg transition">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4">
-                <Users className="text-primary-foreground w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-primary mb-2">
-                অভিজ্ঞ শিক্ষকমণ্ডলী
-              </h3>
-              <p className="text-muted-foreground">
-                অভিজ্ঞ এবং যোগ্য শিক্ষকদের দ্বারা পরিচালিত আমাদের মাদ্রাসা।
-              </p>
-            </div>
-
-            {/* Service 6 */}
-            <div className="p-6 rounded-lg bg-secondary/50 hover:shadow-lg transition">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4">
-                <HomeIcon className="text-primary-foreground w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-primary mb-2">
-                স্বাস্থ্যসেবা
-              </h3>
-              <p className="text-muted-foreground">
-                শিক্ষার্থীদের স্বাস্থ্য এবং সুস্থতার জন্য নিয়মিত স্বাস্থ্য
-                পরীক্ষা করা হয়।
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Classes Section */}
-      <section
-        id="classes"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-secondary/20"
-      >
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-primary mb-4">
-            আমাদের ক্লাসগুলি
-          </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            দুটি শাখায় আমরা বিভিন্ন স্তরের শিক্ষা প্রদান করি যা ছাত্র-ছাত্রীদের
-            ক্রমান্বয়ে উন্নত করে
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Girls Branch */}
-            <div className="bg-white rounded-lg p-8 shadow-sm border border-border">
-              <h3 className="text-2xl font-bold text-primary mb-6 flex items-center gap-2">
-                <Users className="w-6 h-6" />
-                শিক্ষার্থী শাখা (মেয়ে)
-              </h3>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span>প্লে / নার্সারি</span>
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span>এক (নুরানি)</span>
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span>দুই</span>
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span>তিন</span>
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span>চার</span>
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span>পাঁচ (মিজান থেকে তাকমিল)</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Boys Branch */}
-            <div className="bg-white rounded-lg p-8 shadow-sm border border-border">
-              <h3 className="text-2xl font-bold text-primary mb-6 flex items-center gap-2">
-                <Users className="w-6 h-6" />
-                শিক্ষার্থী শাখা (ছেলে)
-              </h3>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span>নুরানি - প্রাথমিক পর্যায়</span>
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span>নাজেরা - কুরআন পঠন</span>
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span>হিফজ - কুরআন মুখস্থকরণ</span>
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span>কিতাব বিভাগ - উন্নত শিক্ষা</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* About Us Section */}
-      <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-primary mb-4">
-            আমাদের সম্পর্কে
-          </h2>
-          <div className="space-y-6 text-muted-foreground leading-relaxed">
-            <p>
-              দারুন নাজাত মাদ্রাসা একটি আধুনিক ইসলামিক শিক্ষা প্রতিষ্ঠান যেখানে
-              আমরা ছাত্র-ছাত্রীদের ধর্মীয় এবং নৈতিক শিক্ষার পাশাপাশি সর্বাধুনিক
-              শিক্ষা পদ্ধতি অনুসরণ করি।
-            </p>
-            <p>
-              আমাদের লক্ষ্য হল এমন মানুষ তৈরি করা যারা শুধুমাত্র ধার্মিক নয়,
-              বরং সমাজে দায়িত্বশীল এবং নৈতিক নাগরিক। প্রতিটি শিক্ষার্থী আমাদের
-              কাছে অমূল্য এবং আমরা তাদের সর্বোচ্চ উন্নয়নে প্রতিশ্রুতিবদ্ধ।
-            </p>
-            <p>
-              দুটি শাখায় (মেয়ে এবং ছেলে) আমরা একাধিক স্তরের শিক্ষা প্রদান করি
-              এবং রেসিডেনশিয়াল ও নন-রেসিডেনশিয়াল উভয় সুবিধা রয়েছে। আমাদের
-              অভিজ্ঞ শিক্ষকমণ্ডলী এবং আধুনিক সুবিধাদি নিশ্চিত করে যে প্রতিটি
-              শিক্ষার্থী সর্বোত্তম শিক্ষা লাভ করতে পারে।
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Us Section */}
-      <section
-        id="contact"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-secondary/20"
-      >
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-primary mb-12">
-            আমাদের সাথে যোগাযোগ করুন
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            {/* Contact Info */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-primary text-lg mb-2">ফোন</h3>
-                <p className="text-muted-foreground">+88 01234-567890</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-primary text-lg mb-2">
-                  ইমেইল
-                </h3>
-                <p className="text-muted-foreground">info@darunnazat.edu.bd</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-primary text-lg mb-2">
-                  ঠিকানা
-                </h3>
-                <p className="text-muted-foreground">
-                  দারুন নাজাত মাদ্রাসা
-                  <br />
-                  [আপনার শহর], বাংলাদেশ
-                </p>
-              </div>
-            </div>
-
-            {/* Contact Form */}
-            <form className="space-y-4 bg-white p-6 rounded-lg shadow-sm border border-border">
-              <input
-                type="text"
-                placeholder="আপনার নাম"
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-              <input
-                type="email"
-                placeholder="আপনার ইমেইল"
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-              <textarea
-                placeholder="আপনার বার্তা"
-                rows={3}
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-              ></textarea>
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition"
-              >
-                পাঠান
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
+      <ContactForm />
 
       {/* Footer */}
       <footer className="bg-primary text-primary-foreground py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-bold text-lg mb-4">দারুন নাজাত মাদ্রাসা</h3>
+              <h3 className="font-bold text-lg mb-4">দারুন নাজাত মাদরাসা</h3>
               <p className="text-sm opacity-90">
                 ইসলামিক শিক্ষায় নিবেদিত একটি আধুনিক শিক্ষা প্রতিষ্ঠান।
               </p>
@@ -506,17 +248,21 @@ export default function Home() {
             <div>
               <h4 className="font-semibold mb-4">যোগাযোগ</h4>
               <p className="text-sm opacity-90">
-                ফোন: +88 01234-567890
+                ফোন: +88 01712-084833
                 <br />
-                ইমেইল: info@darunnazat.edu.bd
+                ফোন: +88 01975-024262
+                <br />
+                ইমেইল: darunnazat@gmail.com
               </p>
             </div>
           </div>
           <div className="border-t border-primary-foreground/20 pt-8 text-center text-sm opacity-75">
-            <p>&copy; 2024 দারুন নাজাত মাদ্রাসা। সব অধিকার সংরক্ষিত।</p>
+            <p>{`${currentYear} — দারুন নাজাত মাদরাসা। সব অধিকার সংরক্ষিত।`}</p>
           </div>
         </div>
       </footer>
     </div>
   );
 }
+
+

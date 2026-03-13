@@ -61,6 +61,7 @@ export const defaultPagination: IPagination = {
   nextPage: null,
   prevPage: null,
   limit: 10,
+  totalDocs: 0,
 };
 
 export const buildQuery = (filters: any) => {

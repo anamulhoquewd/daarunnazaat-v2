@@ -61,6 +61,23 @@ export const get = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
+
+export const getByUser = async (c: Context) => {
+  const id = c.req.query("userId") as string;
+
+  const response = await guardanService.getByUser(id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
 export const updates = async (c: Context) => {
   const _id = c.req.param("_id");
 

@@ -20,6 +20,13 @@ guardianRoutes.post(
 );
 
 guardianRoutes.get(
+  "/by",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => guardianController.getByUser(c),
+);
+
+guardianRoutes.get(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),

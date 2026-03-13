@@ -84,8 +84,11 @@ authRoutes.patch(
   (c) => usersController.restoreUser(c),
 );
 
-authRoutes.delete("/:_id", authenticate, authorize(UserRole.SUPER_ADMIN), (c) =>
-  usersController.permanentDelete(c),
+authRoutes.delete(
+  "/:_id/permanently",
+  authenticate,
+  authorize(UserRole.SUPER_ADMIN),
+  (c) => usersController.permanentDelete(c),
 );
 
 export default authRoutes;

@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import {
   changePasswordZ,
   IUser,
@@ -10,6 +9,7 @@ import {
   userUpdateZ,
   userZ,
 } from "@/validations";
+import crypto from "crypto";
 import mongoose from "mongoose";
 import z from "zod";
 import { transporter } from "../config/email";
@@ -495,6 +495,8 @@ export const activateUser = async (_id: string) => {
 
     user.isActive = true;
 
+    await user.save();
+
     return {
       success: {
         success: true,
@@ -668,6 +670,8 @@ export const restoreUser = async (_id: string) => {
 
     user.isDeleted = false;
     user.deletedAt = null;
+
+    await user.save();
 
     return {
       success: {
@@ -913,8 +917,6 @@ export const resetPassword = async ({
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-
-  console.log("Hashed Token:", hashedToken);
 
   try {
     const data = await User.findOne({

@@ -32,7 +32,7 @@ import { UserBottomFilter } from "@/components/users/userBottomFilter";
 import { UserColumns } from "@/components/users/userColumns";
 import UserFilters from "@/components/users/userFilter";
 import UserRegistrationForm from "@/components/users/userRegistrationForm";
-import useUserQuery from "@/hooks/users/useUserQuery";
+import useUser from "@/hooks/users/useUser";
 import {
   ColumnFiltersState,
   SortingState,
@@ -51,6 +51,7 @@ function UsersPage() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     isBlocked: false,
     status: false,
+    isDelete: false,
   });
 
   const {
@@ -81,7 +82,14 @@ function UsersPage() {
     setIsEditing,
     setIsAddOpen,
     setIsDelOpen,
-  } = useUserQuery();
+
+    activeUser,
+    deactiveUser,
+    blockUser,
+    unblockUser,
+    deleteUser,
+    restoreUser,
+  } = useUser();
 
   const columns = UserColumns({
     setIsEditing,
@@ -89,6 +97,13 @@ function UsersPage() {
     setValues,
     setSelectedId,
     setIsAddOpen,
+
+    activeUser,
+    deactiveUser,
+    blockUser,
+    unblockUser,
+    deleteUser,
+    restoreUser,
   });
 
   const table = useReactTable({
@@ -115,8 +130,6 @@ function UsersPage() {
       },
     },
   });
-
-  console.log("Editing State:", isEditing);
 
   return (
     <Card className="w-full  flex flex-col overflow-hidden">
@@ -283,6 +296,7 @@ function UsersPage() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
         <TableComponent table={table} columns={columns} />
 
         {pagination.total > 0 && (

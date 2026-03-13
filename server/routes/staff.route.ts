@@ -20,6 +20,13 @@ staffRoutes.post(
 );
 
 staffRoutes.get(
+  "/by",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => staffController.getByUser(c),
+);
+
+staffRoutes.get(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),

@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import useUserQuery from "@/hooks/users/useUserQuery";
+import useUserQuery from "@/hooks/users/useUser";
 import { UserRole } from "@/validations";
 
 export default function UserRegistrationPage() {

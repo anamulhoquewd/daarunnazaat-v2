@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Separator } from "../ui/separator";
 
 // Define Props Interface
 interface ColumnsProps {
@@ -15,6 +16,13 @@ interface ColumnsProps {
   setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
+
+  activeUser: (userId: string) => Promise<void>;
+  deactiveUser: (userId: string) => Promise<void>;
+  blockUser: (userId: string) => Promise<void>;
+  unblockUser: (userId: string) => Promise<void>;
+  deleteUser: (userId: string) => Promise<void>;
+  restoreUser: (userId: string) => Promise<void>;
 }
 export const UserColumns = ({
   setIsEditing,
@@ -22,14 +30,21 @@ export const UserColumns = ({
   setIsDelOpen,
   setValues,
   setSelectedId,
+
+  activeUser,
+  deactiveUser,
+  blockUser,
+  unblockUser,
+  deleteUser,
+  restoreUser,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
     header: "User ID",
     cell: ({ row }) => row.original._id || "-",
   },
   {
-    header: "Role",
-    cell: ({ row }) => row.original.role || "-",
+    header: "Roles",
+    cell: ({ row }) => row.original.roles?.join(", ") || "-",
   },
   {
     header: "Phone",
@@ -49,6 +64,11 @@ export const UserColumns = ({
     accessorKey: "isBlocked",
     header: "Blocked",
     cell: ({ row }) => (row.original?.isBlocked ? "Yes" : "No"),
+  },
+  {
+    accessorKey: "isDeleted",
+    header: "Deleted",
+    cell: ({ row }) => (row.original?.isDeleted ? "Yes" : "No"),
   },
   {
     id: "actions",
@@ -74,6 +94,45 @@ export const UserColumns = ({
             Edit
           </DropdownMenuItem>
 
+          <Separator className="my-1" />
+          <DropdownMenuItem
+            onClick={() => {
+              if (row.original.isActive) {
+                deactiveUser!(row.original._id);
+              } else {
+                activeUser!(row.original._id);
+              }
+            }}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            {row.original.isActive ? "Deactivate" : "Activate"}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              if (row.original.isBlocked) {
+                unblockUser!(row.original._id);
+              } else {
+                blockUser!(row.original._id);
+              }
+            }}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            {row.original.isBlocked ? "Unblock" : "Block"}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              if (row.original.isDeleted) {
+                restoreUser!(row.original._id);
+              } else {
+                deleteUser!(row.original._id);
+              }
+            }}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            {row.original.isDeleted ? "Restore" : "Delete"}
+          </DropdownMenuItem>
+          <Separator className="my-1" />
+
           <DropdownMenuItem
             className="text-destructive"
             onClick={() => {
@@ -82,7 +141,7 @@ export const UserColumns = ({
             }}
           >
             <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+            Permanently Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

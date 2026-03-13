@@ -77,41 +77,6 @@ export default function UserRegistrationForm({
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="role"
-            render={({ field }) => {
-              console.log("Role Field:", field);
-              return (
-                <FormItem>
-                  <FormLabel>Role *</FormLabel>
-
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                    </FormControl>
-
-                    <SelectContent>
-                      {Object.entries(UserRole).map(([_, value]) => (
-                        <SelectItem key={value} value={value}>
-                          {value}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <FormDescription>Do not select super admin</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              );
-            }}
-          />
-
           <div className="flex justify-end pt-6 gap-2.5">
             <Button
               type="button"

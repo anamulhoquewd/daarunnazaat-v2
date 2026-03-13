@@ -281,6 +281,47 @@ export const get = async (_id: string) => {
   }
 };
 
+export const getByUser = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // Check if user exists
+    const user = await User.findById(idValidation.data._id);
+
+    if (!user) {
+      return {
+        error: {
+          message: `Invalid user ID!`,
+        },
+      };
+    }
+
+    const staff = await Staff.findOne({
+      userId: idValidation.data._id,
+    });
+
+    return {
+      success: {
+        success: true,
+        message: `Staff fetched successfully!`,
+        data: staff,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
 export const updates = async ({
   _id,
   body,

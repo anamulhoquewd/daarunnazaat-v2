@@ -19,6 +19,7 @@ interface IFilter {
   dateRange: DateRange | undefined;
   isActive: "all" | boolean;
   isBlocked: "all" | boolean;
+  isDelete: "all" | boolean;
   sortType?: SortType;
   sortBy?: "createdAt" | "updatedAt" | "email" | "userId";
   role: UserRole | "all";
@@ -31,7 +32,7 @@ interface ISearch {
 
 type SortType = "asc" | "desc";
 
-function useUserQuery() {
+function useUser() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [isAddOpen, setIsAddOpen] = useState<boolean>(false);
@@ -50,6 +51,7 @@ function useUserQuery() {
     sortType: "desc" as SortType,
     limit: "10",
     role: "all",
+    isDelete: "all",
   });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -64,6 +66,180 @@ function useUserQuery() {
       phone: "",
     },
   });
+
+  const activeUser = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/auth/${userId}/activate`);
+
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to activate user");
+        throw new Error(
+          response.data.error.message || "Failed to activate user",
+        );
+      }
+
+      toast.success(
+        response.data.success.message || "User activated successfully",
+      );
+
+      getUsers({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+
+      console.log("Users: ", users);
+    } catch (error: any) {
+      toast.error("Failed to update user status");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deactiveUser = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/auth/${userId}/deactivate`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to deactivate user");
+        throw new Error(
+          response.data.error.message || "Failed to deactivate user",
+        );
+      }
+      toast.success(
+        response.data.success.message || "User deactivated successfully",
+      );
+
+      getUsers({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("Failed to update user status");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const blockUser = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/auth/${userId}/block`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to block user");
+        throw new Error(response.data.error.message || "Failed to block user");
+      }
+      toast.success(
+        response.data.success.message || "User blocked successfully",
+      );
+
+      getUsers({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("Failed to update user status");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const unblockUser = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/auth/${userId}/unblock`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to unblock user");
+        throw new Error(
+          response.data.error.message || "Failed to unblock user",
+        );
+      }
+      toast.success(
+        response.data.success.message || "User unblocked successfully",
+      );
+
+      getUsers({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("Failed to update user status");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/auth/${userId}/delete`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to delete user");
+        throw new Error(response.data.error.message || "Failed to delete user");
+      }
+      toast.success(
+        response.data.success.message || "User deleted successfully",
+      );
+
+      getUsers({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("An error occurred while deleting the user.");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const restoreUser = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/auth/${userId}/restore`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to restore user");
+        throw new Error(
+          response.data.error.message || "Failed to restore user",
+        );
+      }
+      toast.success(
+        response.data.success.message || "User restored successfully",
+      );
+
+      getUsers({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("An error occurred while restoring the user.");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (data: IUser) => {
     setIsLoading(true);
@@ -103,7 +279,7 @@ function useUserQuery() {
   };
 
   const clearForm = () => {
-    form.reset({ email: "", phone: "", role: undefined });
+    form.reset({ email: "", phone: "" });
   };
 
   const handleUpdate = async (data: IUpdateUser) => {
@@ -138,20 +314,18 @@ function useUserQuery() {
   const handleDelete = async (userId: string) => {
     setIsLoading(true);
     try {
-      const response = await api.delete(`/students/${userId}`);
+      const response = await api.delete(`/auth/${userId}/permanently`);
 
       if (!response.data.success) {
-        toast.error(response.data.error.message || "Failed to delete student");
-        throw new Error(
-          response.data.error.message || "Failed to delete student",
-        );
+        toast.error(response.data.error.message || "Failed to delete user");
+        throw new Error(response.data.error.message || "Failed to delete user");
       }
 
       toast.success(
-        response.data.success.message || "Student deleted successfully",
+        response.data.success.message || "User deleted successfully",
       );
     } catch (error) {
-      toast.error("An error occurred while deleting the student.");
+      toast.error("An error occurred while deleting the user.");
       handleAxiosError(error);
     } finally {
       setIsLoading(false);
@@ -183,6 +357,7 @@ function useUserQuery() {
         isActive: filters?.isActive === "all" ? undefined : filters?.isActive,
         isBlocked:
           filters?.isBlocked === "all" ? undefined : filters?.isBlocked,
+        isDelete: filters?.isDelete === "all" ? undefined : filters?.isDelete,
         role: filters?.role === "all" ? undefined : filters?.role,
         sortBy: filters?.sortBy,
         sortType: filters?.sortType,
@@ -221,6 +396,7 @@ function useUserQuery() {
       isActive: "all",
       isBlocked: "all",
       role: "all",
+      isDelete: "all",
     });
     setSearch({
       global: "",
@@ -296,7 +472,14 @@ function useUserQuery() {
     setIsEditing,
     setIsAddOpen,
     setIsDelOpen,
+
+    activeUser,
+    deactiveUser,
+    blockUser,
+    unblockUser,
+    deleteUser,
+    restoreUser,
   };
 }
 
-export default useUserQuery;
+export default useUser;

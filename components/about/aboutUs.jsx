@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 const data = {
   nameBalika: "দারুন নাজাত আদর্শ বালিকা মাদরাসা",
   nameBalok: "দারুন নাজাত মাদরাসা",
-  address: "কাওলার জমিদার বাড়ি, দক্ষিণ খান, ঢাকা-১২২৯",
+  address: "কাওলার জমিদার বাড়ী, দক্ষিণ খান, ঢাকা-১২২৯",
   muhtamim: "হাফেয মাওলানা শাহিদুল্লাহ",
   teachers: "১৮+",
   staff: "৩",
@@ -115,7 +115,7 @@ export default function MadrasahProfile() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 ${dark ? "bg-gray-950 text-white" : "bg-amber-50 text-gray-900"}`}
+      className={`p-2 lg:py-4 lg:px-8 min-h-screen transition-colors duration-300 ${dark ? "bg-gray-950 text-white" : "bg-amber-50 text-gray-900"}`}
       style={{ fontFamily: "'Noto Serif Bengali', 'Amiri', serif" }}
     >
       {/* Google Fonts */}
@@ -155,11 +155,8 @@ export default function MadrasahProfile() {
             🕌
           </div>
           <h1 className="text-white font-bold text-lg leading-relaxed mb-1">
-            দারুন নাজাত আদর্শ বালিকা মাদরাসা
+            দারুন নাজাত আদর্শ বালক/বালিকা মাদরাসা
           </h1>
-          <p className="text-yellow-300 text-sm mb-1">
-            & দারুন নাজাত মাদরাসা (বালক শাখা)
-          </p>
           <p className="text-emerald-200 text-xs italic mb-3">
             ✨ আলোর পথে, ইসলামের ছায়ায় ✨
           </p>
@@ -223,7 +220,9 @@ export default function MadrasahProfile() {
         <Card
           className={`${dark ? "bg-gray-900 border-gray-800" : "bg-white border-amber-200"}`}
         >
-          <CardContent className="p-4 text-sm leading-8">
+          <CardContent
+            className={`p-4 text-sm leading-8 ${dark ? "text-gray-400" : "text-gray-700"}`}
+          >
             দারুন নাজাত মাদরাসা একটি সুপরিচিত দ্বীনি শিক্ষা প্রতিষ্ঠান —{" "}
             <span
               className={`font-semibold ${dark ? "text-emerald-400" : "text-emerald-700"}`}
