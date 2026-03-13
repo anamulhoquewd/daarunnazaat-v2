@@ -604,7 +604,7 @@ export const salaryPaymentZ = z.object({
   remarks: z.string().optional(),
   status: z.enum(["paid", "reversed", "adjusted"]).optional(),
   isDeleted: z.boolean().optional(),
-  deletedAt: z.coerce.date().optional(),
+  deletedAt: z.coerce.date().nullable().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -645,7 +645,7 @@ export const expenseUpdateZ = expenseZ.partial().refine(
 export const transactionLogZ = z.object({
   transactionType: z.enum(TransactionType),
   referenceId: mongoZ,
-  referenceModel: z.enum(["FeeCollection", "SalaryPayment", "Expense"]),
+  referenceModel: z.enum(["FeeCollection", "Salary", "Expense"]),
   amount: moneyZ,
   description: z.string(),
   performedBy: mongoZ.optional(),

@@ -60,7 +60,7 @@ const FeeCollectionSchema = new Schema<IFeeCollection & Document>(
   { timestamps: true },
 );
 
-FeeCollectionSchema.index({ studentId: 1, month: 1, year: 1 });
+FeeCollectionSchema.index({ studentId: 1, period: 1 });
 FeeCollectionSchema.index({ paymentDate: -1 }); // -1 = descending order
 
 FeeCollectionSchema.index(
@@ -68,15 +68,13 @@ FeeCollectionSchema.index(
     studentId: 1,
     sessionId: 1,
     feeType: 1,
-    month: 1,
-    year: 1,
+    period: 1,
   },
   {
     unique: true,
     partialFilterExpression: {
       isDeleted: false,
-      month: { $exists: true },
-      year: { $exists: true },
+      period: { $exists: true },
     },
   },
 );

@@ -31,8 +31,7 @@ export const gets = async (c: Context) => {
   const sortBy = c.req.query("sortBy") || "createdAt";
   const sortType = c.req.query("sortType") || "desc";
   const search = c.req.query("search") as string;
-  const month = c.req.query("month") as string;
-  const year = c.req.query("year") as string;
+  const period = c.req.query("period") as string;
   const branch = c.req.query("branch") as Branch;
   const paymentMethod = c.req.query("paymentMethod") as PaymentMethod;
   const studentId = c.req.query("studentId") as string;
@@ -54,8 +53,7 @@ export const gets = async (c: Context) => {
     sortType,
 
     search,
-    month,
-    year,
+    period,
     paymentMethod,
     feeRange: { max: maxFee, min: minFee },
     branch,
@@ -133,6 +131,23 @@ export const restoreFee = async (c: Context) => {
   const _id = c.req.param("_id");
 
   const response = await feeCollectionsService.restoreFee(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// Delete fee
+export const permanentDelete = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await feeCollectionsService.permanentDelete(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);

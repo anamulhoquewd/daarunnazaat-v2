@@ -1,6 +1,5 @@
 import {
   Branch,
-  feeCollectionsUpdateZ,
   feeCollectionZ,
   FeeType,
   IFeeCollection,
@@ -12,6 +11,7 @@ import {
   PaymentStatus,
   TransactionType,
 } from "@/validations";
+import { feeUpdateSchema } from "@/validations/student";
 import mongoose from "mongoose";
 import { schemaValidationError } from "../error";
 import { FeeCollection } from "../models/feeCollections.model";
@@ -20,7 +20,6 @@ import { Student } from "../models/students.model";
 import pagination from "../utils/pagination";
 import { generateFeeReceiptNumber } from "../utils/string-generator";
 import { createTransactionLog } from "./transactions.service";
-import { feeUpdateSchema } from "@/validations/student";
 
 export const register = async ({
   body,
@@ -69,7 +68,7 @@ export const register = async ({
     let isFeeExist: IFeeCollection | null = null;
 
     if (monthlyFees.includes(validData.data.feeType)) {
-      // Monthly type → student + session + month + year unique
+      // Monthly type → student + session + period unique
       if (!validData.data.period) {
         return {
           error: {
@@ -299,7 +298,7 @@ export const updates = async ({
     if (validData.data && !validData.data.remarks) {
       return {
         error: {
-          message: "Remarks is required when correcting month/year or amount",
+          message: "Remarks is required when correcting period or amount",
         },
       };
     }
@@ -431,8 +430,7 @@ export const gets = async (queryParams: {
   sortType: string;
 
   search: string;
-  month: string;
-  year: string;
+  period: string;
   paymentMethod: PaymentMethod;
   paymentDate: { from: Date | string; to: Date | string };
   feeRange: { min: number; max: number };
@@ -504,12 +502,9 @@ export const gets = async (queryParams: {
       query.paymentMethod = queryParams.paymentMethod;
     }
 
-    // Filter by month & year
-    if (queryParams.month) {
-      query.month = parseInt(queryParams.month, 10);
-    }
-    if (queryParams.year) {
-      query.year = parseInt(queryParams.year, 10);
+    // Filter by period
+    if (queryParams.period) {
+      query.period = queryParams.period;
     }
 
     // Filter by paymentDate range
@@ -703,6 +698,39 @@ export const restoreFee = async (_id: string) => {
       success: {
         success: true,
         message: "Fee RESTORED successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+// Permanent delete (hard delete) - use with caution
+export const permanentDelete = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const fee = await FeeCollection.findById(idValidation.data._id);
+
+    if (!fee) {
+      return { error: { message: "fee not found!" } };
+    }
+
+    await fee.deleteOne();
+
+    return {
+      success: {
+        success: true,
+        message: "fee deleted successfully",
       },
     };
   } catch (error: any) {

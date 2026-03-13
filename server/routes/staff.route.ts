@@ -37,25 +37,4 @@ staffRoutes.patch(
   (c) => staffController.updates(c)
 );
 
-staffRoutes.delete(
-  "/:_id",
-  authenticate,
-  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => staffController.deletes(c)
-);
-
-staffRoutes.patch(
-  "/activate/:_id",
-  authenticate,
-  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => staffController.activate(c)
-);
-
-staffRoutes.patch(
-  "/deactivate/:_id",
-  authenticate,
-  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => staffController.deactivate(c)
-);
-
 export default staffRoutes;

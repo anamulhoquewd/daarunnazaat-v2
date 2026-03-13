@@ -1,7 +1,7 @@
 import { Expense } from "../models/expences.model";
 import { FeeCollection } from "../models/feeCollections.model";
 import { Guardian } from "../models/guardians.model";
-import { SalaryPayment } from "../models/salaryPayments.model";
+import { Salary } from "../models/salaryPayments.model";
 import { Staff } from "../models/staffs.model";
 import { Student } from "../models/students.model";
 
@@ -21,14 +21,14 @@ export function stringGenerator(strLength: number) {
     let output = "";
     for (let i = 0; i < length; i++) {
       const generateToken = possibleCharacters.charAt(
-        Math.floor(Math.random() * possibleCharactersLength)
+        Math.floor(Math.random() * possibleCharactersLength),
       );
       output += generateToken;
     }
     return output;
   } else {
     throw new Error(
-      "Invalid string length provided. Must be a positive number."
+      "Invalid string length provided. Must be a positive number.",
     );
   }
 }
@@ -95,7 +95,7 @@ export async function generateSalaryReceiptNumber(): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `SAL-${year}-`;
 
-  const lastReceipt = await SalaryPayment.findOne({
+  const lastReceipt = await Salary.findOne({
     receiptNumber: { $regex: `^${prefix}` },
   }).sort({ receiptNumber: -1 });
 

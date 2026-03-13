@@ -36,6 +36,13 @@ studentRoutes.patch(
 );
 
 studentRoutes.patch(
+  "/:_id/promote",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.promote(c),
+);
+
+studentRoutes.patch(
   "/:_id/block",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),

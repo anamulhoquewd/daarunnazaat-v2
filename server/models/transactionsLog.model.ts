@@ -16,7 +16,7 @@ const TransactionLogSchema = new Schema<ITransactionLog & Document>(
     },
     referenceModel: {
       type: String,
-      enum: ["FeeCollection", "SalaryPayment", "Expense"],
+      enum: ["FeeCollection", "Salary", "Expense"],
       required: true,
     },
     amount: { type: Number, required: true },

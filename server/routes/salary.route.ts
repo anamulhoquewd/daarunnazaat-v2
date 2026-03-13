@@ -3,41 +3,54 @@ import { salaryController } from "../controllers";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
 import { UserRole } from "@/validations";
 
-const salaryPaymentRoutes = new Hono();
+const salaryRoutes = new Hono();
 
-salaryPaymentRoutes.get(
+salaryRoutes.get(
   "/",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => salaryController.gets(c)
+  (c) => salaryController.gets(c),
 );
 
-salaryPaymentRoutes.post(
+salaryRoutes.post(
   "/register",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => salaryController.register(c)
+  (c) => salaryController.register(c),
 );
 
-salaryPaymentRoutes.get(
+salaryRoutes.get(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => salaryController.get(c)
+  (c) => salaryController.get(c),
 );
 
-salaryPaymentRoutes.patch(
+salaryRoutes.patch(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => salaryController.updates(c)
+  (c) => salaryController.updates(c),
 );
 
-salaryPaymentRoutes.delete(
-  "/:_id",
+salaryRoutes.patch(
+  "/:_id/delete",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => salaryController.deletes(c)
+  (c) => salaryController.deleteFlag(c),
 );
 
-export default salaryPaymentRoutes;
+salaryRoutes.patch(
+  "/:_id/restore",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => salaryController.restoreSalary(c),
+);
+
+salaryRoutes.delete(
+  "/:_id/permanently",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => salaryController.permanentDelete(c),
+);
+export default salaryRoutes;

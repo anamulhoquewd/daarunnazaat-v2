@@ -33,11 +33,25 @@ feeCollectionRoutes.patch(
   (c) => feeCollectionController.updates(c)
 );
 
-feeCollectionRoutes.delete(
-  "/:_id",
+feeCollectionRoutes.patch(
+  "/:_id/delete",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => feeCollectionController.deletes(c)
+  (c) => feeCollectionController.deleteFlag(c),
+);
+
+feeCollectionRoutes.patch(
+  "/:_id/restore",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => feeCollectionController.restoreFee(c),
+);
+
+feeCollectionRoutes.delete(
+  "/:_id/permanently",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => feeCollectionController.permanentDelete(c),
 );
 
 export default feeCollectionRoutes;
