@@ -50,8 +50,7 @@ function UsersPage() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     isBlocked: false,
-    status: false,
-    isDelete: false,
+    isDeleted: false,
   });
 
   const {
@@ -74,7 +73,6 @@ function UsersPage() {
     handleUpdate,
     handleSubmit,
     setSelectedId,
-    clearForm,
     form,
     isEditing,
     isAddOpen,
@@ -164,7 +162,7 @@ function UsersPage() {
               open={isAddOpen}
               onOpenChange={(open) => {
                 if (!open) {
-                  clearForm();
+                  form.reset({ email: "", phone: "" });
                   setValues(null);
                   setSelectedId("");
                   setIsEditing(false);
@@ -196,7 +194,6 @@ function UsersPage() {
                     handleSubmit={isEditing ? handleUpdate : handleSubmit}
                     isLoading={isLoading}
                     form={form}
-                    clearForm={clearForm}
                   />
                   <ScrollBar orientation="vertical" className="w-2.5" />
                   <ScrollBar orientation="horizontal" className="w-2.5" />

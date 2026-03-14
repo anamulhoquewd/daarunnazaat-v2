@@ -10,7 +10,6 @@ function Paginations({
   pagination: IPagination;
   setPagination: Dispatch<SetStateAction<IPagination>>;
 }) {
-  console.log(pagination);
   return (
     <div>
       <Button

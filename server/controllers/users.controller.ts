@@ -39,7 +39,7 @@ export const getUsers = async (c: Context) => {
   const toDate = c.req.query("toDate") as string;
   const isActiveRaw = c.req.query("isActive") as string;
   const isBlockedRaw = c.req.query("isBlocked") as string;
-  const roles = c.req.query("roles") as string;
+  const roles = c.req.query("roles") as string; // comma separated roles e.g. "admin,staff"
 
   const createdDateRange = { from: fromDate, to: toDate };
 

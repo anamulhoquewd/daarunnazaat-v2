@@ -50,8 +50,7 @@ export function PersonalInfoSection({
   useEffect(() => {
     if (data) {
       form.reset({
-        firstName: data.firstName,
-        lastName: data.lastName,
+        fullName: data.fullName,
         dateOfBirth:
           data.dateOfBirth ?? new Date(data?.dateOfBirth ?? new Date()),
         gender: data.gender,
@@ -94,30 +93,18 @@ export function PersonalInfoSection({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="firstName"
+                  name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>First Name</FormLabel>
+                      <FormLabel>Full Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="John" {...field} />
+                        <Input placeholder="Anamul Hoque" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <DateField name="dateOfBirth" label="Date of Birth" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -184,9 +171,7 @@ export function PersonalInfoSection({
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <DateField name="dateOfBirth" label="Date of Birth" />
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="gender"
@@ -250,12 +235,16 @@ export function PersonalInfoSection({
         <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">First Name</p>
-              <p className="font-medium">{data?.firstName || "N/A"}</p>
+              <p className="text-sm text-muted-foreground">Full Name</p>
+              <p className="font-medium">{data?.fullName || "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Last Name</p>
-              <p className="font-medium">{data?.lastName || "N/A"}</p>
+              <p className="text-sm text-muted-foreground">Date of Birth</p>
+              <p className="font-medium">
+                {data?.dateOfBirth
+                  ? format(data.dateOfBirth, "cc LLL yyyy")
+                  : "N/A"}
+              </p>
             </div>
           </div>
           {(data?.fatherName || data?.motherName) && (
@@ -286,19 +275,12 @@ export function PersonalInfoSection({
               </div>
             </div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Blood Group</p>
               <p className="font-medium">{data?.bloodGroup || "N/A"}</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Date of Birth</p>
-              <p className="font-medium">
-                {data?.dateOfBirth
-                  ? format(data.dateOfBirth, "cc LLL yyyy")
-                  : "N/A"}
-              </p>
-            </div>
+
             <div>
               <p className="text-sm text-muted-foreground">Gender</p>
               <p className="font-medium capitalize">{data?.gender || "N/A"}</p>

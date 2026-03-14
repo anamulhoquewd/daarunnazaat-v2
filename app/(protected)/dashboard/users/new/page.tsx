@@ -22,9 +22,38 @@ import {
 } from "@/components/ui/select";
 import useUserQuery from "@/hooks/users/useUser";
 import { UserRole } from "@/validations";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+const roles = [
+  { label: "Admin", value: "admin" },
+  { label: "Staff", value: "staff" },
+  { label: "Guardian", value: "guardian" },
+];
 
 export default function UserRegistrationPage() {
   const { form, handleSubmit, isLoading } = useUserQuery();
+
+  const toggleRole = (role: UserRole) => {
+    const normalized =
+      form.watch("roles") && Array.isArray(form.watch("roles"))
+        ? form.watch("roles").filter((r: string) => r && r.trim().length > 0)
+        : [];
+
+    if (normalized.includes(role)) {
+      // toggle the role off
+      const next = normalized.filter((r: string) => r !== role);
+      form.setValue("roles", next);
+      return;
+    }
+
+    form.setValue("roles", [...normalized, role]);
+  };
 
   return (
     <main className="w-full flex flex-col overflow-hidden gap-8">
@@ -68,39 +97,53 @@ export default function UserRegistrationPage() {
                       <FormItem>
                         <FormLabel>Phone *</FormLabel>
                         <FormControl>
-                          <Input placeholder="D019******62" {...field} />
+                          <Input placeholder="01XXXXXXXXX" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Role *</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select role" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {Object.entries(UserRole).map(([_, value]) => (
-                              <SelectItem key={value} value={value}>
-                                {value}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between capitalize"
+                      >
+                        {form.watch("roles") &&
+                        Array.isArray(form.watch("roles"))
+                          ? form.watch("roles").join(", ")
+                          : "Select roles"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandGroup>
+                          {roles.map((role) => (
+                            <CommandItem
+                              key={role.value}
+                              onSelect={() =>
+                                toggleRole(role.value as UserRole)
+                              }
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${
+                                  form
+                                    .watch("roles")
+                                    ?.includes(role.value as UserRole)
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                }`}
+                              />
+                              {role.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </CardContent>
             </Card>

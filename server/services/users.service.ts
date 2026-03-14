@@ -588,7 +588,7 @@ export const unblockUser = async (_id: string) => {
     return {
       success: {
         success: true,
-        message: "User UNBLOCKED successfully",
+        message: "User NOT BLOCKED successfully",
       },
     };
   } catch (error: any) {

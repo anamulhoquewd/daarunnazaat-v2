@@ -286,12 +286,26 @@ const personBaseZ = z.object({
     .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
     .trim()
     .optional(),
+
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 // Student Schema
 export const studentZ = personBaseZ
   .extend({
     _id: mongoZ.optional(),
+    email: z
+      .preprocess(
+        (val) => (val === "" ? undefined : val),
+        z
+          .string()
+          .email("Invalid email address")
+          .trim()
+          .toLowerCase()
+          .optional(),
+      )
+      .optional(),
     studentId: z.string().optional(),
     phone: z
       .string()

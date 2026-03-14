@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
+import { RoleMultiSelect } from "./roleMultiSelect";
 interface UserFiltersProps {
   filters: Record<string, string | boolean | undefined>;
   onChange: (key: string, value: string) => void;
@@ -56,23 +57,18 @@ export default function UserFilters({
         <CardContent className="space-y-6 border-t pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Role</label>
-              <Select
-                value={(filters.role as string) || "all"}
-                onValueChange={(v) => onChange("role", v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select batch type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="super_admin">Super Admin</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="staff">Staff</SelectItem>
-                  <SelectItem value="guardian">Guardian</SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium mb-2 block">Roles</label>
+              <RoleMultiSelect
+                value={
+                  filters.roles
+                    ? (filters.roles as string)
+                        .split(",")
+                        .map((r) => r.trim())
+                        .filter(Boolean)
+                    : []
+                }
+                onChange={(roles) => onChange("roles", roles.join(","))}
+              />
             </div>
 
             <div>
@@ -82,10 +78,10 @@ export default function UserFilters({
                   filters.isActive === "all"
                     ? "all"
                     : filters.isActive === true
-                    ? "true"
-                    : filters.isActive === false
-                    ? "false"
-                    : "all"
+                      ? "true"
+                      : filters.isActive === false
+                        ? "false"
+                        : "all"
                 }
                 onValueChange={(v) => onChange("isActive", v)}
               >
@@ -108,10 +104,10 @@ export default function UserFilters({
                   filters.isBlocked === "all"
                     ? "all"
                     : filters.isBlocked === true
-                    ? "true"
-                    : filters.isBlocked === false
-                    ? "false"
-                    : "all"
+                      ? "true"
+                      : filters.isBlocked === false
+                        ? "false"
+                        : "all"
                 }
                 onValueChange={(v) => onChange("isBlocked", v)}
               >
@@ -121,7 +117,7 @@ export default function UserFilters({
                 <SelectContent>
                   <SelectItem value="all">All</SelectItem>
                   <SelectItem value="true">Blocked</SelectItem>
-                  <SelectItem value="false">Unblocked</SelectItem>
+                  <SelectItem value="false">Not blocked</SelectItem>
                 </SelectContent>
               </Select>
             </div>

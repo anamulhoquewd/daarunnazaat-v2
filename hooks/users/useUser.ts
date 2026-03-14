@@ -22,7 +22,7 @@ interface IFilter {
   isDelete: "all" | boolean;
   sortType?: SortType;
   sortBy?: "createdAt" | "updatedAt" | "email" | "userId";
-  role: UserRole | "all";
+  roles: string | "all";
   limit?: string;
 }
 
@@ -50,7 +50,7 @@ function useUser() {
     sortBy: "createdAt",
     sortType: "desc" as SortType,
     limit: "10",
-    role: "all",
+    roles: "all",
     isDelete: "all",
   });
 
@@ -60,7 +60,9 @@ function useUser() {
   const debouncedGlobalSearch = useDebounce(search.global, 700);
 
   const form = useForm({
-    resolver: zodResolver(userZ.pick({ email: true, phone: true, role: true })),
+    resolver: zodResolver(
+      userZ.pick({ email: true, phone: true, roles: true }),
+    ),
     defaultValues: values ?? {
       email: "",
       phone: "",
@@ -90,8 +92,6 @@ function useUser() {
         filters: filterBy,
         currentPage: pagination.page,
       });
-
-      console.log("Users: ", users);
     } catch (error: any) {
       toast.error("Failed to update user status");
       handleAxiosError(error);
@@ -167,7 +167,7 @@ function useUser() {
         );
       }
       toast.success(
-        response.data.success.message || "User unblocked successfully",
+        response.data.success.message || "User not blocked successfully",
       );
 
       getUsers({
@@ -278,14 +278,8 @@ function useUser() {
     }
   };
 
-  const clearForm = () => {
-    form.reset({ email: "", phone: "" });
-  };
-
   const handleUpdate = async (data: IUpdateUser) => {
     setIsLoading(true);
-
-    console.log("Updating user with data:", data, "and ID:", selectedId);
 
     try {
       const response = await api.patch(`/auth/${selectedId}`, data);
@@ -301,6 +295,9 @@ function useUser() {
         filters: filterBy,
         currentPage: pagination.page,
       });
+
+      form.reset({ email: "", phone: "" });
+      setSelectedId(null);
       toast.success("Updated successfully");
     } catch (e) {
       toast.error("Update failed");
@@ -358,7 +355,7 @@ function useUser() {
         isBlocked:
           filters?.isBlocked === "all" ? undefined : filters?.isBlocked,
         isDelete: filters?.isDelete === "all" ? undefined : filters?.isDelete,
-        role: filters?.role === "all" ? undefined : filters?.role,
+        roles: filters?.roles === "all" ? undefined : filters?.roles,
         sortBy: filters?.sortBy,
         sortType: filters?.sortType,
         limit: filters?.limit,
@@ -385,7 +382,7 @@ function useUser() {
     if (debouncedGlobalSearch && debouncedGlobalSearch.trim()) count++;
     if (filterBy.isActive && filterBy.isActive !== "all") count++;
     if (filterBy.isBlocked && filterBy.isBlocked !== "all") count++;
-    if (filterBy.role && filterBy.role !== "all") count++;
+    if (filterBy.roles && filterBy.roles !== "all") count++;
 
     return count;
   };
@@ -395,7 +392,7 @@ function useUser() {
       dateRange: { from: undefined, to: undefined },
       isActive: "all",
       isBlocked: "all",
-      role: "all",
+      roles: "all",
       isDelete: "all",
     });
     setSearch({
@@ -420,6 +417,40 @@ function useUser() {
       ...prev,
       page: 1,
     }));
+  };
+
+  const updateUserRole = async (userId: string, roles: string[]) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.patch(`/auth/${userId}/roles`, {
+        roles,
+      });
+      if (!response.data.success) {
+        toast.error(
+          response.data.error.message || "Failed to update user role",
+        );
+        throw new Error(
+          response.data.error.message || "Failed to update user role",
+        );
+      }
+
+      getUsers({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+      toast.success(
+        response.data.success.message || "User role updated successfully",
+      );
+    } catch (error: any) {
+      toast.error("Failed to update user role");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 🔥 API call only when debounced search OR page/limit changes
@@ -459,7 +490,6 @@ function useUser() {
     updateFilter,
     combinedFilters,
     handleSubmit,
-    clearForm,
     handleDelete,
     handleUpdate,
     selectedId,
@@ -479,6 +509,7 @@ function useUser() {
     unblockUser,
     deleteUser,
     restoreUser,
+    updateUserRole,
   };
 }
 

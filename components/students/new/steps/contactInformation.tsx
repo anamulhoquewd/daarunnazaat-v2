@@ -31,7 +31,7 @@ function ContactInformation() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <FormField
             control={control}
-            name="alternativePhone"
+            name="phone"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Phone Number</FormLabel>

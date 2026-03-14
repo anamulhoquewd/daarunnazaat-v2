@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, RefreshCw, Trash2 } from "lucide-react";
 import { Separator } from "../ui/separator";
 
 // Define Props Interface
@@ -131,6 +131,14 @@ export const UserColumns = ({
             <Pencil className="mr-2 h-4 w-4" />
             {row.original.isDeleted ? "Restore" : "Delete"}
           </DropdownMenuItem>
+
+          <Separator className="my-1" />
+
+          <DropdownMenuItem>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Change Roles
+          </DropdownMenuItem>
+
           <Separator className="my-1" />
 
           <DropdownMenuItem

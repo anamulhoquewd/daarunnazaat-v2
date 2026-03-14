@@ -846,7 +846,7 @@ export const unblockStudent = async (_id: string) => {
     return {
       success: {
         success: true,
-        message: "student UNBLOCKED successfully",
+        message: "student NOT BLOCKED successfully",
       },
     };
   } catch (error: any) {

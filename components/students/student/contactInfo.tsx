@@ -86,12 +86,12 @@ export function ContactInfoSection({
                 {/* Alternative Phone */}
                 <FormField
                   control={form.control}
-                  name="alternativePhone"
+                  name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Alternative Phone (Optional)</FormLabel>
+                      <FormLabel>Phone (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Alternative phone" {...field} />
+                        <Input placeholder="Phone number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -118,25 +118,17 @@ export function ContactInfoSection({
         </CardContent>
       ) : (
         <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium wrap-break-word">
-                {data?.userId?.email || "N/A"}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Phone</p>
-              <p className="font-medium">{data?.userId?.phone || "N/A"}</p>
-            </div>
-          </div>
-          {(data?.alternativePhone || data?.whatsApp) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {(data?.phone || data?.whatsApp || data?.email) && (
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">
-                  Alternative Phone
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="font-medium wrap-break-word">
+                  {data?.email || "N/A"}
                 </p>
-                <p className="font-medium">{data?.alternativePhone || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Phone</p>
+                <p className="font-medium">{data?.phone || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">WhatsApp</p>

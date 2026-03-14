@@ -15,6 +15,7 @@ interface GuardianDetailsProps {
 }
 
 export function GuardianDetails({ data }: GuardianDetailsProps) {
+
   return (
     <Card className="p-6 border border-border">
       <CardHeader>
@@ -26,11 +27,11 @@ export function GuardianDetails({ data }: GuardianDetailsProps) {
           <div>
             <p className="text-sm text-muted-foreground">Guardian ref</p>
             <code className="bg-muted rounded text-xs font-mono truncate">
-              {data?.userId?._id?.substring(0, 10)}...
+              {data?.guardianId?._id?.substring(0, 10)}...
             </code>
             <CopyToClipboard
               title={"Copy Guardian ID"}
-              text={data?.userId?._id || "N/N"}
+              text={data?._id || "N/N"}
             />
           </div>
           <div>
@@ -46,19 +47,21 @@ export function GuardianDetails({ data }: GuardianDetailsProps) {
           <div>
             <p className="text-sm text-muted-foreground">Name</p>
             <p className="font-medium">
-              {data?.guardianId?.firstName
-                ? data?.guardianId?.firstName +
-                  " " +
-                  (data?.guardianId?.lastName ? data?.guardianId?.lastName : "")
-                : "N/A"}
+              {data?.guardianId?.fullName ? data?.guardianId?.fullName : "N/A"}
             </p>
-          </div>{" "}
+          </div>
           <div>
             <p className="text-sm text-muted-foreground">Gender</p>
             <p className="font-medium">
               {data?.guardianId?.gender ? data?.guardianId?.gender : "N/A"}
             </p>
           </div>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Relationship</p>
+          <p className="font-medium">
+            {data?.guardianRelation ? data?.guardianRelation : "N/A"}
+          </p>
         </div>
       </CardContent>
     </Card>

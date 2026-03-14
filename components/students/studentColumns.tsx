@@ -26,7 +26,7 @@ export const StudentColumns = ({
   {
     header: "Name",
     cell: ({ row }) => {
-      const { _id, firstName, lastName } = row.original;
+      const { _id, fullName } = row.original;
 
       return (
         <Link
@@ -34,7 +34,7 @@ export const StudentColumns = ({
           target="_blank"
           className="text-blue-600 hover:underline font-medium"
         >
-          {firstName ?? ""} {lastName ?? ""}
+          {fullName ?? "_"}
         </Link>
       );
     },
@@ -61,9 +61,7 @@ export const StudentColumns = ({
   {
     header: "Guardian",
     cell: ({ row }) =>
-      `${row.original.guardian?.firstName || ""} ${
-        row.original.guardian?.lastName || ""
-      }`,
+      `${row.original.guardian?.fullName || "-"} (${row.original?.guardianRelation || "-"})`,
   },
   {
     accessorKey: "nid",
@@ -72,21 +70,16 @@ export const StudentColumns = ({
   },
   {
     header: "Phone",
-    cell: ({ row }) => row.original.user?.phone || "-",
+    cell: ({ row }) => row.original?.phone || "-",
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.original.user?.email || "-",
+    cell: ({ row }) => row.original?.email || "-",
   },
   {
-    header: "Guardian Phone",
-    cell: ({ row }) => row.original.guardian?.user?.phone || "-",
-  },
-  {
-    accessorKey: "guardian_Email",
-    header: "Guardian Email",
-    cell: ({ row }) => row.original.guardian?.user?.email || "-",
+    header: "G. Phone",
+    cell: ({ row }) => row.original.guardianId?.phone || "-",
   },
   {
     accessorKey: "residential",
@@ -104,7 +97,7 @@ export const StudentColumns = ({
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (row.original.user?.isActive ? "Active" : "Inactive"),
+    cell: ({ row }) => (row.original?.isActive ? "Active" : "Inactive"),
   },
   {
     id: "actions",

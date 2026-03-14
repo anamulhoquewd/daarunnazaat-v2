@@ -12,6 +12,7 @@ import {
 const StudentSchema = new Schema<IStudent & Document>(
   {
     phone: { type: String },
+    email: { type: String, unique: true, sparse: true },
     whatsApp: { type: String },
     studentId: { type: String, required: true, unique: true },
     guardianId: {
@@ -29,6 +30,7 @@ const StudentSchema = new Schema<IStudent & Document>(
     batchType: { type: String, enum: Object.values(BatchType), required: true },
 
     fullName: { type: String, required: true },
+
     fatherName: { type: String },
     motherName: { type: String },
 

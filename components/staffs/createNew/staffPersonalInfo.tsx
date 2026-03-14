@@ -40,10 +40,10 @@ function StaffPersonalInformation() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <FormField
             control={control}
-            name="firstName"
+            name="fullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Name *</FormLabel>
+                <FormLabel>Full Name *</FormLabel>
                 <FormControl>
                   <Input placeholder="John" {...field} />
                 </FormControl>
@@ -51,19 +51,7 @@ function StaffPersonalInformation() {
               </FormItem>
             )}
           />
-          <FormField
-            control={control}
-            name="lastName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <DateField name="dateOfBirth" label="Date of Birth" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-start">
@@ -98,8 +86,7 @@ function StaffPersonalInformation() {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-          <DateField name="dateOfBirth" label="Date of Birth" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <FormField
             control={control}
             name="gender"
