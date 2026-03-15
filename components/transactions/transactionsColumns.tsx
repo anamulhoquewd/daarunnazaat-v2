@@ -40,7 +40,7 @@ export const TransactionsColumns = ({
     header: "Created At",
     cell: ({ getValue }) => {
       const value = getValue<string>();
-      return value ? format(new Date(value), "cc LLL yyyy") : "-";
+      return value ? format(new Date(value), "dd LLL yyyy") : "-";
     },
   },
   {

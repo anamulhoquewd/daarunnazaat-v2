@@ -2,11 +2,12 @@
 
 import api from "@/axios/intercepter";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatMony } from "@/lib/utils";
 import { Branch, IFeeCollection, monthlyFees } from "@/validations";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -36,9 +37,17 @@ export default function InvoicePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const invoiceRef = useRef(null);
+
   const handlePrint = () => {
-    // Implement print functionality here
+    if (invoiceRef.current && typeof window !== "undefined") {
+      const printContents = invoiceRef.current.innerHTML;
+      const originalContents = document.body.innerHTML;
+      document.body.innerHTML = printContents;
+      window.print();
+      document.body.innerHTML = originalContents;
+    }
   };
+
   const handleDownloadPDF = () => {
     // Implement download PDF functionality here
   };
@@ -105,19 +114,36 @@ export default function InvoicePage() {
     );
   }
 
+  let formatted = "_";
+  if (monthlyFees.includes(fee?.feeType) && fee?.period) {
+    const date = parse(fee?.period, "yyyy-MM", new Date());
+    formatted = format(date, "MMMM yyyy");
+  }
+
   const statusConfig_typed =
     statusConfig[fee.paymentStatus as keyof typeof statusConfig];
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto">
+      <div className="flex justify-end space-x-4 mb-4 print:hidden">
+        <Button
+          onClick={handlePrint}
+          className="cursor-pointer bg-green-600 hover:bg-green-700 text-white"
+        >
+          Print
+        </Button>
+      </div>
+      <div className="mx-auto print:p-0 p-4 md:p-8">
         {/* Main Invoice Card */}
-        <Card className="shadow-lg border-neutral-200 bg-white">
+        <Card
+          ref={invoiceRef}
+          className="shadow-lg border-neutral-200 bg-white"
+        >
           <CardHeader className="border-b border-neutral-200 bg-gradient-to-r from-neutral-50 to-white">
             <div className="flex justify-between items-start">
               <div>
                 <CardTitle className="text-3xl font-bold text-neutral-900 mb-2 uppercase">
-                  {`Darun Nazat ${fee.branch === Branch.BRANCH_1 ? "Idial Girls " : ""}Madrasa`}
+                  {`Darun Nazat ${fee.branch === Branch.BALIKA_BRANCH ? "Idial Girls " : ""}Madrasa`}
                 </CardTitle>
                 <p className="text-sm text-neutral-600 font-medium">
                   Kawlar, Jomidar Bari, Dokshin Khan, Dhaka - 1229 <br />
@@ -131,7 +157,7 @@ export default function InvoicePage() {
                 <p className="text-sm text-neutral-600 font-medium">
                   {format(
                     new Date(fee?.paymentDate ?? new Date()),
-                    "cc LLL yyyy",
+                    "dd LLL yyyy",
                   )}
                 </p>
               </div>
@@ -153,8 +179,7 @@ export default function InvoicePage() {
                     Student Name
                   </p>
                   <p className="font-semibold text-neutral-900">
-                    {fee.studentId?.firstName ?? "Unknown"}{" "}
-                    {fee.studentId?.lastName}
+                    {fee.studentId?.fullName ?? "Unknown"}
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -229,7 +254,7 @@ export default function InvoicePage() {
                   <div className="flex justify-between items-center py-2">
                     <span className="text-neutral-700">Payment for</span>
                     <span className="font-medium text-neutral-900 capitalize">
-                      {`${format(new Date(fee.year ?? new Date().getFullYear(), fee.month ?? new Date().getMonth(), 1), "MMMM yyyy")}`}
+                      {formatted}
                     </span>
                   </div>
                 )}
@@ -286,7 +311,7 @@ export default function InvoicePage() {
               <h3 className="text-base font-semibold text-neutral-900 mb-4 uppercase tracking-wide">
                 Payment Information
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="space-y-1">
                   <p className="text-xs text-neutral-600 uppercase tracking-wide">
                     Payment Method
@@ -315,6 +340,12 @@ export default function InvoicePage() {
                       {fee.collectedBy.role}
                     </span>
                   </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-neutral-600 uppercase tracking-wide">
+                    Signature
+                  </p>
+                  <div className="h-12 w-32 border-b border-neutral-900"></div>
                 </div>
               </div>
             </div>
@@ -346,13 +377,13 @@ export default function InvoicePage() {
               <div>
                 <p>Receipt Created</p>
                 <p>
-                  {format(new Date(fee.createdAt ?? new Date()), "cc LLL yyyy")}
+                  {format(new Date(fee.createdAt ?? new Date()), "dd LLL yyyy")}
                 </p>
               </div>
               <div>
                 <p>Last Updated</p>
                 <p>
-                  {format(new Date(fee.updatedAt ?? new Date()), "cc LLL yyyy")}
+                  {format(new Date(fee.updatedAt ?? new Date()), "dd LLL yyyy")}
                 </p>
               </div>
             </div>

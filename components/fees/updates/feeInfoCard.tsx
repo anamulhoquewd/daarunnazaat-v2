@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Lock } from "lucide-react";
-import { formatMony, MONTHS } from "@/lib/utils";
+import { formatMony } from "@/lib/utils";
 import { IFeeCollection } from "@/validations";
 
 interface FeeInfoCardProps {
@@ -28,13 +28,13 @@ export function FeeInfoCard({ fee }: FeeInfoCardProps) {
           <ReadOnlyField label="Receipt Number" value={fee.receiptNumber} />
           <ReadOnlyField
             label="Student Name"
-            value={`${fee.studentId?.firstName} ${fee.studentId?.lastName}`}
+            value={`${fee.studentId?.fullName}`}
           />
           <ReadOnlyField label="Student ID" value={fee.studentId?._id} />
           <ReadOnlyField label="Fee Type" value={fee.feeType} />
           <ReadOnlyField
             label="Payable Amount"
-            value={`PKR ${formatMony(fee?.payableAmount)}`}
+            value={`BDT ${formatMony(fee?.payableAmount)}`}
           />
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -46,10 +46,7 @@ export function FeeInfoCard({ fee }: FeeInfoCardProps) {
             </div>
           </div>
           <ReadOnlyField label="Branch" value={fee.branch} />
-          <ReadOnlyField
-            label="Billing Period (Current)"
-            value={`${typeof fee.month === "number" ? MONTHS[fee.month] : fee.month} ${fee.year}`}
-          />
+          <ReadOnlyField label="Billing Period (Current)" value={fee.period} />
         </div>
       </CardContent>
     </Card>

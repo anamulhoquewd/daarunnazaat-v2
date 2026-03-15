@@ -52,7 +52,7 @@ export function SessionHistorySection({ data }: SessionHistorySectionProps) {
                   <p className="text-sm text-muted-foreground">Start Date</p>
                   <p className="font-medium">
                     {session?.sessionId?.startDate
-                      ? format(session?.sessionId?.startDate, "cc LLL yyyy")
+                      ? format(session?.sessionId?.startDate, "dd LLL yyyy")
                       : "N/A"}
                   </p>
                 </div>
@@ -60,7 +60,7 @@ export function SessionHistorySection({ data }: SessionHistorySectionProps) {
                   <p className="text-sm text-muted-foreground">End Date</p>
                   <p className="font-medium">
                     {session?.sessionId?.endDate
-                      ? format(session?.sessionId?.endDate, "cc LLL yyyy")
+                      ? format(session?.sessionId?.endDate, "dd LLL yyyy")
                       : "N/A"}
                   </p>
                 </div>

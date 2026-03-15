@@ -75,7 +75,6 @@ export type AcademicInfo = z.infer<typeof academicInfoSchema>;
 export type Fees = z.infer<typeof feesSchema>;
 
 export interface IStudentPopulated extends IStudent {
-  user: IUser;
   class: IClass;
   guardian: IGuardian;
 }

@@ -262,7 +262,7 @@ export function PersonalInfoSection({
               <p className="text-sm text-muted-foreground">Date of Birth</p>
               <p className="font-medium">
                 {data?.dateOfBirth
-                  ? format(data.dateOfBirth, "cc LLL yyyy")
+                  ? format(data.dateOfBirth, "dd LLL yyyy")
                   : "N/A"}
               </p>
             </div>

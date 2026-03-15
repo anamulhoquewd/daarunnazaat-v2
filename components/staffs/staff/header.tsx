@@ -51,7 +51,7 @@ export function StaffProfileHeader({ data }: { data: IStaff }) {
               </p>
               <p className="text-sm text-muted-foreground">
                 Date of Birth:{" "}
-                {data?.dateOfBirth && format(data?.dateOfBirth, "cc LLL yyyy")}
+                {data?.dateOfBirth && format(data?.dateOfBirth, "dd LLL yyyy")}
               </p>
             </div>
           </div>

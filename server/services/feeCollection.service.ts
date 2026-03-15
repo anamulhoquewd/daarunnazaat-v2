@@ -298,15 +298,16 @@ export const updates = async ({
     if (validData.data && !validData.data.remarks) {
       return {
         error: {
-          message: "Remarks is required when correcting period or amount",
+          message:
+            "Remarks is required when correcting period or amount changed",
         },
       };
     }
 
-    const isMonthOrYearChanged =
+    const isPeriodChanged =
       validData.data.period && validData.data.period !== fee.period;
 
-    if (monthlyFees.includes(fee.feeType as FeeType) && isMonthOrYearChanged) {
+    if (monthlyFees.includes(fee.feeType as FeeType) && isPeriodChanged) {
       const targetPeriod = validData.data.period ?? fee.period;
 
       const duplicateFee = await FeeCollection.findOne({
@@ -334,23 +335,24 @@ export const updates = async ({
     }
 
     const oldReceived = fee.receivedAmount;
+    console.log("Existing Fee Data:", fee.toObject());
 
     // ===== RECALCULATE =====
     let dueAmount = 0;
     let advanceAmount = 0;
     let paymentStatus = PaymentStatus.PARTIAL;
 
-    if (fee.receivedAmount >= fee.payableAmount!) {
+    if (validData.data.receivedAmount >= fee.payableAmount!) {
       paymentStatus = PaymentStatus.PAID;
-      advanceAmount = fee.receivedAmount - fee.payableAmount!;
+      advanceAmount = validData.data.receivedAmount - fee.payableAmount!;
       dueAmount = 0;
-    } else if (fee.receivedAmount === 0) {
+    } else if (validData.data.receivedAmount === 0) {
       paymentStatus = PaymentStatus.DUE;
-      dueAmount = fee.payableAmount! - fee.receivedAmount;
+      dueAmount = fee.payableAmount! - validData.data.receivedAmount;
       advanceAmount = 0;
     } else {
       paymentStatus = PaymentStatus.PARTIAL;
-      dueAmount = fee.payableAmount! - fee.receivedAmount;
+      dueAmount = fee.payableAmount! - validData.data.receivedAmount;
       advanceAmount = 0;
     }
 
@@ -358,6 +360,19 @@ export const updates = async ({
     fee.advanceAmount = advanceAmount;
     fee.paymentStatus = paymentStatus;
     fee.updatedBy = updatedByUserId;
+
+    console.log("Updated Fee Data:", {
+      ...fee.toObject(),
+      dueAmount,
+      advanceAmount,
+      paymentStatus,
+    });
+
+    console.log("Valid Update Data:", validData.data);
+    console.log("Fee Data Before Update:", fee.toObject());
+    console.log("dueAmount:", dueAmount);
+    console.log("advanceAmount:", advanceAmount);
+    
 
     Object.assign(fee, validData.data);
 

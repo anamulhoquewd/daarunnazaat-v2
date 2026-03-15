@@ -5,7 +5,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MONTHS } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
@@ -28,7 +27,6 @@ export const FeesColumns = ({
       return (
         <Link
           href={`/dashboard/fees/${_id}`}
-          target="_blank"
           className="text-blue-600 hover:underline font-medium"
         >
           {receiptNumber ?? "-"}
@@ -42,10 +40,7 @@ export const FeesColumns = ({
   },
   {
     header: "Student name",
-    cell: ({ row }) =>
-      `${row.original?.studentId?.firstName || ""} ${
-        row.original?.studentId?.lastName || ""
-      }`,
+    cell: ({ row }) => row.original?.studentId?.fullName || "-",
   },
   {
     accessorKey: "branch",
@@ -87,7 +82,7 @@ export const FeesColumns = ({
     header: "Payment Date",
     cell: ({ getValue }) => {
       const value = getValue<string>();
-      return value ? format(new Date(value), "cc LLL yyyy") : "-";
+      return value ? format(new Date(value), "dd LLL yyyy") : "-";
     },
   },
   {
@@ -95,18 +90,11 @@ export const FeesColumns = ({
     header: "Payment Method",
     cell: ({ row }) => row.original?.paymentMethod,
   },
-  {
-    header: "Month",
-    cell: ({ row }) => {
-      const { month } = row.original;
 
-      return <div>{MONTHS[month] ?? "-"}</div>;
-    },
-  },
   {
-    accessorKey: "year",
-    header: "Year",
-    cell: ({ row }) => row.original?.year || "-",
+    accessorKey: "period",
+    header: "Period",
+    cell: ({ row }) => row.original?.period || "-",
   },
   {
     accessorKey: "status",
@@ -140,17 +128,8 @@ export const FeesColumns = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          <Link
-            target="_blank"
-            href={`/dashboard/fees/edit/${row.original._id}`}
-          >
-            <DropdownMenuItem
-            // onClick={() => {
-            //   setValues(row.original);
-            //   setSelectedId(row.original._id);
-            //   setIsEditing(true);
-            // }}
-            >
+          <Link href={`/dashboard/fees/edit/${row.original._id}`}>
+            <DropdownMenuItem>
               <Pencil className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>

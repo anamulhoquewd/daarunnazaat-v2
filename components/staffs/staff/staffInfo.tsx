@@ -195,7 +195,7 @@ export function StaffInfoSection({
             <div>
               <p className="text-sm text-muted-foreground">Join Date</p>
               <p className="font-medium">
-                {data?.joinDate && format(data?.joinDate, "cc LLL yyyy")}
+                {data?.joinDate && format(data?.joinDate, "dd LLL yyyy")}
               </p>
             </div>
             <div>

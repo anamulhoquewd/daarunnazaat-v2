@@ -36,7 +36,7 @@ export function AdministrationSection({ data }: AdministrationSectionProps) {
           <div>
             <p className="text-sm text-muted-foreground">Created At</p>
             <p className="font-medium">
-              {data?.createdAt ? format(data?.createdAt, "cc LLL yyyy") : "N/A"}
+              {data?.createdAt ? format(data?.createdAt, "dd LLL yyyy") : "N/A"}
             </p>
           </div>
 
@@ -44,7 +44,7 @@ export function AdministrationSection({ data }: AdministrationSectionProps) {
             <p className="text-sm text-muted-foreground">Passout Date</p>
             <p className="font-medium">
               {data?.passoutDate
-                ? format(data?.passoutDate, "cc LLL yyyy")
+                ? format(data?.passoutDate, "dd LLL yyyy")
                 : "N/A"}
             </p>
           </div>
@@ -65,13 +65,13 @@ export function AdministrationSection({ data }: AdministrationSectionProps) {
           <div>
             <p className="text-sm text-muted-foreground">Blocked At</p>
             <p className="font-medium">
-              {data?.blockedAt ? format(data?.blockedAt, "cc LLL yyyy") : "N/A"}
+              {data?.blockedAt ? format(data?.blockedAt, "dd LLL yyyy") : "N/A"}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Deleted At</p>
             <p className="font-medium">
-              {data?.deletedAt ? format(data?.deletedAt, "cc LLL yyyy") : "N/A"}
+              {data?.deletedAt ? format(data?.deletedAt, "dd LLL yyyy") : "N/A"}
             </p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DateField } from "@/components/common/dateCalendar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,13 +27,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FeeType, IStudent, IUser, PaymentMethod } from "@/validations";
-import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Calendar } from "../ui/calendar";
-import { DateField } from "@/components/common/dateCalendar";
+import { FeeType, IStudent, PaymentMethod } from "@/validations";
 import { IStudentPopulated } from "@/validations/student";
+import { Loader2 } from "lucide-react";
+import { PeriodPicker } from "../common/datePeriod";
 
 interface FeePaymentFormProps {
   selectedStudent: IStudentPopulated | null;
@@ -63,7 +60,7 @@ export function FeePaymentForm({
         <CardTitle>Fee Payment Form</CardTitle>
         <CardDescription>
           {selectedStudent
-            ? `Record fee payment for ${selectedStudent.firstName} ${selectedStudent.lastName}`
+            ? `Record fee payment for ${selectedStudent.fullName}`
             : "Select a student to record their fee payment"}
         </CardDescription>
       </CardHeader>
@@ -80,7 +77,7 @@ export function FeePaymentForm({
                         Student Name
                       </p>
                       <p className="font-semibold">
-                        {`${selectedStudent.firstName} ${selectedStudent?.lastName}`}
+                        {`${selectedStudent.fullName}`}
                       </p>
                     </div>
                     <div>
@@ -95,11 +92,17 @@ export function FeePaymentForm({
                   <div className="flex flex-col gap-2">
                     <div>
                       <p className="text-sm text-muted-foreground">Contact</p>
-                      <p className="text-sm">{selectedStudent?.user.phone}</p>
+                      <p className="text-sm">
+                        {selectedStudent?.phone ||
+                          selectedStudent?.whatsApp ||
+                          "N/A"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="text-sm">{selectedStudent?.user.email}</p>
+                      <p className="text-sm">
+                        {selectedStudent?.email || "N/A"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -174,7 +177,7 @@ export function FeePaymentForm({
                   )}
                 />
               ) : (
-                <MonthYearPicker form={form} />
+                <PeriodPicker form={form} />
               )}
             </div>
 
@@ -269,50 +272,5 @@ export function FeePaymentForm({
         </Form>
       </CardContent>
     </Card>
-  );
-}
-
-function MonthYearPicker({ form }: { form: any }) {
-  const month = form.watch("month");
-  const year = form.watch("year");
-
-  const displayValue =
-    month && year
-      ? format(new Date(year, month), "MMMM yyyy")
-      : "Select month & year";
-
-  return (
-    <FormItem>
-      <FormLabel>Month & Year</FormLabel>
-
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className="w-full justify-start text-left font-normal"
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {displayValue}
-          </Button>
-        </PopoverTrigger>
-
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            captionLayout="dropdown"
-            startMonth={new Date(2020, 0)}
-            endMonth={new Date(new Date().getFullYear() + 10, 11)}
-            onSelect={(date) => {
-              if (!date) return;
-
-              form.setValue("month", date.getMonth());
-              form.setValue("year", date.getFullYear());
-            }}
-          />
-        </PopoverContent>
-      </Popover>
-
-      <FormMessage />
-    </FormItem>
   );
 }

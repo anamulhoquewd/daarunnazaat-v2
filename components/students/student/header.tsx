@@ -71,7 +71,7 @@ export function StudentProfileHeader({ data }: { data: IStudent }) {
               </p>
               <p className="text-sm text-muted-foreground">
                 Date of Birth:{" "}
-                {data?.dateOfBirth && format(data?.dateOfBirth, "cc LLL yyyy")}
+                {data?.dateOfBirth && format(data?.dateOfBirth, "dd LLL yyyy")}
               </p>
             </div>
           </div>

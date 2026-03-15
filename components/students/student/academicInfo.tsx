@@ -232,7 +232,7 @@ export function AcademicInfoSection({
               <p className="text-sm text-muted-foreground">Admission Date</p>
               <p className="font-medium">
                 {data?.admissionDate
-                  ? format(data?.admissionDate, "cc LLL yyyy")
+                  ? format(data?.admissionDate, "dd LLL yyyy")
                   : "N/A"}
               </p>
             </div>

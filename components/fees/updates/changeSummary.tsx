@@ -3,8 +3,7 @@ import { Separator } from "@/components/ui/separator";
 
 interface Changes {
   receivedAmount?: { old: number; new: number };
-  month?: { old: string; new: string };
-  year?: { old: string; new: string };
+  period?: { old: string; new: string };
 }
 
 interface ChangesSummaryProps {
@@ -29,24 +28,17 @@ export function ChangesSummary({ changes }: ChangesSummaryProps) {
               <li className="flex justify-between">
                 <span>Received Amount:</span>
                 <span>
-                  PKR {changes.receivedAmount.old.toLocaleString()} → PKR{" "}
+                  BDT {changes.receivedAmount.old.toLocaleString()} → BDT{" "}
                   {changes.receivedAmount.new.toLocaleString()}
                 </span>
               </li>
             )}
-            {changes.month && (
+
+            {changes.period && (
               <li className="flex justify-between">
-                <span>Billing Month:</span>
+                <span>Billing Period:</span>
                 <span>
-                  {changes.month.old} → {changes.month.new}
-                </span>
-              </li>
-            )}
-            {changes.year && (
-              <li className="flex justify-between">
-                <span>Billing Year:</span>
-                <span>
-                  {changes.year.old} → {changes.year.new}
+                  {changes.period.old} → {changes.period.new}
                 </span>
               </li>
             )}

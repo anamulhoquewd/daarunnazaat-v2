@@ -11,8 +11,7 @@ import api from "@/axios/intercepter";
 
 interface Changes {
   receivedAmount?: { old: number; new: number };
-  month?: { old: string; new: string };
-  year?: { old: string; new: string };
+  period?: { old: string; new: string };
 }
 
 export function useFeeUpdate() {
@@ -34,8 +33,7 @@ export function useFeeUpdate() {
       paymentDate: new Date(),
       paymentMethod: "cash" as PaymentMethod,
       remarks: "",
-      month: 0,
-      year: new Date().getFullYear(),
+      period: "",
     },
   });
 
@@ -65,8 +63,7 @@ export function useFeeUpdate() {
           paymentDate: feeData.paymentDate || new Date(),
           paymentMethod: feeData.paymentMethod || "",
           remarks: feeData.remarks || "",
-          month: feeData.month ?? 0,
-          year: feeData.year ?? new Date().getFullYear(),
+          period: feeData.period || "",
         });
 
         toast.success(response.data.message);
@@ -102,12 +99,7 @@ export function useFeeUpdate() {
         receivedAmount: data.receivedAmount,
         paymentDate: data.paymentDate,
         paymentMethod: data.paymentMethod,
-        month:
-          typeof data.month === "string"
-            ? parseInt(data.month, 10)
-            : data.month,
-        year:
-          typeof data.year === "string" ? parseInt(data.year, 10) : data.year,
+        period: data.period,
         remarks: data.remarks,
       };
 
@@ -120,17 +112,24 @@ export function useFeeUpdate() {
       toast.success(response.data.message || "Fee updated successfully!");
 
       setSuccessMessage(true);
+
+      form.reset({
+        receivedAmount: 0,
+        paymentDate: new Date(),
+        paymentMethod: "cash" as PaymentMethod,
+        remarks: "",
+        period: "",
+      });
+
       setTimeout(() => {
         setSuccessMessage(false);
         window.history.back();
       }, 2000);
     } catch (err: any) {
       if (err.code === 11000) {
-        toast.error("A fee already exists for this month and year.");
-        setError("A fee already exists for this month and year.");
-        throw new Error(
-          "Error: " + "A fee already exists for this month and year.",
-        );
+        toast.error("A fee already exists for this period.");
+        setError("A fee already exists for this period.");
+        throw new Error("Error: " + "A fee already exists for this period.");
       }
 
       setError(
