@@ -335,7 +335,6 @@ export const updates = async ({
     }
 
     const oldReceived = fee.receivedAmount;
-    console.log("Existing Fee Data:", fee.toObject());
 
     // ===== RECALCULATE =====
     let dueAmount = 0;
@@ -360,19 +359,6 @@ export const updates = async ({
     fee.advanceAmount = advanceAmount;
     fee.paymentStatus = paymentStatus;
     fee.updatedBy = updatedByUserId;
-
-    console.log("Updated Fee Data:", {
-      ...fee.toObject(),
-      dueAmount,
-      advanceAmount,
-      paymentStatus,
-    });
-
-    console.log("Valid Update Data:", validData.data);
-    console.log("Fee Data Before Update:", fee.toObject());
-    console.log("dueAmount:", dueAmount);
-    console.log("advanceAmount:", advanceAmount);
-    
 
     Object.assign(fee, validData.data);
 
