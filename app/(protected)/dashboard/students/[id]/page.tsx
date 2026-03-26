@@ -16,11 +16,20 @@ import { StudentProfileHeader } from "@/components/students/student/header";
 import { ProfileHeaderSkeleton } from "@/components/students/student/headerSkeleton";
 import { InfoSectionSkeleton } from "@/components/students/student/InfoSectionSkeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { IUpdateStaff, IUpdateStudent } from "@/validations";
 
 export default function StudentProfilePage() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
   const { student, loading, handleUpdate } = useStudentActions();
+
+  const handleSave = async (data: IUpdateStudent | IUpdateStaff) => {
+    const transformedData = {
+      ...data,
+      avatar: typeof data.avatar === "object" ? data.avatar?.url : data.avatar,
+    };
+    await handleUpdate(transformedData as IUpdateStudent);
+  };
 
   if (!student && !loading.fetch) return <StudentNotFound />;
 
@@ -54,7 +63,7 @@ export default function StudentProfilePage() {
                       setEditingSection(isEditing ? "personal" : null)
                     }
                     data={student ?? undefined}
-                    onSave={handleUpdate}
+                    onSave={handleSave}
                   />
                   <ContactInfoSection
                     isEditing={editingSection === "contact"}
@@ -62,7 +71,7 @@ export default function StudentProfilePage() {
                       setEditingSection(isEditing ? "contact" : null)
                     }
                     data={student ?? undefined}
-                    onSave={handleUpdate}
+                    onSave={handleSave}
                   />
                 </div>
                 <AddressSection
@@ -71,7 +80,7 @@ export default function StudentProfilePage() {
                     setEditingSection(isEditing ? "address" : null)
                   }
                   data={student ?? undefined}
-                  onSave={handleUpdate}
+                  onSave={handleSave}
                 />
               </TabsContent>
 
@@ -82,7 +91,7 @@ export default function StudentProfilePage() {
                     setEditingSection(isEditing ? "fees" : null)
                   }
                   data={student ?? undefined}
-                  onSave={handleUpdate}
+                  onSave={handleSave}
                 />
               </TabsContent>
 
@@ -94,7 +103,7 @@ export default function StudentProfilePage() {
                       setEditingSection(isEditing ? "academic" : null)
                     }
                     data={student ?? undefined}
-                    onSave={handleUpdate}
+                    onSave={handleSave}
                   />
                   <ClassDetails data={student ?? undefined} />
                 </div>

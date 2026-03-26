@@ -36,7 +36,7 @@ export default function InvoicePage() {
   const [fee, setFee] = useState<IFeeCollection | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const invoiceRef = useRef(null);
+  const invoiceRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
     if (invoiceRef.current && typeof window !== "undefined") {

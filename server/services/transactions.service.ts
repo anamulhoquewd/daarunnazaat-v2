@@ -128,7 +128,7 @@ export const gets = async (queryParams: {
       queryParams.sortType?.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch fees with pagination
-    const [fees, total] = await Promise.all([
+    const [fees, total, docsCount] = await Promise.all([
       TransactionLog.find(query)
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
@@ -137,6 +137,7 @@ export const gets = async (queryParams: {
         .populate("performedBy", "role phone")
         .exec(),
       TransactionLog.countDocuments(query),
+      TransactionLog.countDocuments(),
     ]);
 
     // Pagination helper
@@ -144,6 +145,7 @@ export const gets = async (queryParams: {
       page: queryParams.page,
       limit: queryParams.limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {

@@ -217,6 +217,25 @@ const data = {
         },
       ],
     },
+    {
+      title: "Pay admission due ",
+      url: "/dashboard/pay-admission-due ",
+      icon: ArrowRightLeft,
+      items: [
+        {
+          title: "Registration",
+          url: null,
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
   ],
 };
 

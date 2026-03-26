@@ -1,5 +1,6 @@
 "use client";
 
+import { ModeToggle } from "@/components/common/modeToggle";
 import AboutOnHomePage from "@/components/home/about";
 import ContactForm from "@/components/home/contactForm";
 import Curriculum from "@/components/home/curriculum";
@@ -73,6 +74,8 @@ export default function Home() {
 
           {/* Dashboard & Mobile Menu */}
           <div className="flex items-center gap-3">
+            <ModeToggle />
+
             <Link
               href="/dashboard"
               className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition text-sm font-medium"

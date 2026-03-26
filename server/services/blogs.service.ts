@@ -107,7 +107,7 @@ export const gets = async (queryParams: {
       queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch blogs
-    const [blogs, total] = await Promise.all([
+    const [blogs, total, docsCount] = await Promise.all([
       Blog.find(query)
         .populate({
           path: "authorId",
@@ -122,6 +122,7 @@ export const gets = async (queryParams: {
         .limit(queryParams.limit)
         .exec(),
       Blog.countDocuments(query),
+      Blog.countDocuments(),
     ]);
 
     console.log("Query: ", query);
@@ -131,6 +132,7 @@ export const gets = async (queryParams: {
       page: queryParams.page,
       limit: queryParams.limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {
@@ -252,7 +254,7 @@ export const getDrafts = async (queryParams: {
       queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch blogs
-    const [blogs, total] = await Promise.all([
+    const [blogs, total, docsCount] = await Promise.all([
       Blog.find(query)
         .populate({
           path: "authorId",
@@ -267,15 +269,15 @@ export const getDrafts = async (queryParams: {
         .limit(queryParams.limit)
         .exec(),
       Blog.countDocuments(query),
+      Blog.countDocuments(),
     ]);
-
-    console.log("Query: ", query);
 
     // Pagination
     const createPagination = pagination({
       page: queryParams.page,
       limit: queryParams.limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {
@@ -633,7 +635,7 @@ export const getUserBlogs = async ({
       queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch blogs
-    const [blogs, total] = await Promise.all([
+    const [blogs, total, docsCount] = await Promise.all([
       Blog.find(query)
         .populate({
           path: "authorId",
@@ -648,6 +650,7 @@ export const getUserBlogs = async ({
         .limit(queryParams.limit)
         .exec(),
       Blog.countDocuments(query),
+      Blog.countDocuments(),
     ]);
 
     console.log("Query: ", query);
@@ -657,6 +660,7 @@ export const getUserBlogs = async ({
       page: queryParams.page,
       limit: queryParams.limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {

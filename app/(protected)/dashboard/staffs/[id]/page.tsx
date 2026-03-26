@@ -17,6 +17,10 @@ export default function StaffProfilePage() {
 
   const { staff, loading, handleUpdate } = useStaffActions();
 
+  const handleStudentUpdate = async (data: any) => {
+    return handleUpdate(data);
+  };
+
   if (!staff && !loading.fetch) return <StaffNotFound />;
 
   return (
@@ -55,7 +59,7 @@ export default function StaffProfilePage() {
                       setEditingSection(isEditing ? "contact" : null)
                     }
                     data={staff ?? undefined}
-                    onSave={handleUpdate}
+                    onSave={handleStudentUpdate}
                   />
                 </div>
                 <AddressSection
@@ -64,7 +68,7 @@ export default function StaffProfilePage() {
                     setEditingSection(isEditing ? "address" : null)
                   }
                   data={staff ?? undefined}
-                  onSave={handleUpdate}
+                  onSave={handleStudentUpdate}
                 />
               </TabsContent>
 
