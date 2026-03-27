@@ -2,13 +2,12 @@ import { Branch, ISalaryPayment, PaymentMethod } from "@/validations";
 import { Model, model, models, Schema } from "mongoose";
 
 // Salary Payment Model
-const SalaryPaymentSchema = new Schema<ISalaryPayment & Document>(
+const SalarySchema = new Schema<ISalaryPayment & Document>(
   {
     receiptNumber: { type: String, required: true, unique: true },
     staffId: { type: Schema.Types.ObjectId, ref: "Staff", required: true },
     branch: { type: String, enum: Object.values(Branch), required: true },
-    month: { type: Number, required: true, min: 0, max: 11 },
-    year: { type: Number, required: true, min: 2000 },
+    period: { type: String, required: true }, // e.g. "2020-03", "2020-12", etc.
     basicSalary: { type: Number, required: true, min: 0 },
     bonus: { type: Number, default: 0, min: 0 },
     netSalary: {
@@ -37,9 +36,9 @@ const SalaryPaymentSchema = new Schema<ISalaryPayment & Document>(
   { timestamps: true },
 );
 
-SalaryPaymentSchema.index({ staffId: 1, month: 1, year: 1 }, { unique: true });
+SalarySchema.index({ staffId: 1, period: 1 }, { unique: true });
 
-SalaryPaymentSchema.pre("validate", function (next) {
+SalarySchema.pre("validate", function (next) {
   const doc = this as any;
 
   const basicSalary = Number(doc.basicSalary) || 0;
@@ -55,6 +54,5 @@ SalaryPaymentSchema.pre("validate", function (next) {
   next();
 });
 
-export const SalaryPayment: Model<ISalaryPayment & Document> =
-  models.SalaryPayment ||
-  model<ISalaryPayment & Document>("SalaryPayment", SalaryPaymentSchema);
+export const Salary: Model<ISalaryPayment & Document> =
+  models.Salary || model<ISalaryPayment & Document>("Salary", SalarySchema);

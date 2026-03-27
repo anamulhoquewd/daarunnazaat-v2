@@ -10,11 +10,11 @@ import {
 } from "@/validations";
 import mongoose from "mongoose";
 import { schemaValidationError } from "../error";
-import { SalaryPayment } from "../models/salaryPayments.model";
 import { Staff } from "../models/staffs.model";
 import pagination from "../utils/pagination";
 import { generateSalaryReceiptNumber } from "../utils/string-generator";
 import { createTransactionLog } from "./transactions.service";
+import { Salary } from "../models/salaryPayments.model";
 
 export const register = async (body: ISalaryPayment) => {
   // Safe Parse for better error handling
@@ -34,10 +34,9 @@ export const register = async (body: ISalaryPayment) => {
     }
 
     // Check if salry is already exists
-    const isExistSalary = await SalaryPayment.findOne({
+    const isExistSalary = await Salary.findOne({
       staffId: validData.data.staffId,
-      month: validData.data.month,
-      year: validData.data.year,
+      period: validData.data.period,
     });
 
     if (isExistSalary) {
@@ -46,12 +45,8 @@ export const register = async (body: ISalaryPayment) => {
           message: "Sorry! Salary already paid.",
           fields: [
             {
-              name: "month",
-              message: "Salary already paid for this month",
-            },
-            {
-              name: "year",
-              message: "Salary already paid for this year",
+              name: "period",
+              message: "Salary already paid for this period",
             },
           ],
         },
@@ -61,7 +56,7 @@ export const register = async (body: ISalaryPayment) => {
     const receiptNumber = await generateSalaryReceiptNumber();
 
     // Create salry
-    const salaryPayment = new SalaryPayment({
+    const salaryPayment = new Salary({
       ...validData.data,
       paidBy: body.paidBy,
       receiptNumber,
@@ -74,9 +69,9 @@ export const register = async (body: ISalaryPayment) => {
     await createTransactionLog({
       transactionType: TransactionType.EXPENSE,
       referenceId: docs._id,
-      referenceModel: "SalaryPayment",
+      referenceModel: "Salary",
       amount: docs.netSalary || docs.basicSalary + docs.bonus,
-      description: `Salary paid for ${docs.month}/${docs.year}`,
+      description: `Salary paid for ${docs.period}`,
       performedBy: body.paidBy,
       branch: docs.branch,
     });
@@ -127,7 +122,7 @@ export const updates = async ({
 
   try {
     // Check if salary exists
-    const salary = await SalaryPayment.findById(idValidation.data._id);
+    const salary = await Salary.findById(idValidation.data._id);
 
     if (!salary) {
       return {
@@ -166,9 +161,9 @@ export const updates = async ({
         createTransactionLog({
           transactionType: TransactionType.ADJUSTMENT,
           referenceId: docs._id,
-          referenceModel: "SalaryPayment",
+          referenceModel: "Salary",
           amount: docs.netSalary! - oldNetSalary,
-          description: `Salary adjusted for ${docs.month}/${docs.year}`,
+          description: `Salary adjusted for ${docs.period}`,
           performedBy: updatedByUserId,
           branch: docs.branch,
         }),
@@ -182,9 +177,9 @@ export const updates = async ({
           createTransactionLog({
             transactionType: TransactionType.REVERSAL,
             referenceId: docs._id,
-            referenceModel: "SalaryPayment",
+            referenceModel: "Salary",
             amount: oldNetSalary,
-            description: `Salary reversed for ${docs.month}/${docs.year}`,
+            description: `Salary reversed for ${docs.period}`,
             performedBy: updatedByUserId,
             branch: docs.branch,
           }),
@@ -194,9 +189,9 @@ export const updates = async ({
           createTransactionLog({
             transactionType: TransactionType.EXPENSE,
             referenceId: docs._id,
-            referenceModel: "SalaryPayment",
+            referenceModel: "Salary",
             amount: docs.netSalary!,
-            description: `Salary marked as paid for ${docs.month}/${docs.year}`,
+            description: `Salary marked as paid for ${docs.period}`,
             performedBy: updatedByUserId,
             branch: docs.branch,
           }),
@@ -206,9 +201,9 @@ export const updates = async ({
           createTransactionLog({
             transactionType: TransactionType.ADJUSTMENT,
             referenceId: docs._id,
-            referenceModel: "SalaryPayment",
+            referenceModel: "Salary",
             amount: docs.netSalary! - oldNetSalary,
-            description: `Salary manually adjusted for ${docs.month}/${docs.year}`,
+            description: `Salary manually adjusted for ${docs.period}`,
             performedBy: updatedByUserId,
             branch: docs.branch,
           }),
@@ -243,8 +238,7 @@ export const gets = async (queryParams: {
   sortType: string;
 
   search?: string;
-  month?: string;
-  year?: string;
+  period?: string;
   paymentMethod?: PaymentMethod;
   netSalaryRange?: { min?: number; max?: number };
   paidBy?: string;
@@ -292,12 +286,9 @@ export const gets = async (queryParams: {
       query.paidBy = new mongoose.Types.ObjectId(queryParams.paidBy);
     }
 
-    // Filter by month & year
-    if (queryParams.month) {
-      query.month = parseInt(queryParams.month, 10);
-    }
-    if (queryParams.year) {
-      query.year = parseInt(queryParams.year, 10);
+    // Filter by period
+    if (queryParams.period) {
+      query.period = queryParams.period;
     }
 
     if (queryParams.paymentMethod) {
@@ -343,8 +334,8 @@ export const gets = async (queryParams: {
       queryParams.sortType?.toLowerCase() === "asc" ? 1 : -1;
 
     // Fetch salary payments with pagination
-    const [salaryPayments, total] = await Promise.all([
-      SalaryPayment.find(query)
+    const [salaryPayments, total, docsCount] = await Promise.all([
+      Salary.find(query)
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
         .limit(queryParams.limit)
@@ -354,7 +345,8 @@ export const gets = async (queryParams: {
         )
         .populate("paidBy", "phone role")
         .exec(),
-      SalaryPayment.countDocuments(query),
+      Salary.countDocuments(query),
+      Salary.countDocuments(),
     ]);
 
     // Pagination helper
@@ -362,6 +354,7 @@ export const gets = async (queryParams: {
       page: queryParams.page,
       limit: queryParams.limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {
@@ -392,7 +385,7 @@ export const get = async (_id: string) => {
 
   try {
     // Check if Salary payment exists
-    const salary = await SalaryPayment.findById(idValidation.data._id);
+    const salary = await Salary.findById(idValidation.data._id);
 
     if (!salary) {
       return {
@@ -420,7 +413,7 @@ export const get = async (_id: string) => {
   }
 };
 
-export const deletes = async (_id: string) => {
+export const deleteFlag = async (_id: string) => {
   // Validate ID
   const idValidation = mongoIdZ.safeParse({ _id: _id });
   if (!idValidation.success) {
@@ -428,7 +421,7 @@ export const deletes = async (_id: string) => {
   }
 
   try {
-    const salary = await SalaryPayment.findById(idValidation.data._id);
+    const salary = await Salary.findById(idValidation.data._id);
 
     if (!salary) {
       return {
@@ -438,17 +431,93 @@ export const deletes = async (_id: string) => {
       };
     }
 
-    // Delete salary
-    // is deleted flaf is on inside of delete
-    // await salary.deleteOne();
+    // isDeleted flag is on inside delete
     salary.isDeleted = true;
     salary.deletedAt = new Date();
+
+    await salary.save();
 
     // Response
     return {
       success: {
         success: true,
         message: `salary deleted successfully!`,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const restoreSalary = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // optional: check salary exists
+    const salary = await Salary.findById(_id);
+
+    if (!salary) {
+      return {
+        error: {
+          message: `salary not found with provided ID!`,
+        },
+      };
+    }
+
+    if (!salary.isDeleted) {
+      return { error: { message: "salary not deleted." } };
+    }
+
+    salary.isDeleted = false;
+    salary.deletedAt = null;
+
+    return {
+      success: {
+        success: true,
+        message: "salary RESTORED successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+// Permanent delete (hard delete) - use with caution
+export const permanentDelete = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const salary = await Salary.findById(idValidation.data._id);
+
+    if (!salary) {
+      return { error: { message: "salary not found!" } };
+    }
+
+    await salary.deleteOne();
+
+    return {
+      success: {
+        success: true,
+        message: "salary deleted successfully",
       },
     };
   } catch (error: any) {

@@ -31,8 +31,7 @@ export const gets = async (c: Context) => {
   const sortBy = c.req.query("sortBy") || "createdAt";
   const sortType = c.req.query("sortType") || "desc";
   const search = c.req.query("search") as string;
-  const month = c.req.query("month") as string;
-  const year = c.req.query("year") as string;
+  const period = c.req.query("period") as string;
   const paymentMethod = c.req.query("paymentMethod") as PaymentMethod;
   const paidBy = c.req.query("paidBy") as string;
   const staffId = c.req.query("staffId") as string;
@@ -52,8 +51,7 @@ export const gets = async (c: Context) => {
     sortType,
 
     search,
-    month,
-    year,
+    period,
     paymentMethod,
     netSalaryRange: { max: maxSalary, min: minSalary },
     paidBy,
@@ -103,10 +101,44 @@ export const updates = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
-export const deletes = async (c: Context) => {
+export const deleteFlag = async (c: Context) => {
   const _id = c.req.param("_id");
 
-  const response = await salaryService.deletes(_id);
+  const response = await salaryService.deleteFlag(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// Restore salary
+export const restoreSalary = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await salaryService.restoreSalary(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// Delete fee
+export const permanentDelete = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await salaryService.permanentDelete(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);

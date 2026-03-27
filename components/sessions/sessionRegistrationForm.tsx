@@ -29,12 +29,14 @@ export default function SessionRegistrationForm({
   form,
   handleSubmit,
   isLoading,
+  setIsAddOpen,
   values,
 }: {
   isLoading: boolean;
   handleSubmit: (data: ISession) => Promise<void>;
   form: any;
   values: ISession | null;
+  setIsAddOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   useEffect(() => {
     if (values) {
@@ -121,15 +123,16 @@ export default function SessionRegistrationForm({
               type="button"
               variant="outline"
               className="cursor-pointer"
-              onClick={() =>
+              onClick={() => {
+                setIsAddOpen(false);
                 form.reset({
                   className: "",
                   description: "",
                   monthlyFee: 0,
                   capacity: 0,
                   isActive: true,
-                })
-              }
+                });
+              }}
             >
               <DialogClose>Cancel</DialogClose>
             </Button>

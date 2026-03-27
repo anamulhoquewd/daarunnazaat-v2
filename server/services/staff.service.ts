@@ -25,7 +25,6 @@ export const createStaff = async (body: IStaff) => {
     };
   }
 
-  // ✅ Transaction use করো - atomicity নিশ্চিত করতে
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -40,15 +39,12 @@ export const createStaff = async (body: IStaff) => {
       };
     }
 
-    // Ensure role is staff
-    if (
-      user.role !== UserRole.STAFF &&
-      user.role !== UserRole.ADMIN &&
-      user.role !== UserRole.SUPER_ADMIN
-    ) {
+    // Ensure roles has staff
+    if (!user.roles.includes(UserRole.STAFF)) {
       return {
         error: {
-          message: "User role is not STAFF/SUPER_ADMIN/ADMIN",
+          message:
+            "User role is not STAFF, please update user role to STAFF first.",
         },
       };
     }
@@ -76,16 +72,6 @@ export const createStaff = async (body: IStaff) => {
 
     // Save staff
     const newStaff = await staff.save();
-
-    // 6️⃣ ✅ Update User profile field
-    await User.findByIdAndUpdate(
-      validData.data.userId,
-      {
-        profile: newStaff._id,
-        profileModel: "Staff", // Dynamic ref এর জন্য
-      },
-      { session },
-    );
 
     // ✅ Transaction commit
     await session.commitTransaction();
@@ -221,7 +207,10 @@ export const gets = async (queryParams: {
       },
     ];
 
-    const result = await Staff.aggregate(pipeline);
+    const [result, docsCount] = await Promise.all([
+      Staff.aggregate(pipeline),
+      Staff.countDocuments(),
+    ]);
 
     const staffs = result[0]?.data || [];
     const total = result[0]?.total[0]?.count || 0;
@@ -231,6 +220,7 @@ export const gets = async (queryParams: {
       page: queryParams.page,
       limit: queryParams.limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {
@@ -272,6 +262,47 @@ export const get = async (_id: string) => {
         },
       };
     }
+
+    return {
+      success: {
+        success: true,
+        message: `Staff fetched successfully!`,
+        data: staff,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const getByUser = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // Check if user exists
+    const user = await User.findById(idValidation.data._id);
+
+    if (!user) {
+      return {
+        error: {
+          message: `Invalid user ID!`,
+        },
+      };
+    }
+
+    const staff = await Staff.findOne({
+      userId: idValidation.data._id,
+    });
 
     return {
       success: {
@@ -385,7 +416,6 @@ export const updateMe = async ({
       department: true,
       designation: true,
       joinDate: true,
-      nid: true,
       staffId: true,
       userId: true,
       resignationDate: true,
@@ -434,128 +464,6 @@ export const updateMe = async ({
         success: true,
         message: "Staff updated successfully",
         data: docs,
-      },
-    };
-  } catch (error: any) {
-    return {
-      serverError: {
-        success: false,
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? null : error.stack,
-      },
-    };
-  }
-};
-
-export const deletes = async (_id: string) => {
-  // Validate ID
-  const idValidation = mongoIdZ.safeParse({ _id: _id });
-  if (!idValidation.success) {
-    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
-  }
-
-  try {
-    const staff = await Staff.findById(idValidation.data._id);
-
-    if (!staff) {
-      return {
-        error: {
-          message: `Staff not found with provided ID!`,
-        },
-      };
-    }
-
-    // Delete Staff
-    // Inactive inside of delete
-    // await staff.deleteOne();
-    staff.isActive = false;
-    await staff.save();
-
-    // Response
-    return {
-      success: {
-        success: true,
-        message: `Staff deleted successfully!`,
-      },
-    };
-  } catch (error: any) {
-    return {
-      serverError: {
-        success: false,
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? null : error.stack,
-      },
-    };
-  }
-};
-
-export const deactivate = async (_id: string) => {
-  // Validate ID
-  const idValidation = mongoIdZ.safeParse({ _id });
-  if (!idValidation.success) {
-    return {
-      error: schemaValidationError(idValidation.error, "Invalid ID"),
-    };
-  }
-
-  try {
-    const staff = await Staff.findById(idValidation.data._id);
-
-    if (!staff) {
-      return {
-        error: {
-          message: "Staff not found with provided ID!",
-        },
-      };
-    }
-
-    // Also deactivate user
-    await User.findByIdAndUpdate(staff.userId, { isActive: false });
-
-    return {
-      success: {
-        success: true,
-        message: "Staff deactivated successfully!",
-      },
-    };
-  } catch (error: any) {
-    return {
-      serverError: {
-        success: false,
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? null : error.stack,
-      },
-    };
-  }
-};
-
-export const activate = async (_id: string) => {
-  // Validate ID
-  const idValidation = mongoIdZ.safeParse({ _id });
-  if (!idValidation.success) {
-    return {
-      error: schemaValidationError(idValidation.error, "Invalid ID"),
-    };
-  }
-
-  try {
-    const staff = await Staff.findById(idValidation.data._id);
-
-    if (!staff) {
-      return {
-        error: {
-          message: "Staff not found with provided ID!",
-        },
-      };
-    }
-
-    // Also activate user
-    await User.findByIdAndUpdate(staff.userId, { isActive: true });
-
-    return {
-      success: {
-        success: true,
-        message: "Staff activated successfully!",
       },
     };
   } catch (error: any) {

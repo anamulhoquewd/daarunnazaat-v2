@@ -10,11 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { IStaff } from "@/validations";
+import { format } from "date-fns";
 import { ArrowLeft, Expand, MoreVertical } from "lucide-react";
 import Link from "next/link";
 
 export function StaffProfileHeader({ data }: { data: IStaff }) {
-  console.log("data?.firstName.charAt(0):", data?.firstName.charAt(0));
   return (
     <div className="border-b border-border bg-card">
       <div className="container max-w-6xl mx-auto px-4 py-8">
@@ -32,9 +32,7 @@ export function StaffProfileHeader({ data }: { data: IStaff }) {
 
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold">
-                  {data?.firstName} {data?.lastName}
-                </h1>
+                <h1 className="text-3xl font-bold">{data?.fullName}</h1>
                 {data?.userId?.isActive ? (
                   <Badge variant="secondary" className="text-sm">
                     Active
@@ -50,8 +48,7 @@ export function StaffProfileHeader({ data }: { data: IStaff }) {
               </p>
               <p className="text-sm text-muted-foreground">
                 Date of Birth:{" "}
-                {data?.dateOfBirth &&
-                  new Date(data?.dateOfBirth).toLocaleDateString()}
+                {data?.dateOfBirth && format(data?.dateOfBirth, "dd LLL yyyy")}
               </p>
             </div>
           </div>

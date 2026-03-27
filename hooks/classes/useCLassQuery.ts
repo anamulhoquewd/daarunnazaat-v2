@@ -1,9 +1,11 @@
 import api from "@/axios/intercepter";
 import { buildQuery, defaultPagination, handleAxiosError } from "@/lib/utils";
-import { IClass, IPagination, IUpdateClass } from "@/validations";
+import { classZ, IClass, IPagination, IUpdateClass } from "@/validations";
 import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "../common/useDebounce";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface IFilter {
   isActive: "all" | boolean;
@@ -20,6 +22,7 @@ type SortType = "asc" | "desc";
 
 function useClassQuery() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
   const [classes, setClasses] = useState<IClass[]>([]);
   const [pagination, setPagination] = useState<IPagination>(defaultPagination);
   const [search, setSearch] = useState<ISearch>({
@@ -70,6 +73,56 @@ function useClassQuery() {
       setPagination(res.data.pagination);
     } catch (err) {
       handleAxiosError(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const form = useForm({
+    resolver: zodResolver(classZ),
+    shouldUnregister: false,
+    defaultValues: {
+      className: "",
+      description: "",
+      monthlyFee: 0,
+      capacity: 0,
+      isActive: true,
+    },
+  });
+
+  const handleSubmit = async (data: IClass) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.post("/classes/register", data);
+
+      if (!response.data.success) {
+        throw new Error(
+          response.data.error.message || "Failed to create class",
+        );
+      }
+
+      getClasses({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+
+      setIsAddOpen(false);
+
+      toast.success("Class created successfully!");
+    } catch (error: any) {
+      handleAxiosError(error);
+
+      if (error.response?.data?.fields?.length) {
+        error.response.data.fields.forEach((f: any) => {
+          form.setError(f.name as any, {
+            message: f.message,
+          });
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -183,6 +236,10 @@ function useClassQuery() {
     setIsEditing,
     setSelectedId,
     handleUpdate,
+    form,
+    handleSubmit,
+    setIsDelOpen,
+    isDelOpen,
   };
 }
 

@@ -1,7 +1,9 @@
 import { IUser, UserRole } from "@/validations";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { Model, Schema, model, models } from "mongoose";
+import mongoose, { Model } from "mongoose";
+
+const { Schema, model, models } = mongoose;
 
 // User Model
 const UserSchema = new Schema<IUser & Document>(
@@ -9,17 +11,7 @@ const UserSchema = new Schema<IUser & Document>(
     email: { type: String, required: true, unique: true, lowercase: true },
     phone: { type: String, required: true },
     password: { type: String, required: true, select: false },
-    role: { type: String, enum: Object.values(UserRole), required: true },
-    profile: {
-      type: Schema.Types.ObjectId,
-      refPath: "profileModel",
-      default: null,
-    },
-    profileModel: {
-      type: String,
-      enum: ["Student", "Staff", "Guardian"],
-      default: null,
-    },
+    roles: { type: [String], enum: Object.values(UserRole), required: true },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
     isBlocked: {
@@ -35,7 +27,10 @@ const UserSchema = new Schema<IUser & Document>(
     passwordResetExpires: { type: Date, select: false },
 
     isDeleted: { type: Boolean, default: false },
-    deletedAt: Date,
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );
@@ -53,7 +48,7 @@ UserSchema.methods.generateResetPasswordToken = function (expMinutes = 30) {
   // 3. Expiration time
   this.passwordResetExpires = new Date(Date.now() + expMinutes * 60 * 1000);
 
-  // 4. Return plain token (email-এ যাবে)
+  // 4. Return plain token (email-friendly)
   return plainToken;
 };
 
@@ -78,8 +73,6 @@ UserSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
-
-UserSchema.index({ role: 1 });
 
 export const User: Model<IUser & Document> =
   models.User || model<IUser & Document>("User", UserSchema);

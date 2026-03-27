@@ -18,8 +18,8 @@ const FeeCollectionSchema = new Schema<IFeeCollection & Document>(
     branch: { type: String, enum: Object.values(Branch), required: true },
 
     feeType: { type: String, enum: Object.values(FeeType), required: true },
-    month: { type: Number, min: 0, max: 11 },
-    year: { type: Number, min: 2000 },
+
+    period: { type: String }, // e.g. "2020-03", "2020-12", etc.
 
     baseAmount: { type: Number, required: true },
     payableAmount: { type: Number, required: true },
@@ -52,12 +52,15 @@ const FeeCollectionSchema = new Schema<IFeeCollection & Document>(
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
 
     isDeleted: { type: Boolean, default: false },
-    deletedAt: Date,
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );
 
-FeeCollectionSchema.index({ studentId: 1, month: 1, year: 1 });
+FeeCollectionSchema.index({ studentId: 1, period: 1 });
 FeeCollectionSchema.index({ paymentDate: -1 }); // -1 = descending order
 
 FeeCollectionSchema.index(
@@ -65,15 +68,13 @@ FeeCollectionSchema.index(
     studentId: 1,
     sessionId: 1,
     feeType: 1,
-    month: 1,
-    year: 1,
+    period: 1,
   },
   {
     unique: true,
     partialFilterExpression: {
       isDeleted: false,
-      month: { $exists: true },
-      year: { $exists: true },
+      period: { $exists: true },
     },
   },
 );

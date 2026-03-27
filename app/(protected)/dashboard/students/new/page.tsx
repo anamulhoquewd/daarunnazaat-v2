@@ -32,7 +32,7 @@ export default function StudentRegistrationPage() {
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-8"
           >
-            <UserSelection />
+            {/* <UserSelection /> */}
             <PersonalInformation />
             <ContactInformation />
             <AddressInformation />

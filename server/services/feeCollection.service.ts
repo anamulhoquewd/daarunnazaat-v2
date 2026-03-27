@@ -1,6 +1,5 @@
 import {
   Branch,
-  feeCollectionsUpdateZ,
   feeCollectionZ,
   FeeType,
   IFeeCollection,
@@ -12,6 +11,7 @@ import {
   PaymentStatus,
   TransactionType,
 } from "@/validations";
+import { feeUpdateSchema } from "@/validations/student";
 import mongoose from "mongoose";
 import { schemaValidationError } from "../error";
 import { FeeCollection } from "../models/feeCollections.model";
@@ -20,7 +20,6 @@ import { Student } from "../models/students.model";
 import pagination from "../utils/pagination";
 import { generateFeeReceiptNumber } from "../utils/string-generator";
 import { createTransactionLog } from "./transactions.service";
-import { feeUpdateSchema } from "@/validations/student";
 
 export const register = async ({
   body,
@@ -69,15 +68,12 @@ export const register = async ({
     let isFeeExist: IFeeCollection | null = null;
 
     if (monthlyFees.includes(validData.data.feeType)) {
-      // Monthly type → student + session + month + year unique
-      if (!validData.data.month || !validData.data.year) {
+      // Monthly type → student + session + period unique
+      if (!validData.data.period) {
         return {
           error: {
-            message: "Month and year are required for this fee type",
-            fields: [
-              { name: "month", message: "Month is required" },
-              { name: "year", message: "Year is required" },
-            ],
+            message: "Period is required for this fee type",
+            fields: [{ name: "period", message: "Period is required" }],
           },
         };
       }
@@ -86,8 +82,7 @@ export const register = async ({
         studentId: validData.data.studentId,
         sessionId: student.currentSessionId,
         feeType: validData.data.feeType,
-        month: validData.data.month,
-        year: validData.data.year,
+        period: validData.data.period,
         isDeleted: false,
       });
     }
@@ -100,7 +95,7 @@ export const register = async ({
           fields: [
             {
               name: "feeType",
-              message: `Fee already collected for ${validData.data.feeType} for ${validData.data.month}/${validData.data.year}`,
+              message: `Fee already collected for ${validData.data.feeType} for ${validData.data.period}`,
             },
           ],
         },
@@ -303,37 +298,35 @@ export const updates = async ({
     if (validData.data && !validData.data.remarks) {
       return {
         error: {
-          message: "Remarks is required when correcting month/year or amount",
+          message:
+            "Remarks is required when correcting period or amount changed",
         },
       };
     }
 
-    const isMonthOrYearChanged =
-      (validData.data.month && validData.data.month !== fee.month) ||
-      (validData.data.year && validData.data.year !== fee.year);
+    const isPeriodChanged =
+      validData.data.period && validData.data.period !== fee.period;
 
-    if (monthlyFees.includes(fee.feeType as FeeType) && isMonthOrYearChanged) {
-      const targetMonth = validData.data.month ?? fee.month;
-      const targetYear = validData.data.year ?? fee.year;
+    if (monthlyFees.includes(fee.feeType as FeeType) && isPeriodChanged) {
+      const targetPeriod = validData.data.period ?? fee.period;
 
       const duplicateFee = await FeeCollection.findOne({
         _id: { $ne: fee._id }, // exclude current fee
         studentId: fee.studentId,
         sessionId: fee.sessionId,
         feeType: fee.feeType,
-        month: targetMonth,
-        year: targetYear,
+        period: targetPeriod,
         isDeleted: false,
       });
 
       if (duplicateFee) {
         return {
           error: {
-            message: "Fee already exists for the selected month and year.",
+            message: "Fee already exists for the selected period.",
             fields: [
               {
-                name: "month",
-                message: `A ${fee.feeType} fee already exists for ${targetMonth}/${targetYear}`,
+                name: "period",
+                message: `A ${fee.feeType} fee already exists for ${targetPeriod}`,
               },
             ],
           },
@@ -348,17 +341,17 @@ export const updates = async ({
     let advanceAmount = 0;
     let paymentStatus = PaymentStatus.PARTIAL;
 
-    if (fee.receivedAmount >= fee.payableAmount!) {
+    if (validData.data.receivedAmount >= fee.payableAmount!) {
       paymentStatus = PaymentStatus.PAID;
-      advanceAmount = fee.receivedAmount - fee.payableAmount!;
+      advanceAmount = validData.data.receivedAmount - fee.payableAmount!;
       dueAmount = 0;
-    } else if (fee.receivedAmount === 0) {
+    } else if (validData.data.receivedAmount === 0) {
       paymentStatus = PaymentStatus.DUE;
-      dueAmount = fee.payableAmount! - fee.receivedAmount;
+      dueAmount = fee.payableAmount! - validData.data.receivedAmount;
       advanceAmount = 0;
     } else {
       paymentStatus = PaymentStatus.PARTIAL;
-      dueAmount = fee.payableAmount! - fee.receivedAmount;
+      dueAmount = fee.payableAmount! - validData.data.receivedAmount;
       advanceAmount = 0;
     }
 
@@ -409,7 +402,7 @@ export const updates = async ({
         amount: Math.abs(diff),
         description: `Fee amount updated (${diff > 0 ? "+" : "-"}${Math.abs(diff)})`,
         performedBy: updatedByUserId,
-        branch: fee.branch ?? Branch.BRANCH_1,
+        branch: fee.branch ?? Branch.DEFAULT,
       });
     }
 
@@ -438,8 +431,7 @@ export const gets = async (queryParams: {
   sortType: string;
 
   search: string;
-  month: string;
-  year: string;
+  period: string;
   paymentMethod: PaymentMethod;
   paymentDate: { from: Date | string; to: Date | string };
   feeRange: { min: number; max: number };
@@ -511,12 +503,9 @@ export const gets = async (queryParams: {
       query.paymentMethod = queryParams.paymentMethod;
     }
 
-    // Filter by month & year
-    if (queryParams.month) {
-      query.month = parseInt(queryParams.month, 10);
-    }
-    if (queryParams.year) {
-      query.year = parseInt(queryParams.year, 10);
+    // Filter by period
+    if (queryParams.period) {
+      query.period = queryParams.period;
     }
 
     // Filter by paymentDate range
@@ -557,7 +546,7 @@ export const gets = async (queryParams: {
       queryParams.sortType?.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch fees with pagination
-    const [fees, total] = await Promise.all([
+    const [fees, total, docsCount] = await Promise.all([
       FeeCollection.find(query)
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
@@ -567,6 +556,7 @@ export const gets = async (queryParams: {
         .populate("collectedBy", "phone role")
         .exec(),
       FeeCollection.countDocuments(query),
+      FeeCollection.countDocuments(),
     ]);
 
     // Pagination helper
@@ -574,6 +564,7 @@ export const gets = async (queryParams: {
       page: queryParams.page,
       limit: queryParams.limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {
@@ -636,7 +627,7 @@ export const get = async (_id: string) => {
   }
 };
 
-export const deletes = async (_id: string) => {
+export const deleteFlag = async (_id: string) => {
   // Validate ID
   const idValidation = mongoIdZ.safeParse({ _id: _id });
   if (!idValidation.success) {
@@ -654,9 +645,7 @@ export const deletes = async (_id: string) => {
       };
     }
 
-    // Delete fee
     // isDeleted flag is on inside delete
-    // await fee.deleteOne();
     fee.isDeleted = true;
     fee.deletedAt = new Date();
 
@@ -667,6 +656,82 @@ export const deletes = async (_id: string) => {
       success: {
         success: true,
         message: `Fee deleted successfully!`,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const restoreFee = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // optional: check fee exists
+    const fee = await FeeCollection.findById(_id);
+
+    if (!fee) {
+      return {
+        error: {
+          message: `fee not found with provided ID!`,
+        },
+      };
+    }
+
+    if (!fee.isDeleted) {
+      return { error: { message: "fee not deleted." } };
+    }
+
+    fee.isDeleted = false;
+    fee.deletedAt = null;
+
+    return {
+      success: {
+        success: true,
+        message: "Fee RESTORED successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+// Permanent delete (hard delete) - use with caution
+export const permanentDelete = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const fee = await FeeCollection.findById(idValidation.data._id);
+
+    if (!fee) {
+      return { error: { message: "fee not found!" } };
+    }
+
+    await fee.deleteOne();
+
+    return {
+      success: {
+        success: true,
+        message: "fee deleted successfully",
       },
     };
   } catch (error: any) {

@@ -64,13 +64,9 @@ export const SalariesColumns = ({
     cell: ({ row }) => row.original?.staffId?.phone || "-",
   },
   {
-    header: "Month",
-    cell: ({ row }) => row.original?.month || "-",
-  },
-  {
-    accessorKey: "year",
-    header: "Year",
-    cell: ({ row }) => row.original?.year || "-",
+    accessorKey: "period",
+    header: "Period",
+    cell: ({ row }) => row.original?.period || "-",
   },
   {
     accessorKey: "salary",
@@ -101,7 +97,7 @@ export const SalariesColumns = ({
     header: "Payment Date",
     cell: ({ getValue }) => {
       const value = getValue<string>();
-      return value ? format(new Date(value), "yyyy-MM-dd") : "-";
+      return value ? format(new Date(value), "dd LLL yyyy") : "-";
     },
   },
   {

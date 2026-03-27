@@ -89,9 +89,9 @@ export function ContactInfoSection({
                   name="alternativePhone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Alternative Phone (Optional)</FormLabel>
+                      <FormLabel>Phone (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Alternative phone" {...field} />
+                        <Input placeholder="Phone number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -118,30 +118,30 @@ export function ContactInfoSection({
         </CardContent>
       ) : (
         <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{data?.userId?.email || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Phone</p>
-              <p className="font-medium">{data?.userId?.phone || "N/A"}</p>
-            </div>
-          </div>
-          {(data?.alternativePhone || data?.whatsApp) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Alternative Phone
-                </p>
-                <p className="font-medium">{data?.alternativePhone || "N/A"}</p>
+          {data &&
+            "userId" in data &&
+            (data.userId?.phone || data.whatsApp || data.userId?.email) && (
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="font-medium wrap-break-word">
+                    {("userId" in data && data.userId?.email) ||
+                      data?.whatsApp ||
+                      "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="font-medium">
+                    {("userId" in data && data.userId?.phone) || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">WhatsApp</p>
+                  <p className="font-medium">{data?.whatsApp || "N/A"}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">WhatsApp</p>
-                <p className="font-medium">{data?.whatsApp || "N/A"}</p>
-              </div>
-            </div>
-          )}
+            )}
         </CardContent>
       )}
     </EditableSection>

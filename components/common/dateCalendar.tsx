@@ -60,10 +60,12 @@ export function DateField({ name, label }: { name: string; label: string }) {
                   mode="single"
                   selected={field.value}
                   month={month}
-                  captionLayout="dropdown" // 🔥 month + year dropdown
+                  startMonth={new Date(1900, 0)}
+                  endMonth={new Date(new Date().getFullYear() + 10, 0)}
+                  captionLayout="dropdown"
                   onMonthChange={setMonth}
                   onSelect={(date) => {
-                    field.onChange(date); // update form value
+                    field.onChange(date);
                     setOpen(false);
                   }}
                 />

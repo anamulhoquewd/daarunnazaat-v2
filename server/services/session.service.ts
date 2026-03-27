@@ -105,13 +105,14 @@ export const gets = async (queryParams: {
       queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch sessions
-    const [sessions, total] = await Promise.all([
+    const [sessions, total, docsCount] = await Promise.all([
       Session.find(query)
         .sort({ [sortField]: sortDirection })
         .skip((queryParams.page - 1) * queryParams.limit)
         .limit(queryParams.limit)
         .exec(),
       Session.countDocuments(query),
+      Session.countDocuments(),
     ]);
 
     // Pagination
@@ -119,6 +120,7 @@ export const gets = async (queryParams: {
       page: queryParams.page,
       limit: queryParams.limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {
@@ -247,7 +249,7 @@ export const updates = async ({
   }
 };
 
-export const deletes = async (_id: string) => {
+export const activate = async (_id: string) => {
   // Validate ID
   const idValidation = mongoIdZ.safeParse({ _id: _id });
   if (!idValidation.success) {
@@ -260,22 +262,63 @@ export const deletes = async (_id: string) => {
     if (!session) {
       return {
         error: {
-          message: `Session not found with provided ID!`,
+          message: `session not found with provided ID!`,
         },
       };
     }
 
-    // Delete Session
-    // Inactive inside of delete
-    // await session.deleteOne();
-    session.isActive = false;
+    if (session.isActive) {
+      return { error: { message: "session is already active." } };
+    }
+
+    // Activate inside delete
+    session.isActive = true;
+
     await session.save();
 
     // Response
     return {
       success: {
         success: true,
-        message: `Session deleted successfully!`,
+        message: `session activated successfully!`,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const deactivate = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const session = await Session.findById(idValidation.data._id);
+
+    if (!session) {
+      return { error: { message: "session not found!" } };
+    }
+
+    if (!session.isActive) {
+      return { error: { message: "session already deactivated." } };
+    }
+
+    session.isActive = false;
+
+    await session.save();
+
+    return {
+      success: {
+        success: true,
+        message: "session deactivated successfully",
       },
     };
   } catch (error: any) {

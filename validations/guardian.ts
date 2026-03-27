@@ -2,8 +2,7 @@ import { z } from "zod";
 import { guardianZ } from ".";
 
 export const guardianPpersonalInfoSchema = guardianZ.pick({
-  firstName: true,
-  lastName: true,
+  fullName: true,
   gender: true,
   bloodGroup: true,
   nid: true,

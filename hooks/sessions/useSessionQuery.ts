@@ -5,10 +5,13 @@ import {
   ISession,
   IPagination,
   IUpdateSession,
+  sessionZ,
 } from "@/validations";
 import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "../common/useDebounce";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface IFilter {
   isActive: "all" | boolean;
@@ -44,10 +47,61 @@ function useSessionQuery() {
     limit: "10",
   });
 
+  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
+
+  const form = useForm({
+    resolver: zodResolver(sessionZ),
+    shouldUnregister: false,
+    defaultValues: {
+      sessionName: "",
+      isActive: true,
+      startDate: undefined,
+      endDate: undefined,
+      batchType: undefined,
+    },
+  });
+
+  const handleSubmit = async (data: ISession) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.post("/sessions/register", data);
+
+      if (!response.data.success) {
+        throw new Error(
+          response.data.error.message || "Failed to create session",
+        );
+      }
+
+      setIsAddOpen(false);
+
+      getSessions({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+      toast.success("Session created successfully!");
+    } catch (error: any) {
+      handleAxiosError(error);
+
+      if (error.response?.data?.fields?.length) {
+        error.response.data.fields.forEach((f: any) => {
+          form.setError(f.name as any, {
+            message: f.message,
+          });
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
 
-  const getClasses = async ({
+  const getSessions = async ({
     search,
     filters,
     currentPage,
@@ -106,7 +160,7 @@ function useSessionQuery() {
         throw new Error(response.data.error.message || "Failed to update user");
       }
 
-      getClasses({
+      getSessions({
         search: {
           global: debouncedGlobalSearch,
         },
@@ -154,7 +208,7 @@ function useSessionQuery() {
 
   // 🔥 API call only when debounced search OR page/limit changes
   useEffect(() => {
-    getClasses({
+    getSessions({
       search: {
         global: debouncedGlobalSearch,
       },
@@ -180,7 +234,7 @@ function useSessionQuery() {
     search,
     filterBy,
     setPagination,
-    refetch: getClasses,
+    refetch: getSessions,
     setValues,
     setSearch,
     setFilterBy,
@@ -195,6 +249,10 @@ function useSessionQuery() {
     values,
     isEditing,
     handleUpdate,
+    form,
+    handleSubmit,
+    setIsDelOpen,
+    isDelOpen,
   };
 }
 

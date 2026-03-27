@@ -22,7 +22,6 @@ export const createGuardian = async (body: IGuardian) => {
       error: schemaValidationError(validData.error, "Invalid request body"),
     };
   }
-  // ✅ Transaction use করো - atomicity নিশ্চিত করতে
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -38,10 +37,11 @@ export const createGuardian = async (body: IGuardian) => {
     }
 
     // Ensure role is guardian
-    if (user.role !== UserRole.GUARDIAN) {
+    if (!user.roles.includes(UserRole.GUARDIAN)) {
       return {
         error: {
-          message: "User role is not guardian",
+          message:
+            "User not have to guardian tole, please assign guardian role to the user first",
         },
       };
     }
@@ -70,17 +70,7 @@ export const createGuardian = async (body: IGuardian) => {
     // Save guardian
     const newGuardian = await guardian.save();
 
-    // 6️⃣ ✅ Update User profile field
-    await User.findByIdAndUpdate(
-      validData.data.userId,
-      {
-        profile: newGuardian._id,
-        profileModel: "Guardian", // Dynamic ref এর জন্য
-      },
-      { session },
-    );
-
-    // ✅ Transaction commit
+    // Transaction commit
     await session.commitTransaction();
 
     return {
@@ -126,8 +116,7 @@ export const gets = async (queryParams: {
       const search = queryParams.search;
 
       matchStage.$or = [
-        { firstName: { $regex: search, $options: "i" } },
-        { lastName: { $regex: search, $options: "i" } },
+        { fullName: { $regex: search, $options: "i" } },
         { nid: { $regex: search, $options: "i" } },
         { guardianId: { $regex: search, $options: "i" } },
         { "user.phone": { $regex: search, $options: "i" } },
@@ -145,12 +134,12 @@ export const gets = async (queryParams: {
     const allowedSortFields = [
       "createdAt",
       "updatedAt",
-      "firstName",
+      "fullName",
       "guardianId",
     ];
     const sortField = allowedSortFields.includes(queryParams.sortBy)
       ? queryParams.sortBy
-      : "firstName";
+      : "fullName";
 
     const sortDirection =
       queryParams.sortType?.toLowerCase() === "asc" ? 1 : -1;
@@ -179,7 +168,10 @@ export const gets = async (queryParams: {
       },
     ];
 
-    const result = await Guardian.aggregate(pipeline);
+    const [result, docsCount] = await Promise.all([
+      Guardian.aggregate(pipeline),
+      Guardian.countDocuments(),
+    ]);
 
     const guardians = result[0]?.data || [];
     const total = result[0]?.total[0]?.count || 0;
@@ -189,6 +181,7 @@ export const gets = async (queryParams: {
       page: queryParams.page,
       limit: queryParams.limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {
@@ -197,6 +190,48 @@ export const gets = async (queryParams: {
         message: "Guardians fetched successfully!",
         data: guardians,
         pagination: createPagination,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const getByUser = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // Check if user exists
+    const user = await User.findById(idValidation.data._id);
+
+    if (!user) {
+      return {
+        error: {
+          message: `Invalid user ID!`,
+        },
+      };
+    }
+
+    // Check if guardian exists
+    const guardian = await Guardian.findOne({
+      userId: idValidation.data._id,
+    }).populate("userId");
+
+    return {
+      success: {
+        success: true,
+        message: `Guardian fetched successfully!`,
+        data: guardian,
       },
     };
   } catch (error: any) {
@@ -263,79 +298,7 @@ export const updates = async ({
   }
 
   // Validate Body
-  const validData = guardianUpdateZ.safeParse(body);
-  if (!validData.success) {
-    return {
-      error: schemaValidationError(validData.error, "Invalid request body"),
-    };
-  }
-
-  try {
-    // Check if Guardian exists
-    const guardian = await Guardian.findById(idValidation.data._id);
-
-    if (!guardian) {
-      return {
-        error: {
-          message: "Guardian not fount with the provided ID",
-        },
-      };
-    }
-
-    // Check if all fields are empty
-    if (Object.keys(validData.data).length === 0) {
-      return {
-        success: {
-          success: true,
-          message: "No updates provided, returning existing user",
-
-          data: guardian,
-        },
-      };
-    }
-
-    // Update only provided fields
-    Object.assign(guardian, validData.data);
-
-    const docs = await guardian.save();
-
-    return {
-      success: {
-        success: true,
-        message: "Guardian updated successfully",
-        data: docs,
-      },
-    };
-  } catch (error: any) {
-    return {
-      serverError: {
-        success: false,
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? null : error.stack,
-      },
-    };
-  }
-};
-
-export const updateMe = async ({
-  userId,
-  body,
-}: {
-  userId: string;
-  body: IUpdateGuardian;
-}) => {
-  // Validate ID
-  const idValidation = mongoIdZ.safeParse({ _id: userId });
-  if (!idValidation.success) {
-    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
-  }
-
-  // Validate Body
-  const validData = guardianUpdateZ
-    .omit({
-      userId: true,
-    })
-    .safeParse(body);
+  const validData = guardianUpdateZ.omit({ userId: true }).safeParse(body);
   if (!validData.success) {
     return {
       error: schemaValidationError(validData.error, "Invalid request body"),
@@ -408,10 +371,7 @@ export const deletes = async (_id: string) => {
     }
 
     // Delete Guardian
-    // Inactive inside delete
-    // await guardian.deleteOne();
-    guardian.isActive = true;
-    await guardian.save();
+    await guardian.deleteOne();
 
     // Response
     return {
@@ -431,82 +391,3 @@ export const deletes = async (_id: string) => {
   }
 };
 
-export const deactivate = async (_id: string) => {
-  // Validate ID
-  const idValidation = mongoIdZ.safeParse({ _id });
-  if (!idValidation.success) {
-    return {
-      error: schemaValidationError(idValidation.error, "Invalid ID"),
-    };
-  }
-
-  try {
-    const guardian = await Guardian.findById(idValidation.data._id);
-
-    if (!guardian) {
-      return {
-        error: {
-          message: "Guardian not found with provided ID!",
-        },
-      };
-    }
-
-    // Also deactivate user
-    await User.findByIdAndUpdate(guardian.userId, { isActive: false });
-
-    return {
-      success: {
-        success: true,
-        message: "Guardian deactivated successfully!",
-      },
-    };
-  } catch (error: any) {
-    return {
-      serverError: {
-        success: false,
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? null : error.stack,
-      },
-    };
-  }
-};
-
-export const activate = async (_id: string) => {
-  // Validate ID
-  const idValidation = mongoIdZ.safeParse({ _id });
-  if (!idValidation.success) {
-    return {
-      error: schemaValidationError(idValidation.error, "Invalid ID"),
-    };
-  }
-
-  try {
-    const guardian = await Guardian.findById(idValidation.data._id);
-
-    if (!guardian) {
-      return {
-        error: {
-          message: "Guardian not found with provided ID!",
-        },
-      };
-    }
-
-    // Also activate user
-    await User.findByIdAndUpdate(guardian.userId, { isActive: true });
-
-    return {
-      success: {
-        success: true,
-        message: "Guardian activated successfully!",
-      },
-    };
-  } catch (error: any) {
-    return {
-      serverError: {
-        success: false,
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? null : error.stack,
-      },
-    };
-  }
-};

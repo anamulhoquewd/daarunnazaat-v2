@@ -1,16 +1,18 @@
 import api from "@/axios/intercepter";
+import { IGuardian, IStaff, UserRole } from "@/validations";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-export type Role = "student" | "staff" | "admin" | "guardian" | "super_admin";
-export type ProfileModel = "Student" | "Staff" | "Guardian" | null;
-
 interface Me {
-  _id: string;
-  email: string;
-  role: Role;
-  profileModel: ProfileModel;
-  profile: any; // Student | Staff | Guardian
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+    roles: UserRole[];
+  };
+  staff?: IStaff | null;
+  guardian?: IGuardian | null;
 }
 
 interface AuthState {
@@ -49,9 +51,26 @@ export const useAuthStore = create<AuthState>()(
       try {
         const response = await api.get("/users/me");
 
+        let staff = null;
+        let guardian = null;
+
+        if (response.data.data.roles.includes("staff")) {
+          staff = await api.get(`/staffs/by?userId=${response.data.data._id}`);
+        }
+
+        if (response.data.data.roles.includes("guardian")) {
+          guardian = await api.get(
+            `/guardians/by?userId=${response.data.data._id}`,
+          );
+        }
+
         if (response.data?.success) {
           set({
-            me: response.data.data,
+            me: {
+              user: response.data.data,
+              staff: staff?.data.data || null,
+              guardian: guardian?.data.data || null,
+            },
             isAuthenticated: true,
             loading: false,
           });
@@ -70,5 +89,5 @@ export const useAuthStore = create<AuthState>()(
         });
       }
     },
-  }))
+  })),
 );

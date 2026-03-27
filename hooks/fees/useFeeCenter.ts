@@ -74,9 +74,6 @@ export function useFeeCenter() {
       return;
     }
 
-    console.log("Data: ", data);
-    // return;
-
     setSubmitLoading(true);
     try {
       const res = await api.post("/fees/register", data);

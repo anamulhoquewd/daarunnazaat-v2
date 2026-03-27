@@ -30,7 +30,7 @@ export const StaffColumns = ({
   {
     header: "Name",
     cell: ({ row }) => {
-      const { _id, firstName, lastName } = row.original;
+      const { _id, fullName } = row.original;
 
       return (
         <Link
@@ -38,7 +38,7 @@ export const StaffColumns = ({
           target="_blank"
           className="text-blue-600 hover:underline font-medium"
         >
-          {firstName ?? ""} {lastName ?? ""}
+          {fullName ?? ""}
         </Link>
       );
     },
@@ -67,7 +67,7 @@ export const StaffColumns = ({
     header: "Join Date",
     cell: ({ getValue }) => {
       const value = getValue<string>();
-      return value ? format(new Date(value), "yyyy-MM-dd") : "-";
+      return value ? format(new Date(value), "dd LLL yyyy") : "-";
     },
   },
   {

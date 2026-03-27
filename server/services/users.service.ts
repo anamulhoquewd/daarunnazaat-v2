@@ -9,6 +9,7 @@ import {
   userUpdateZ,
   userZ,
 } from "@/validations";
+import crypto from "crypto";
 import mongoose from "mongoose";
 import z from "zod";
 import { transporter } from "../config/email";
@@ -30,12 +31,12 @@ export const register = async (body: IUser) => {
 
   try {
     // You can't register super admin via this route
-    if (validData.data.role === "super_admin") {
+    if (validData.data.roles.includes("super_admin" as UserRole)) {
       return {
         error: {
           message: "Not allowed to register super admin",
           fields: [
-            { name: "role", message: "Not allowed to register super admin" },
+            { name: "roles", message: "Not allowed to register super admin" },
           ],
         },
       };
@@ -90,7 +91,7 @@ export const register = async (body: IUser) => {
     const user = new User({
       ...validData.data,
       password,
-      role: validData.data.role,
+      role: validData.data.roles,
     });
 
     // Save user
@@ -125,73 +126,20 @@ export const register = async (body: IUser) => {
   }
 };
 
-export const registerSuperAdmin = async () => {
-  // Safe Parse for better error handling
-  const validData = userZ.omit({ role: true }).safeParse({
-    email: process.env.ADMIN_EMAIL,
-    phone: process.env.ADMIN_PHONE,
-  });
-
-  if (!validData.success) {
-    return {
-      error: schemaValidationError(validData.error, "Invalid request body"),
-    };
-  }
-  try {
-    // Check if super admin already exists
-    const isSuperAdminExist = await User.findOne({ role: "super_admin" });
-
-    if (isSuperAdminExist) {
-      return {
-        success: false,
-        error: {
-          message: "Super admin already exists",
-        },
-      };
-    }
-
-    // Create Super user
-    const user = new User({
-      email: validData.data.email,
-      phone: validData.data.phone,
-      password: process.env.ADMIN_PASSWORD as string,
-      role: "super_admin",
-    });
-
-    // Save Super user
-    const docs = await user.save();
-
-    // Response
-    return {
-      message: "Super admin created successfully!",
-      success: true,
-      data: docs,
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      error: {
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? null : error.stack,
-      },
-    };
-  }
-};
-
 export const gets = async (queryParams: {
   page: number;
   limit: number;
   sortBy: string;
   sortType: string;
-  role: UserRole;
+  roles: string;
   search: string;
   isActive?: boolean;
   isBlocked?: boolean;
+  isDeleted?: boolean;
   createdDateRange: {
     from: string | Date | undefined;
     to: string | Date | undefined;
   };
-  nullProfile: string | null;
 }) => {
   try {
     const {
@@ -203,9 +151,9 @@ export const gets = async (queryParams: {
       sortBy,
       sortType,
       createdDateRange,
-      role,
+      roles: rolesParam,
+      isDeleted,
     } = queryParams;
-    let { nullProfile } = queryParams;
 
     // Build query
     const query: any = {};
@@ -216,12 +164,13 @@ export const gets = async (queryParams: {
     if (typeof isBlocked === "boolean") {
       query.isBlocked = isBlocked;
     }
-    if (role) query.role = role;
+    if (typeof isDeleted === "boolean") {
+      query.isDeleted = isDeleted;
+    }
 
-    if (nullProfile === "null") nullProfile = null;
-
-    if (nullProfile === null) {
-      query.profile = nullProfile;
+    if (rolesParam) {
+      const roles = rolesParam.split(",") as UserRole[];
+      query.roles = { $in: roles };
     }
 
     if (search) {
@@ -236,7 +185,7 @@ export const gets = async (queryParams: {
         });
       }
     }
-    // Admission date range
+    // Registration date range
     if (createdDateRange?.from && createdDateRange?.to) {
       query.createdAt = {};
       if (createdDateRange.from)
@@ -251,16 +200,15 @@ export const gets = async (queryParams: {
     const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
     const sortDirection = sortType?.toLocaleLowerCase() === "asc" ? 1 : -1;
 
-    console.log("Query: ", query);
-
     // Fetch users
-    const [users, total] = await Promise.all([
+    const [users, total, totalDocs] = await Promise.all([
       User.find(query)
         .sort({ [sortField]: sortDirection })
         .skip((page - 1) * limit)
         .limit(limit)
         .exec(),
       User.countDocuments(query),
+      User.countDocuments(),
     ]);
 
     // Pagination
@@ -268,6 +216,7 @@ export const gets = async (queryParams: {
       page: page,
       limit: limit,
       total,
+      totalDocs,
     });
 
     return {
@@ -334,10 +283,8 @@ export const updateUser = async ({
 }: {
   _id: string;
   body: {
-    isActive: boolean;
     email: string;
     phone: string;
-    role: UserRole;
   };
 }) => {
   // Validate ID
@@ -348,7 +295,10 @@ export const updateUser = async ({
 
   // Validate Body
   const validData = userUpdateZ
-    .omit({ alternativePhone: true, whatsApp: true, isBlocked: true })
+    .pick({
+      email: true,
+      phone: true,
+    })
     .safeParse(body);
 
   if (!validData.success) {
@@ -364,7 +314,7 @@ export const updateUser = async ({
     if (!user) {
       return {
         error: {
-          message: "User not fount with the provided ID",
+          message: "User not found with the provided ID",
         },
       };
     }
@@ -403,6 +353,167 @@ export const updateUser = async ({
   }
 };
 
+export const updateRoles = async ({
+  _id,
+  body,
+}: {
+  _id: string;
+  body: { roles: UserRole[] };
+}) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  // Validate Body
+  const validData = userZ
+    .pick({
+      roles: true,
+    })
+    .safeParse(body);
+
+  if (!validData.success) {
+    return {
+      error: schemaValidationError(validData.error, "Invalid request body"),
+    };
+  }
+
+  try {
+    // Check if user exists
+    const user = await User.findById(idValidation.data._id);
+
+    if (!user) {
+      return {
+        error: {
+          message: "User not found with the provided ID",
+        },
+      };
+    }
+
+    const existingRoles = user.roles;
+    const newRoles = validData.data.roles;
+
+    // prevent removing super_admin
+    if (
+      existingRoles.includes("super_admin" as UserRole) &&
+      !newRoles.includes("super_admin" as UserRole)
+    ) {
+      return {
+        error: {
+          message: "Super admin role cannot be removed",
+        },
+      };
+    }
+
+    user.roles = newRoles;
+
+    const docs = await user.save();
+
+    return {
+      success: {
+        success: true,
+        message: "User updated successfully",
+        data: docs,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const deactivateUser = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const user = await User.findById(idValidation.data._id);
+
+    if (!user) {
+      return { error: { message: "User not found!" } };
+    }
+
+    if (user.roles.includes("super_admin" as UserRole)) {
+      return { error: { message: "Super admin cannot be deactivated." } };
+    }
+
+    if (!user.isActive) {
+      return { error: { message: "User already deactivated." } };
+    }
+
+    user.isActive = false;
+
+    await user.save();
+
+    return {
+      success: {
+        success: true,
+        message: "User deactivated successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const activateUser = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // optional: check user exists
+    const user = await User.findById(_id);
+
+    if (!user) {
+      return {
+        error: {
+          message: `User not found with provided ID!`,
+        },
+      };
+    }
+
+    if (user.isActive) {
+      return { error: { message: "User is already active." } };
+    }
+
+    user.isActive = true;
+
+    await user.save();
+
+    return {
+      success: {
+        success: true,
+        message: "User activated successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
 export const blockUser = async (_id: string) => {
   const idValidation = mongoIdZ.safeParse({ _id });
   if (!idValidation.success) {
@@ -416,7 +527,7 @@ export const blockUser = async (_id: string) => {
       return { error: { message: "User not found!" } };
     }
 
-    if (user.role === "super_admin") {
+    if (user.roles.includes("super_admin" as UserRole)) {
       return { error: { message: "Super admin cannot be blocked." } };
     }
 
@@ -470,12 +581,102 @@ export const unblockUser = async (_id: string) => {
     }
 
     user.isBlocked = false;
-    user.blockedAt = new Date();
+    user.blockedAt = null;
+
+    await user.save();
 
     return {
       success: {
         success: true,
-        message: "User UN_BLOCKED successfully",
+        message: "User NOT BLOCKED successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const deletedUser = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const user = await User.findById(idValidation.data._id);
+
+    if (!user) {
+      return { error: { message: "User not found!" } };
+    }
+
+    if (user.roles.includes("super_admin" as UserRole)) {
+      return { error: { message: "Super admin cannot be deleted." } };
+    }
+
+    if (user.isDeleted) {
+      return { error: { message: "User already deleted." } };
+    }
+
+    user.isDeleted = true;
+    user.deletedAt = new Date();
+
+    await user.save();
+
+    return {
+      success: {
+        success: true,
+        message: "User deleted successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const restoreUser = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // optional: check user exists
+    const user = await User.findById(_id);
+
+    if (!user) {
+      return {
+        error: {
+          message: `User not found with provided ID!`,
+        },
+      };
+    }
+
+    if (!user.isDeleted) {
+      return { error: { message: "User not deleted." } };
+    }
+
+    user.isDeleted = false;
+    user.deletedAt = null;
+
+    await user.save();
+
+    return {
+      success: {
+        success: true,
+        message: "User RESTORED successfully",
       },
     };
   } catch (error: any) {
@@ -509,7 +710,7 @@ export const deleteUser = async (_id: string) => {
       };
     }
 
-    if (user.role === "super_admin") {
+    if (user.roles.includes("super_admin" as UserRole)) {
       return {
         error: {
           message: "It is not possible to delete the super admin.",
@@ -664,7 +865,7 @@ export const forgotPassword = async (email: string) => {
       text: `Assalamu alikum,\n\nClick the link below to reset your password:\n\n${resetUrl}\n\nIf you didn't request this, please ignore this email. This token will expire in 30 minutes.\n\nJazakallah!`,
     };
 
-    // await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
 
     return {
       success: {
@@ -712,13 +913,18 @@ export const resetPassword = async ({
     };
   }
 
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
   try {
     const data = await User.findOne({
-      resetPasswordToken: resetToken,
-      resetPasswordExpireDate: { $gt: Date.now() },
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
     });
 
-    console.log("Data: ", data);
+    console.log("Data found for reset token:", data);
 
     if (!data) {
       return {
@@ -830,7 +1036,7 @@ export const login = async (body: {
       user.refreshTokens = user.refreshTokens.slice(-2); // last 2 tokens
     }
 
-    // ✅ last login update
+    // last login update
     user.lastLogin = new Date();
 
     await user.save();
@@ -844,6 +1050,43 @@ export const login = async (body: {
           accessToken,
           refreshToken,
         },
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+// Permanent delete (hard delete) - use with caution
+export const permanentDelete = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const user = await User.findById(idValidation.data._id);
+
+    if (!user) {
+      return { error: { message: "User not found!" } };
+    }
+
+    if (user.roles.includes("super_admin" as UserRole)) {
+      return { error: { message: "Super admin cannot be deleted." } };
+    }
+
+    await user.deleteOne();
+
+    return {
+      success: {
+        success: true,
+        message: "User deleted successfully",
       },
     };
   } catch (error: any) {

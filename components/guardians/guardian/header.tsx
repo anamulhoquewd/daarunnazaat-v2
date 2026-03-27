@@ -14,7 +14,6 @@ import { ArrowLeft, Expand, MoreVertical } from "lucide-react";
 import Link from "next/link";
 
 export function GuardianProfileHeader({ data }: { data: IGuardian }) {
-  console.log("data?.firstName.charAt(0):", data?.firstName.charAt(0));
   return (
     <div className="border-b border-border bg-card">
       <div className="container max-w-6xl mx-auto px-4 py-8">
@@ -32,9 +31,7 @@ export function GuardianProfileHeader({ data }: { data: IGuardian }) {
 
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold">
-                  {data?.firstName} {data?.lastName}
-                </h1>
+                <h1 className="text-3xl font-bold">{data?.fullName}</h1>
                 {data?.userId?.isActive ? (
                   <Badge variant="secondary" className="text-sm">
                     Active

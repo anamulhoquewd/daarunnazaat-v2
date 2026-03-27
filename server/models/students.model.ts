@@ -11,13 +11,8 @@ import {
 // Student Model
 const StudentSchema = new Schema<IStudent & Document>(
   {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      unique: true,
-    },
-    alternativePhone: { type: String },
+    phone: { type: String },
+    email: { type: String, unique: true, sparse: true },
     whatsApp: { type: String },
     studentId: { type: String, required: true, unique: true },
     guardianId: {
@@ -34,8 +29,8 @@ const StudentSchema = new Schema<IStudent & Document>(
     branch: { type: String, enum: Object.values(Branch), required: true },
     batchType: { type: String, enum: Object.values(BatchType), required: true },
 
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    fullName: { type: String, required: true },
+
     fatherName: { type: String },
     motherName: { type: String },
 
@@ -123,7 +118,23 @@ const StudentSchema = new Schema<IStudent & Document>(
     },
 
     passoutDate: { type: Date },
+
     isActive: { type: Boolean, default: true },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+    blockedAt: {
+      type: Date,
+      default: null,
+    },
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+
+    remarks: { type: String },
   },
   { timestamps: true },
 );

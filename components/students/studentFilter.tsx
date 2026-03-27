@@ -18,6 +18,7 @@ import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
 import { ClassFilterCombobox } from "../clasess/classFilterCombobox";
 import { GuardianFilterCombobox } from "../guardians/guardianFilterCombobox";
+import { Branch } from "@/validations";
 
 interface StudentFiltersProps {
   filters: Record<string, string | boolean | undefined>;
@@ -70,8 +71,13 @@ export default function StudentFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Branches</SelectItem>
-                  <SelectItem value="branch_1">Branch 1</SelectItem>
-                  <SelectItem value="branch_2">Branch 2</SelectItem>
+                  {Object.entries(Branch)
+                    .filter(([key]) => key !== "DEFAULT")
+                    .map(([key, value]) => (
+                      <SelectItem key={key} value={value}>
+                        {value}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

@@ -34,6 +34,9 @@ function Header() {
   const { me } = useAuthStore();
   const { handleLogout } = useLogout();
 
+  // Figure out the profile. staff first, if not then guardian. This is because a user can have both roles, but we want to prioritize staff for the profile information.
+  const profile = me?.staff || me?.guardian;
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 md:px-6">
       {/* Mobile Navigation */}
@@ -66,11 +69,11 @@ function Header() {
           <DropdownMenuTrigger className="h-9 w-9 rounded-full cursor-pointer">
             <Avatar className="h-9 w-9">
               <AvatarFallback>
-                {me?.profile?.firstName
+                {profile?.fullName
                   .split(" ")
                   .map((ch: string) => ch[0])
                   .join("")
-                  .toUpperCase() || "DARUNNAZAT"}
+                  .toUpperCase() || "DN"}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
@@ -78,10 +81,10 @@ function Header() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {me?.profile?.firstName || "Darunnazat"}
+                  {profile?.fullName || "DN"}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  {me?.email || "info@darunnazat.com"}
+                  {me?.user?.email || "darunnazat@gmail.com"}
                 </p>
               </div>
             </DropdownMenuLabel>

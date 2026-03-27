@@ -46,8 +46,7 @@ export function PersonalInfoSection({
   useEffect(() => {
     if (data) {
       form.reset({
-        firstName: data.firstName ?? "",
-        lastName: data.lastName ?? "",
+        fullName: data.fullName ?? "",
         gender: data.gender ?? "",
         bloodGroup: data.bloodGroup ?? BloodGroup.NON,
         nid: data.nid ?? "",
@@ -88,25 +87,12 @@ export function PersonalInfoSection({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="firstName"
+                  name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>First Name</FormLabel>
+                      <FormLabel>Full Name</FormLabel>
                       <FormControl>
                         <Input placeholder="John" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Doe" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -257,11 +243,7 @@ export function PersonalInfoSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">First Name</p>
-              <p className="font-medium">{data?.firstName || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Last Name</p>
-              <p className="font-medium">{data?.lastName || "N/A"}</p>
+              <p className="font-medium">{data?.fullName || "N/A"}</p>
             </div>
           </div>
 

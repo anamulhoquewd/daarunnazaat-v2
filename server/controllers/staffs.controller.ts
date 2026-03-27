@@ -54,6 +54,22 @@ export const gets = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
+export const getByUser = async (c: Context) => {
+  const id = c.req.query("userId") as string;
+
+  const response = await staffService.getByUser(id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
 export const get = async (c: Context) => {
   const _id = c.req.param("_id");
 
@@ -94,54 +110,6 @@ export const updateMe = async (c: Context) => {
   const body = await c.req.json();
 
   const response = await staffService.updateMe({ userId: user.profile, body });
-
-  if (response.error) {
-    return badRequestError(c, response.error);
-  }
-
-  if (response.serverError) {
-    return serverError(c, response.serverError);
-  }
-
-  return c.json(response.success, 200);
-};
-
-export const deletes = async (c: Context) => {
-  const _id = c.req.param("_id");
-
-  const response = await staffService.deletes(_id);
-
-  if (response.error) {
-    return badRequestError(c, response.error);
-  }
-
-  if (response.serverError) {
-    return serverError(c, response.serverError);
-  }
-
-  return c.json(response.success, 200);
-};
-
-export const deactivate = async (c: Context) => {
-  const _id = c.req.param("_id");
-
-  const response = await staffService.deactivate(_id);
-
-  if (response.error) {
-    return badRequestError(c, response.error);
-  }
-
-  if (response.serverError) {
-    return serverError(c, response.serverError);
-  }
-
-  return c.json(response.success, 200);
-};
-
-export const activate = async (c: Context) => {
-  const _id = c.req.param("_id");
-
-  const response = await staffService.activate(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);

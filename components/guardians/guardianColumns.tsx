@@ -29,7 +29,7 @@ export const GuardianColumns = ({
   {
     header: "Name",
     cell: ({ row }) => {
-      const { _id, firstName, lastName } = row.original;
+      const { _id, fullName } = row.original;
 
       return (
         <Link
@@ -37,7 +37,7 @@ export const GuardianColumns = ({
           target="_blank"
           className="text-blue-600 hover:underline font-medium"
         >
-          {firstName ?? ""} {lastName ?? ""}
+          {fullName ?? ""}
         </Link>
       );
     },

@@ -1,11 +1,9 @@
-import { MONTHS } from "@/lib/utils";
 import { IFeeCollection } from "@/validations";
 import { UseFormReturn } from "react-hook-form";
 
 interface Changes {
   receivedAmount?: { old: number; new: number };
-  month?: { old: string; new: string };
-  year?: { old: string; new: string };
+  period?: { old: string; new: string }; // e.g. "2023-08"
 }
 
 export function useFeeFieldHandlers(
@@ -35,47 +33,28 @@ export function useFeeFieldHandlers(
     }
   };
 
-  const handleMonthChange = (value: string) => {
-    const monthIndex = parseInt(value, 10);
-    form.setValue("month", monthIndex, { shouldValidate: true });
+  const handlePeriodChange = (value: string) => {
+    form.setValue("period", value, { shouldValidate: true });
 
-    if (fee && monthIndex !== (fee.month ?? 0)) {
+    if (fee && value !== fee.period) {
       setChanges((prev) => ({
         ...prev,
-        month: { old: MONTHS[fee.month ?? 0], new: MONTHS[monthIndex] },
+        period: { old: fee.period, new: value },
       }));
-      setRemarksError("Remarks are required when changing the billing period.");
+      setRemarksError("Remarks are required when changing the period.");
     } else {
       setChanges((prev) => {
-        const { month, ...rest } = prev;
+        const { period, ...rest } = prev;
         return rest;
       });
       setRemarksError("");
     }
   };
 
-  const handleYearChange = (value: string) => {
-    const yearNum = parseInt(value, 10);
-    form.setValue("year", yearNum, { shouldValidate: true });
-
-    if (fee && yearNum !== fee.year) {
-      setChanges((prev) => ({
-        ...prev,
-        year: { old: String(fee.year), new: String(yearNum) },
-      }));
-      setRemarksError("Remarks are required when changing the billing period.");
-    } else {
-      setChanges((prev) => {
-        const { year, ...rest } = prev;
-        return rest;
-      });
-      setRemarksError("");
-    }
-  };
+  console.log("Current Changes:", form.getValues());
 
   return {
     handleReceivedAmountChange,
-    handleMonthChange,
-    handleYearChange,
+    handlePeriodChange,
   };
 }

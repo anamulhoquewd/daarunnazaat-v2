@@ -118,7 +118,7 @@ export function FeeStudentSearch({
             <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-semibold text-green-900">
-                {selectedStudent.firstName} {selectedStudent.lastName}
+                {selectedStudent.fullName}
               </p>
               <p className="text-sm text-green-700">
                 ID: {selectedStudent.studentId}
@@ -153,15 +153,15 @@ export function FeeStudentSearch({
                   <div className="flex items-start gap-3">
                     <User className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">
-                        {student.firstName} {student?.lastName}
-                      </p>
+                      <p className="font-medium truncate">{student.fullName}</p>
                       <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mt-1">
                         <p>ID: {student.studentId}</p>
-                        <p>Phone: {student.user?.phone}</p>
+                        <p>
+                          Phone: {student?.phone || student?.whatsApp || "N/A"}
+                        </p>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Email: {student.user?.email}
+                        Email: {student?.email || "N/A"}
                       </p>
                     </div>
                   </div>

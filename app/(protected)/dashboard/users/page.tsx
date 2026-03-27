@@ -32,7 +32,7 @@ import { UserBottomFilter } from "@/components/users/userBottomFilter";
 import { UserColumns } from "@/components/users/userColumns";
 import UserFilters from "@/components/users/userFilter";
 import UserRegistrationForm from "@/components/users/userRegistrationForm";
-import useUserQuery from "@/hooks/users/useUserQuery";
+import useUser from "@/hooks/users/useUser";
 import {
   ColumnFiltersState,
   SortingState,
@@ -50,7 +50,7 @@ function UsersPage() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     isBlocked: false,
-    status: false,
+    isDeleted: false,
   });
 
   const {
@@ -73,7 +73,6 @@ function UsersPage() {
     handleUpdate,
     handleSubmit,
     setSelectedId,
-    clearForm,
     form,
     isEditing,
     isAddOpen,
@@ -81,7 +80,14 @@ function UsersPage() {
     setIsEditing,
     setIsAddOpen,
     setIsDelOpen,
-  } = useUserQuery();
+
+    activeUser,
+    deactiveUser,
+    blockUser,
+    unblockUser,
+    deleteUser,
+    restoreUser,
+  } = useUser();
 
   const columns = UserColumns({
     setIsEditing,
@@ -89,6 +95,13 @@ function UsersPage() {
     setValues,
     setSelectedId,
     setIsAddOpen,
+
+    activeUser,
+    deactiveUser,
+    blockUser,
+    unblockUser,
+    deleteUser,
+    restoreUser,
   });
 
   const table = useReactTable({
@@ -115,8 +128,6 @@ function UsersPage() {
       },
     },
   });
-
-  console.log("Editing State:", isEditing);
 
   return (
     <Card className="w-full  flex flex-col overflow-hidden">
@@ -151,7 +162,7 @@ function UsersPage() {
               open={isAddOpen}
               onOpenChange={(open) => {
                 if (!open) {
-                  clearForm();
+                  form.reset({ email: "", phone: "" });
                   setValues(null);
                   setSelectedId("");
                   setIsEditing(false);
@@ -179,10 +190,10 @@ function UsersPage() {
                 <ScrollArea className="sm:max-w-[525px] h-[65dvh] overflow-hidden pr-2 md:px-4">
                   <UserRegistrationForm
                     values={values}
+                    setIsAddOpen={setIsAddOpen}
                     handleSubmit={isEditing ? handleUpdate : handleSubmit}
                     isLoading={isLoading}
                     form={form}
-                    clearForm={clearForm}
                   />
                   <ScrollBar orientation="vertical" className="w-2.5" />
                   <ScrollBar orientation="horizontal" className="w-2.5" />
@@ -282,6 +293,7 @@ function UsersPage() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
         <TableComponent table={table} columns={columns} />
 
         {pagination.total > 0 && (

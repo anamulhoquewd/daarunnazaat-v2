@@ -37,7 +37,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useClassQuery from "@/hooks/classes/useCLassQuery";
-import { useClassForm } from "@/hooks/classes/useClassForm";
 import {
   ColumnFiltersState,
   SortingState,
@@ -64,8 +63,6 @@ function ClassesPage() {
     setPagination,
     search,
     setSearch,
-    filterBy,
-    setFilterBy,
     activeFilterCount,
     handleClearFilters,
     updateFilter,
@@ -78,9 +75,11 @@ function ClassesPage() {
     setIsEditing,
     isAddOpen,
     setIsAddOpen,
+    form,
+    handleSubmit,
+    isLoading,
+    setIsDelOpen,
   } = useClassQuery();
-
-  const { form, handleSubmit, isLoading, setIsDelOpen } = useClassForm();
 
   const columns = ClassColumns({
     setIsEditing,
@@ -182,6 +181,7 @@ function ClassesPage() {
                 </AlertDialogHeader>
                 <ScrollArea className="sm:max-w-[525px] h-[65dvh] overflow-hidden pr-2 md:px-4">
                   <ClassRegistrationForm
+                    setIsAddOpen={setIsAddOpen}
                     values={values}
                     handleSubmit={isEditing ? handleUpdate : handleSubmit}
                     isLoading={isLoading}

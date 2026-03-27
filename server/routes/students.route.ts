@@ -9,48 +9,87 @@ studentRoutes.get(
   "/",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => studentController.gets(c)
+  (c) => studentController.gets(c),
 );
 
 studentRoutes.post(
   "/register",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => studentController.register(c)
-);
-
-studentRoutes.patch("/me", authenticate, authorize(UserRole.STUDENT), (c) =>
-  studentController.updateMe(c)
+  (c) => studentController.register(c),
 );
 
 studentRoutes.patch(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => studentController.updates(c)
+  (c) => studentController.updates(c),
 );
 
 studentRoutes.get("/:_id", authenticate, (c) => studentController.get(c));
 
-studentRoutes.delete(
+studentRoutes.patch(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => studentController.deletes(c)
+  (c) => studentController.deleteStudent(c),
 );
 
 studentRoutes.patch(
-  "/activate/:_id",
+  "/:_id/promote",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => studentController.activate(c)
+  (c) => studentController.promote(c),
 );
 
 studentRoutes.patch(
-  "/deactivate/:_id",
+  "/:_id/block",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => studentController.deactivate(c)
+  (c) => studentController.blockStudent(c),
+);
+
+studentRoutes.patch(
+  "/:_id/unblock",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.unblockStudent(c),
+);
+
+studentRoutes.patch(
+  "/:_id/delete",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.deleteStudent(c),
+);
+
+studentRoutes.patch(
+  "/:_id/restore",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.restoreStudent(c),
+);
+
+studentRoutes.patch(
+  "/:_id/activate",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.activate(c),
+);
+
+studentRoutes.patch(
+  "/:_id/deactivate",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => studentController.deactivate(c),
+);
+
+// with coation
+studentRoutes.delete(
+  "/:_id/permanently",
+  authenticate,
+  authorize(UserRole.SUPER_ADMIN),
+  (c) => studentController.permanentDelete(c),
 );
 
 export default studentRoutes;

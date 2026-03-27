@@ -13,6 +13,9 @@ import { FormProvider } from "react-hook-form";
 export default function StaffRegistrationPage() {
   const { form, handleSubmit, isLoading, clearForm } = useStaffForm();
 
+  console.log("Form values: ", form.getValues());
+  console.log("Form errors: ", form.formState.errors);
+
   return (
     <main className="w-full flex flex-col overflow-hidden gap-8">
       <div className="text-center space-y-2">

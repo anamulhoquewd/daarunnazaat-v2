@@ -9,8 +9,7 @@ import {
 } from "@/validations";
 
 export const personalInfoSchema = studentZ.pick({
-  firstName: true,
-  lastName: true,
+  fullName: true,
   dateOfBirth: true,
   gender: true,
   bloodGroup: true,
@@ -62,8 +61,7 @@ export const feesSchema = studentZ.pick({
 export const feeUpdateSchema = feeCollectionZ.pick({
   paymentDate: true,
   receivedAmount: true,
-  month: true,
-  year: true,
+  period: true,
   remarks: true,
   paymentMethod: true,
 });
@@ -77,7 +75,6 @@ export type AcademicInfo = z.infer<typeof academicInfoSchema>;
 export type Fees = z.infer<typeof feesSchema>;
 
 export interface IStudentPopulated extends IStudent {
-  user: IUser;
   class: IClass;
   guardian: IGuardian;
 }

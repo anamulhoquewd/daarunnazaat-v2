@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { IStudent } from "@/validations";
+import { format } from "date-fns";
 import { ArrowLeft, Expand, MoreVertical } from "lucide-react";
 import Link from "next/link";
 
@@ -26,27 +27,41 @@ export function StudentProfileHeader({ data }: { data: IStudent }) {
               <ArrowLeft className="h-5 w-5" />
             </Link>
 
-            <Avatar className="h-20 w-20 border-2 border-primary">
-              <AvatarImage alt={data?.firstName} src={data?.avatar || ""} />
+            <Avatar className="h-20 w-20 border-2 border-green-300">
+              <AvatarImage alt={data?.fullName} src={data?.avatar || ""} />
               <AvatarFallback className="text-lg font-semibold">
-                {data
-                  ? `${data.firstName.charAt(0)}${data?.lastName?.charAt(0)}`
-                  : "NA"}
+                {data ? `${data.fullName.charAt(0)}` : "NA"}
               </AvatarFallback>
             </Avatar>
 
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold">
-                  {data?.firstName} {data?.lastName}
-                </h1>
-                {data?.userId?.isActive ? (
+                <h1 className="text-3xl font-bold">{data?.fullName}</h1>
+                {data?.isActive ? (
                   <Badge variant="secondary" className="text-sm">
                     Active
                   </Badge>
                 ) : (
                   <Badge variant="destructive" className="text-sm">
                     Inactive
+                  </Badge>
+                )}
+                {data?.isBlocked ? (
+                  <Badge variant="destructive" className="text-sm">
+                    Blocked
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="text-sm">
+                    Not Blocked
+                  </Badge>
+                )}
+                {data?.isDeleted ? (
+                  <Badge variant="destructive" className="text-sm">
+                    Delete
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="text-sm">
+                    Not Deleted
                   </Badge>
                 )}
               </div>
@@ -56,8 +71,7 @@ export function StudentProfileHeader({ data }: { data: IStudent }) {
               </p>
               <p className="text-sm text-muted-foreground">
                 Date of Birth:{" "}
-                {data?.dateOfBirth &&
-                  new Date(data?.dateOfBirth).toLocaleDateString()}
+                {data?.dateOfBirth && format(data?.dateOfBirth, "dd LLL yyyy")}
               </p>
             </div>
           </div>

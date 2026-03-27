@@ -14,7 +14,6 @@ import {
   studentUpdateZ,
   studentZ,
   TransactionType,
-  UserRole,
 } from "@/validations";
 import mongoose, { PipelineStage, Types } from "mongoose";
 import z from "zod";
@@ -23,7 +22,6 @@ import { FeeCollection } from "../models/feeCollections.model";
 import { Guardian } from "../models/guardians.model";
 import { Session } from "../models/sessions.model";
 import { Student } from "../models/students.model";
-import { User } from "../models/users.model";
 import pagination from "../utils/pagination";
 import {
   generateFeeReceiptNumber,
@@ -47,65 +45,15 @@ export const createStudent = async ({
     };
   }
 
-  // ✅ Transaction use করো - atomicity নিশ্চিত করতে
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    // Check user exists
-    const user = await User.findById(validData.data.userId).session(session);
-    if (!user) {
-      await session.abortTransaction();
-      return {
-        error: {
-          message: "User not found with the provided User ID",
-        },
-      };
-    }
-
-    if (user.profile) {
-      await session.abortTransaction();
-      return {
-        error: {
-          message: "User already has a profile",
-        },
-      };
-    }
-
-    // Ensure role is student
-    if (user.role !== UserRole.STUDENT) {
-      await session.abortTransaction();
-      return {
-        error: {
-          message: "User role is not student",
-        },
-      };
-    }
-
-    // Check student already exists
-    const existingStudent = await Student.findOne({
-      userId: validData.data.userId,
-    }).session(session);
-
-    if (existingStudent) {
-      await session.abortTransaction();
-      return {
-        error: {
-          message: "Student profile already exists for this user.",
-          fields: [
-            {
-              name: "userId",
-              message: "Student profile already exists for this user.",
-            },
-          ],
-        },
-      };
-    }
-
     // Validate guardian
     const guardian = await Guardian.findById(validData.data.guardianId).session(
       session,
     );
+
     if (!guardian) {
       await session.abortTransaction();
       return {
@@ -121,12 +69,6 @@ export const createStudent = async ({
       isActive: true,
       batchType: validData.data.batchType,
     }).session(session);
-
-    console.log("Session: ", currentSession);
-    console.log("Values: ", {
-      _id: validData.data.currentSessionId,
-      batchType: validData.data.batchType,
-    });
 
     if (!currentSession) {
       await session.abortTransaction();
@@ -184,16 +126,6 @@ export const createStudent = async ({
       };
     }
 
-    // ✅ Update User profile field
-    await User.findByIdAndUpdate(
-      validData.data.userId,
-      {
-        profile: newStudent._id,
-        profileModel: "Student", // Dynamic reference
-      },
-      { session },
-    );
-
     // ✅ Transaction commit
     await session.commitTransaction();
 
@@ -207,6 +139,11 @@ export const createStudent = async ({
   } catch (error: any) {
     // Error হলে rollback
     await session.abortTransaction();
+
+    if (error.code === 11000) {
+      // duplicate studentId
+      throw new Error("Student ID conflict. Please retry.");
+    }
 
     return {
       serverError: {
@@ -329,6 +266,7 @@ export const gets = async (queryParams: {
   sortBy: string;
   sortType: string;
   search: string;
+
   classId: string;
   branch: Branch;
   sessionId: string;
@@ -364,17 +302,6 @@ export const gets = async (queryParams: {
     /* =========================
        LOOKUPS
     ========================= */
-
-    // user
-    pipeline.push({
-      $lookup: {
-        from: "users",
-        localField: "userId",
-        foreignField: "_id",
-        as: "user",
-      },
-    });
-    pipeline.push({ $unwind: "$user" });
 
     // class
     pipeline.push({
@@ -455,12 +382,10 @@ export const gets = async (queryParams: {
     // SEARCH (root + nested)
     if (search) {
       matchStage.$or = [
-        { firstName: { $regex: search, $options: "i" } },
-        { lastName: { $regex: search, $options: "i" } },
+        { fullName: { $regex: search, $options: "i" } },
         { studentId: { $regex: search, $options: "i" } },
         { nid: { $regex: search, $options: "i" } },
-        { "user.email": { $regex: search, $options: "i" } },
-        { "user.phone": { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -475,7 +400,7 @@ export const gets = async (queryParams: {
     const allowedSortFields = [
       "createdAt",
       "updatedAt",
-      "firstName",
+      "fullName",
       "studentId",
       "admissionDate",
     ];
@@ -501,7 +426,12 @@ export const gets = async (queryParams: {
       },
     });
 
-    const result = await Student.aggregate(pipeline);
+    // const result = await Student.aggregate(pipeline);
+
+    const [result, docsCount] = await Promise.all([
+      Student.aggregate(pipeline),
+      Student.countDocuments(),
+    ]);
 
     const students = result[0]?.data || [];
     const total = result[0]?.total[0]?.count || 0;
@@ -510,6 +440,7 @@ export const gets = async (queryParams: {
       page,
       limit,
       total,
+      totalDocs: docsCount,
     });
 
     return {
@@ -543,7 +474,6 @@ export const get = async (_id: string) => {
   try {
     // Find student with populated data
     const student = await Student.findById(idValidation.data._id)
-      .populate("userId")
       .populate("guardianId")
       .populate("classId")
       .populate("currentSessionId")
@@ -591,109 +521,9 @@ export const updates = async ({
     };
   }
 
-  // Validate Body
-  const validData = studentUpdateZ.safeParse(body);
-  if (!validData.success) {
-    return {
-      error: schemaValidationError(validData.error, "Invalid request body"),
-    };
-  }
-
-  try {
-    // Check if student exists
-    const student = await Student.findById(idValidation.data._id);
-
-    if (!student) {
-      return {
-        error: {
-          message: "Student not found with the provided ID",
-        },
-      };
-    }
-
-    // Check if all fields are empty
-    if (Object.keys(validData.data).length === 0) {
-      return {
-        success: {
-          success: true,
-          message: "No updates provided, returning existing student",
-          data: student,
-        },
-      };
-    }
-
-    // Don't allow updating critical fields
-    const restrictedFields = ["userId", "studentId", "guardianId"];
-    restrictedFields.forEach((field) => delete (validData.data as any)[field]);
-
-    // Update only provided fields
-    Object.assign(student, validData.data);
-    const docs = await student.save();
-
-    const populatedStudent = await Student.findById(docs._id)
-      .populate("userId")
-      .populate("guardianId")
-      .populate("classId")
-      .populate("currentSessionId")
-      .populate("sessionHistory.sessionId")
-      .populate("sessionHistory.classId");
-
-    return {
-      success: {
-        success: true,
-        message: "Student updated successfully",
-        data: populatedStudent,
-      },
-    };
-  } catch (error: any) {
-    return {
-      serverError: {
-        success: false,
-        message: error.message,
-        stack: process.env.NODE_ENV === "production" ? null : error.stack,
-      },
-    };
-  }
-};
-
-export const updateMe = async ({
-  userId,
-  body,
-}: {
-  userId: string;
-  body: IUpdateStudent;
-}) => {
-  // Validate ID
-  const idValidation = mongoIdZ.safeParse({ _id: userId });
-  if (!idValidation.success) {
-    return {
-      error: schemaValidationError(idValidation.error, "Invalid ID"),
-    };
-  }
-
-  // Validate Body
+  // Validate Body. Omit studentId and guardianId to prevent updates to these critical fields
   const validData = studentUpdateZ
-    .omit({
-      classId: true,
-      admissionDate: true,
-      admissionFee: true,
-      admissionFeeReceived: true,
-      batchType: true,
-      branch: true,
-      currentSessionId: true,
-      guardianId: true,
-      isMealIncluded: true,
-      isResidential: true,
-      mealFee: true,
-      monthlyFee: true,
-      passoutDate: true,
-      residentialFee: true,
-      sessionHistory: true,
-      studentId: true,
-      userId: true,
-      nid: true,
-      birthCertificateNumber: true,
-    })
+    .omit({ studentId: true, guardianId: true })
     .safeParse(body);
   if (!validData.success) {
     return {
@@ -725,18 +555,25 @@ export const updateMe = async ({
     }
 
     // Don't allow updating critical fields
-    const restrictedFields = ["userId", "studentId", "guardianId"];
+    const restrictedFields = ["studentId", "guardianId"];
     restrictedFields.forEach((field) => delete (validData.data as any)[field]);
 
     // Update only provided fields
     Object.assign(student, validData.data);
     const docs = await student.save();
 
+    const populatedStudent = await Student.findById(docs._id)
+      .populate("guardianId")
+      .populate("classId")
+      .populate("currentSessionId")
+      .populate("sessionHistory.sessionId")
+      .populate("sessionHistory.classId");
+
     return {
       success: {
         success: true,
         message: "Student updated successfully",
-        data: docs,
+        data: populatedStudent,
       },
     };
   } catch (error: any) {
@@ -750,7 +587,7 @@ export const updateMe = async ({
   }
 };
 
-export const deletes = async (_id: string) => {
+export const deleteStudent = async (_id: string) => {
   // Validate ID
   const idValidation = mongoIdZ.safeParse({ _id });
   if (!idValidation.success) {
@@ -770,17 +607,66 @@ export const deletes = async (_id: string) => {
       };
     }
 
-    // Delete student
-    await student.deleteOne();
+    if (student.isDeleted) {
+      return { error: { message: "student already deleted." } };
+    }
 
-    // TODO student delete korle user delete korbo ki korbo na.
-    // Also delete associated user
-    // await User.findByIdAndDelete(student.userId);
+    student.isDeleted = true;
+    student.deletedAt = new Date();
+
+    await student.save();
 
     return {
       success: {
         success: true,
         message: "Student deleted successfully!",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const restoreStudent = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // optional: check student exists
+    const student = await Student.findById(_id);
+
+    if (!student) {
+      return {
+        error: {
+          message: `student not found with provided ID!`,
+        },
+      };
+    }
+
+    if (!student.isDeleted) {
+      return { error: { message: "student not deleted." } };
+    }
+
+    console.log("Restoring student:", student);
+
+    student.isDeleted = false;
+    student.deletedAt = null;
+
+    await student.save();
+
+    return {
+      success: {
+        success: true,
+        message: "student RESTORED successfully",
       },
     };
   } catch (error: any) {
@@ -814,8 +700,16 @@ export const deactivate = async (_id: string) => {
       };
     }
 
-    // Also deactivate user
-    await User.findByIdAndUpdate(student.userId, { isActive: false });
+    if (!student.isActive) {
+      return {
+        error: {
+          message: "Student already deactivated.",
+        },
+      };
+    }
+
+    student.isActive = false;
+    await student.save();
 
     return {
       success: {
@@ -854,13 +748,105 @@ export const activate = async (_id: string) => {
       };
     }
 
-    // Also activate user
-    await User.findByIdAndUpdate(student.userId, { isActive: true });
+    if (student.isActive) {
+      return {
+        error: {
+          message: "Student already active.",
+        },
+      };
+    }
+
+    student.isActive = true;
+    await student.save();
 
     return {
       success: {
         success: true,
         message: "Student activated successfully!",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const blockStudent = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const student = await Student.findById(idValidation.data._id);
+
+    if (!student) {
+      return { error: { message: "student not found!" } };
+    }
+
+    if (student.isBlocked) {
+      return { error: { message: "student already blocked." } };
+    }
+
+    student.isBlocked = true;
+    student.blockedAt = new Date();
+
+    await student.save();
+
+    return {
+      success: {
+        success: true,
+        message: "student blocked successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const unblockStudent = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // optional: check student exists
+    const student = await Student.findById(_id);
+
+    if (!student) {
+      return {
+        error: {
+          message: `student not found with provided ID!`,
+        },
+      };
+    }
+
+    if (!student.isBlocked) {
+      return { error: { message: "student NOT blocked." } };
+    }
+
+    student.isBlocked = false;
+    student.blockedAt = null;
+
+    await student.save();
+
+    return {
+      success: {
+        success: true,
+        message: "student NOT BLOCKED successfully",
       },
     };
   } catch (error: any) {
@@ -970,5 +956,38 @@ export const promote = async ({
     };
   } finally {
     session.endSession();
+  }
+};
+
+// Permanent delete (hard delete) - use with caution
+export const permanentDelete = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const student = await Student.findById(idValidation.data._id);
+
+    if (!student) {
+      return { error: { message: "student not found!" } };
+    }
+
+    await student.deleteOne();
+
+    return {
+      success: {
+        success: true,
+        message: "student deleted successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
   }
 };

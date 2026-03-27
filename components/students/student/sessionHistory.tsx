@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { IStudent } from "@/validations";
+import { format } from "date-fns";
 
 interface SessionHistorySectionProps {
   data?: IStudent;
@@ -51,9 +52,7 @@ export function SessionHistorySection({ data }: SessionHistorySectionProps) {
                   <p className="text-sm text-muted-foreground">Start Date</p>
                   <p className="font-medium">
                     {session?.sessionId?.startDate
-                      ? new Date(
-                          session?.sessionId?.startDate,
-                        ).toLocaleDateString()
+                      ? format(session?.sessionId?.startDate, "dd LLL yyyy")
                       : "N/A"}
                   </p>
                 </div>
@@ -61,9 +60,7 @@ export function SessionHistorySection({ data }: SessionHistorySectionProps) {
                   <p className="text-sm text-muted-foreground">End Date</p>
                   <p className="font-medium">
                     {session?.sessionId?.endDate
-                      ? new Date(
-                          session?.sessionId?.endDate,
-                        ).toLocaleDateString()
+                      ? format(session?.sessionId?.endDate, "dd LLL yyyy")
                       : "N/A"}
                   </p>
                 </div>

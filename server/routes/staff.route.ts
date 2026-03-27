@@ -20,6 +20,13 @@ staffRoutes.post(
 );
 
 staffRoutes.get(
+  "/by",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => staffController.getByUser(c),
+);
+
+staffRoutes.get(
   "/:_id",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
@@ -35,27 +42,6 @@ staffRoutes.patch(
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   (c) => staffController.updates(c)
-);
-
-staffRoutes.delete(
-  "/:_id",
-  authenticate,
-  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => staffController.deletes(c)
-);
-
-staffRoutes.patch(
-  "/activate/:_id",
-  authenticate,
-  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => staffController.activate(c)
-);
-
-staffRoutes.patch(
-  "/deactivate/:_id",
-  authenticate,
-  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => staffController.deactivate(c)
 );
 
 export default staffRoutes;

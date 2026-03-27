@@ -1,7 +1,6 @@
 import { INotice } from "@/validations";
-import mongoose from "mongoose";
-import { User } from "../models/users.model";
 import { Notice } from "../models/notices.model";
+import { User } from "../models/users.model";
 
 export const register = async ({
   body,
@@ -12,9 +11,9 @@ export const register = async ({
 }) => {
   try {
     // 1️⃣ Get publisher info
-    const user = await User.findById(authorId).populate("profile");
+    const user = await User.findById(authorId);
 
-    if (!user || !user.profile) {
+    if (!user) {
       return {
         error: {
           message: "User or profile not found",
@@ -22,15 +21,11 @@ export const register = async ({
       };
     }
 
-    const profile = user.profile;
-
     // Create notice
     const notice = await Notice.create({
       ...body,
       publishedBy: authorId,
-      publisherName: `${profile.firstName} ${profile.lastName}`,
-      publisherRole: user.role,
-      publisherAvatar: profile.avatar,
+      publisherPhone: `${user.phone}`,
       publishedAt: body.isPublished ? new Date() : undefined,
       views: 0,
       viewedBy: [],

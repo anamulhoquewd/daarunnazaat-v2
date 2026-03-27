@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import mongoose from "mongoose";
 import z from "zod";
 
 // ==================== ENUMS ====================
@@ -6,13 +6,13 @@ export enum UserRole {
   SUPER_ADMIN = "super_admin",
   ADMIN = "admin",
   STAFF = "staff",
-  STUDENT = "student",
   GUARDIAN = "guardian",
 }
 
 export enum Gender {
   MALE = "male",
   FEMALE = "female",
+  DEFAULT = "non", // for those who don't want to disclose
 }
 
 export enum BloodGroup {
@@ -25,28 +25,31 @@ export enum BloodGroup {
   AB_POSITIVE = "AB+",
   AB_NEGATIVE = "AB-",
   NON = "NON", // for those who don't want to disclose
+  DEFAULT = "NON",
 }
 
 export enum Branch {
-  BRANCH_1 = "branch_1",
-  BRANCH_2 = "branch_2",
+  BALIKA_BRANCH = "Balika Branch",
+  BALOK_BRANCH = "Balok Branch",
+  DEFAULT = "Balika Branch",
 }
 
 export enum GuardianRelation {
   FATHER = "Father",
   MOTHER = "Mother",
-  UNCALE = "Uncle",
+  UNCLE = "Uncle",
   AUNT = "Aunt",
   BROTHER = "Brother",
   SISTER = "Sister",
   GRAND_FATHER = "Grandfather",
   GRAND_MOTHER = "Grandmother",
   OTHER = "Other",
+  DEFAULT = "Father",
 }
 
 export enum BatchType {
-  JANUARY_DECEMBER = "january_december",
-  RAMADAN_RAMADAN = "ramadan_ramadan",
+  JANUARY_DECEMBER = "January December",
+  RAMADAN_RAMADAN = "Ramadan Ramadan",
 }
 
 export enum FeeType {
@@ -77,6 +80,7 @@ export enum PaymentMethod {
   BANK_TRANSFER = "bank_transfer",
   MOBILE_BANKING = "mobile_banking",
   CHEQUE = "cheque",
+  DEFAULT = "cash",
 }
 
 export enum TransactionType {
@@ -84,6 +88,7 @@ export enum TransactionType {
   EXPENSE = "expense",
   REVERSAL = "reversal",
   ADJUSTMENT = "adjustment",
+  DEFAULT = "default",
 }
 
 export enum ExpenseCategory {
@@ -95,6 +100,7 @@ export enum ExpenseCategory {
   MAINTENANCE = "maintenance",
   SUPPLIES = "supplies",
   OTHER = "other",
+  DEFAULT = "other",
 }
 
 export enum AttendanceStatus {
@@ -111,13 +117,7 @@ export enum ExamType {
   MIDTERM = "midterm",
   FINAL = "final",
   ANNUAL = "annual",
-}
-
-export enum BookStatus {
-  AVAIlabel = "availabel",
-  ISSUED = "issued",
-  LOST = "lost",
-  DAMAGED = "damaged",
+  DEFAULT = "default",
 }
 
 export enum NoticeType {
@@ -129,6 +129,7 @@ export enum NoticeType {
   EXAM = "exam",
   ADMISSION = "admission",
   RESULT = "result",
+  DEFAULT = "general",
 }
 
 export enum NoticePriority {
@@ -136,6 +137,7 @@ export enum NoticePriority {
   MEDIUM = "medium",
   HIGH = "high",
   URGENT = "urgent",
+  DEFAULT = "medium",
 }
 
 export enum NoticeAudience {
@@ -145,15 +147,21 @@ export enum NoticeAudience {
   GUARDIANS = "guardians",
   SPECIFIC_CLASS = "specific_class",
   SPECIFIC_BRANCH = "specific_branch",
+  DEFAULT = "all",
 }
 
 export enum BlogStatus {
   DRAFT = "draft",
   PUBLISHED = "published",
   ARCHIVED = "archived",
+  DEFAULT = "draft",
 }
 
 // ==================== ZOD SCHEMAS ====================
+
+const periodSchema = z
+  .string()
+  .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Invalid period format. Use YYYY-MM");
 
 // Bangladesh phone regex (local format like 017xxxxxxxx)
 export const BDPhoneRegex = /^01[3-9]\d{8}$/;
@@ -191,30 +199,19 @@ export const userZ = z.object({
     .string()
     .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
     .trim(),
-  alternativePhone: z
-    .string()
-    .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
-    .trim()
-    .optional(),
-  whatsApp: z
-    .string()
-    .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
-    .trim()
-    .optional(),
-  role: z.nativeEnum(UserRole),
-  profile: mongoZ.optional(),
-  profileModel: z.enum(["Student", "Staff", "Guardian"]).optional(),
-  isActive: z.boolean().optional(),
+  roles: z.array(z.enum(UserRole)).min(1, "At least one role is required"),
   lastLogin: z.coerce.date().optional(),
   refreshTokens: z.array(z.string()).optional(),
   passwordResetToken: z.string().nullable().optional(),
   ResetTokenExpires: z.coerce.date().optional(),
 
+  isActive: z.boolean().optional(),
+
   isBlocked: z.boolean().optional(),
-  blockedAt: z.coerce.date().optional(),
+  blockedAt: z.coerce.date().nullable().optional(),
 
   isDeleted: z.boolean().optional(),
-  deletedAt: z.coerce.date().optional(),
+  deletedAt: z.coerce.date().nullable().optional(),
 
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
@@ -243,29 +240,28 @@ export const changePasswordZ = z
 
 // Person Base Schema (for common fields)
 const personBaseZ = z.object({
-  firstName: z
+  fullName: z
     .string()
-    .min(1, "First name is required")
-    .min(2, "First name must be at least 2 characters"),
-  lastName: z
-    .string()
-    .min(1, "First name is required")
-    .min(2, "First name must be at least 2 characters"),
+    .min(1, "Full name is required")
+    .min(2, "Full name must be at least 2 characters"),
   fatherName: z.string().optional(),
   motherName: z.string().optional(),
   dateOfBirth: z.coerce.date().optional(),
-  gender: z.nativeEnum(Gender),
-  bloodGroup: z.nativeEnum(BloodGroup).optional(),
+  gender: z.enum(Gender),
+  bloodGroup: z.enum(BloodGroup).optional(),
   nid: z
     .string()
-    .refine((val) => /^\d{10}$|^\d{17}$/.test(val), {
+    .trim()
+    .transform((val) => (val === "" ? undefined : val))
+    .refine((val) => !val || /^\d{10}$|^\d{17}$/.test(val), {
       message: "NID must be either 10 or 17 digits",
     })
-    .trim()
     .optional(),
   birthCertificateNumber: z
     .string()
-    .refine((val) => /^\d{17}$/.test(val), {
+    .trim()
+    .transform((val) => (val === "" ? undefined : val))
+    .refine((val) => !val || /^\d{17}$/.test(val), {
       message: "Birth certificate number must be 17 digits",
     })
     .optional(),
@@ -290,14 +286,32 @@ const personBaseZ = z.object({
     .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
     .trim()
     .optional(),
+
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 // Student Schema
 export const studentZ = personBaseZ
   .extend({
     _id: mongoZ.optional(),
-    userId: mongoZ,
+    email: z
+      .preprocess(
+        (val) => (val === "" ? undefined : val),
+        z
+          .string()
+          .email("Invalid email address")
+          .trim()
+          .toLowerCase()
+          .optional(),
+      )
+      .optional(),
     studentId: z.string().optional(),
+    phone: z
+      .string()
+      .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
+      .trim()
+      .optional(),
     guardianId: mongoZ,
     currentSessionId: mongoZ,
     sessionHistory: z
@@ -332,8 +346,8 @@ export const studentZ = personBaseZ
         return entry as GuardianRelation;
       }),
     classId: mongoZ,
-    branch: z.nativeEnum(Branch),
-    batchType: z.nativeEnum(BatchType),
+    branch: z.enum(Branch),
+    batchType: z.enum(BatchType),
 
     isResidential: z.boolean().default(false),
     isMealIncluded: z.boolean().default(false),
@@ -381,10 +395,17 @@ export const studentZ = personBaseZ
     passoutDate: z.coerce.date().optional(),
     avatar: z.string().optional(),
 
-    paymentMethod: z.nativeEnum(PaymentMethod),
-    paymentSource: z.nativeEnum(PaymentSource),
+    paymentMethod: z.enum(PaymentMethod),
+    paymentSource: z.enum(PaymentSource),
     remarks: z.string().optional(),
+
     isActive: z.boolean().optional(),
+
+    isBlocked: z.boolean().optional(),
+    blockedAt: z.coerce.date().nullable().optional(),
+
+    isDeleted: z.boolean().optional(),
+    deletedAt: z.coerce.date().nullable().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.isMealIncluded && !data.mealFee) {
@@ -419,7 +440,6 @@ export const guardianZ = personBaseZ.omit({ dateOfBirth: true }).extend({
   guardianId: z.string().optional(),
   occupation: z.string().optional(),
   monthlyIncome: moneyZ.optional(),
-  isActive: z.boolean().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -440,10 +460,19 @@ export const staffZ = personBaseZ.extend({
   department: z.string().optional(),
   joinDate: z.coerce.date(),
   basicSalary: moneyZ.min(0),
-  branch: z.nativeEnum(Branch),
+  branch: z.enum(Branch),
   resignationDate: z.coerce.date().optional(),
-  avatar: z.string().optional(),
-  isActive: z.boolean().optional(),
+  qualifications: z
+    .array(
+      z.object({
+        degree: z.string(),
+        subject: z.string().optional(),
+        institution: z.string().optional(),
+        year: z.number().optional(),
+        grade: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -478,7 +507,7 @@ export const classUpdateZ = classZ.partial().refine(
 export const sessionZ = z.object({
   _id: mongoZ.optional(),
   sessionName: z.string(),
-  batchType: z.nativeEnum(BatchType),
+  batchType: z.enum(BatchType),
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   isActive: z.boolean().default(true),
@@ -500,11 +529,11 @@ export const feeCollectionZ = z
     receiptNumber: z.string().optional(),
     studentId: mongoZ,
     sessionId: mongoZ.optional(),
-    branch: z.nativeEnum(Branch).optional(),
+    branch: z.enum(Branch).optional(),
 
-    feeType: z.nativeEnum(FeeType),
-    month: moneyZ.min(0).max(11).optional(),
-    year: moneyZ.min(2000).optional(),
+    feeType: z.enum(FeeType),
+
+    period: periodSchema,
 
     payableAmount: moneyZ.min(0).optional(),
     receivedAmount: moneyZ.min(0).default(0),
@@ -513,17 +542,17 @@ export const feeCollectionZ = z
     dueAmount: moneyZ.min(0).default(0),
     advanceAmount: moneyZ.min(0).default(0),
 
-    paymentStatus: z.nativeEnum(PaymentStatus).optional(),
+    paymentStatus: z.enum(PaymentStatus).optional(),
 
-    paymentSource: z.nativeEnum(PaymentSource),
-    paymentMethod: z.nativeEnum(PaymentMethod),
+    paymentSource: z.enum(PaymentSource),
+    paymentMethod: z.enum(PaymentMethod),
     paymentDate: z.coerce.date().default(() => new Date()),
 
     collectedBy: mongoZ.optional(), // Staff who collected
     updatedBy: mongoZ.optional(), // Staff who collected
 
     isDeleted: z.boolean().optional(),
-    deletedAt: z.coerce.date().optional(),
+    deletedAt: z.coerce.date().nullable().optional(),
 
     createdAt: z.coerce.date().optional(),
     updatedAt: z.coerce.date().optional(),
@@ -539,18 +568,10 @@ export const feeCollectionZ = z
     ];
 
     if (monthlyFees.includes(data.feeType)) {
-      if (!data.month) {
+      if (!data.period) {
         ctx.addIssue({
-          path: ["month"],
-          message: "Month is required for monthly type fees",
-          code: z.ZodIssueCode.custom,
-        });
-      }
-
-      if (!data.year) {
-        ctx.addIssue({
-          path: ["year"],
-          message: "Year is required for monthly type fees",
+          path: ["period"],
+          message: "Period is required for monthly type fees",
           code: z.ZodIssueCode.custom,
         });
       }
@@ -586,19 +607,18 @@ export const salaryPaymentZ = z.object({
   _id: mongoZ.optional(),
   receiptNumber: z.string().optional(),
   staffId: mongoZ,
-  month: moneyZ.min(0).max(11),
-  year: moneyZ.min(2000),
+  period: periodSchema,
   basicSalary: moneyZ.min(0),
   bonus: moneyZ.min(0).default(0),
   netSalary: moneyZ.optional(),
   paymentDate: z.coerce.date().default(() => new Date()),
-  paymentMethod: z.nativeEnum(PaymentMethod),
-  branch: z.nativeEnum(Branch),
+  paymentMethod: z.enum(PaymentMethod),
+  branch: z.enum(Branch),
   paidBy: mongoZ.optional(),
   remarks: z.string().optional(),
   status: z.enum(["paid", "reversed", "adjusted"]).optional(),
   isDeleted: z.boolean().optional(),
-  deletedAt: z.coerce.date().optional(),
+  deletedAt: z.coerce.date().nullable().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -614,12 +634,12 @@ export const salaryPaymentUpdateZ = salaryPaymentZ.partial().refine(
 export const expenseZ = z.object({
   _id: mongoZ.optional(),
   voucherNumber: z.string(),
-  category: z.nativeEnum(ExpenseCategory),
+  category: z.enum(ExpenseCategory),
   description: z.string(),
   amount: moneyZ.min(0),
   expenseDate: z.coerce.date().default(() => new Date()),
-  paymentMethod: z.nativeEnum(PaymentMethod),
-  branch: z.nativeEnum(Branch),
+  paymentMethod: z.enum(PaymentMethod),
+  branch: z.enum(Branch),
   paidTo: z.string().optional(),
   approvedBy: mongoZ.optional(),
   remarks: z.string().optional(),
@@ -637,13 +657,13 @@ export const expenseUpdateZ = expenseZ.partial().refine(
 
 // Transaction Log Schema
 export const transactionLogZ = z.object({
-  transactionType: z.nativeEnum(TransactionType),
+  transactionType: z.enum(TransactionType),
   referenceId: mongoZ,
-  referenceModel: z.enum(["FeeCollection", "SalaryPayment", "Expense"]),
+  referenceModel: z.enum(["FeeCollection", "Salary", "Expense"]),
   amount: moneyZ,
   description: z.string(),
   performedBy: mongoZ.optional(),
-  branch: z.nativeEnum(Branch),
+  branch: z.enum(Branch),
   isDeleted: z.boolean().optional(),
   deletedAt: z.coerce.date().optional(),
 });
@@ -654,7 +674,7 @@ export const attendanceZ = z.object({
   studentId: mongoZ,
   classId: mongoZ,
   date: z.coerce.date(),
-  status: z.nativeEnum(AttendanceStatus),
+  status: z.enum(AttendanceStatus),
   remarks: z.string().optional(),
   sessionId: mongoZ,
   markedBy: mongoZ,
@@ -665,7 +685,7 @@ export const staffAttendanceZ = z.object({
   _id: mongoZ.optional(),
   staffId: mongoZ,
   date: z.coerce.date(),
-  status: z.nativeEnum(AttendanceStatus),
+  status: z.enum(AttendanceStatus),
   checkInTime: z.coerce.date().optional(),
   checkOutTime: z.coerce.date().optional(),
   remarks: z.string().optional(),
@@ -676,7 +696,7 @@ export const staffAttendanceZ = z.object({
 export const examZ = z.object({
   _id: mongoZ.optional(),
   examName: z.string(),
-  examType: z.nativeEnum(ExamType),
+  examType: z.enum(ExamType),
   classId: mongoZ,
   sessionId: mongoZ,
   examDate: z.coerce.date(),
@@ -711,37 +731,6 @@ export const resultZ = z.object({
   remarks: z.string().optional(),
 });
 
-// TODO. amra book resale kori.
-// Book Schema
-export const bookZ = z.object({
-  _id: mongoZ.optional(),
-  bookCode: z.string(),
-  title: z.string(),
-  author: z.string().optional(),
-  publisher: z.string().optional(),
-  edition: z.string().optional(),
-  category: z.string(),
-  quantity: moneyZ.min(0),
-  availabelQuantity: moneyZ.min(0),
-  status: z.nativeEnum(BookStatus),
-  branch: z.nativeEnum(Branch),
-});
-
-// Book Issue Schema
-export const bookIssueZ = z.object({
-  _id: mongoZ.optional(),
-  bookId: mongoZ,
-  studentId: mongoZ,
-  issueDate: z.coerce.date().default(() => new Date()),
-  expectedReturnDate: z.coerce.date(),
-  actualReturnDate: z.coerce.date().optional(),
-  status: z.enum(["issued", "returned", "lost"]),
-  issuedBy: mongoZ,
-  returnedTo: mongoZ.optional(),
-  fineAmount: moneyZ.default(0),
-  remarks: z.string().optional(),
-});
-
 // Notice Schema
 export const noticeZ = z.object({
   title: z.string(),
@@ -758,9 +747,9 @@ export const noticeZ = z.object({
       }),
     )
     .optional(),
-  type: z.nativeEnum(NoticeType),
-  audience: z.nativeEnum(NoticeAudience).optional(),
-  priority: z.nativeEnum(NoticePriority).optional(),
+  type: z.enum(NoticeType),
+  audience: z.enum(NoticeAudience).optional(),
+  priority: z.enum(NoticePriority).optional(),
   targetClasses: z.array(z.string()).optional(),
   targetBranches: z.array(z.string()).optional(),
   publishedBy: mongoZ.optional(),
@@ -784,7 +773,7 @@ export const blogZ = z.object({
   featuredImage: imageZ.optional(),
   authorId: mongoZ.optional(),
   publishedBy: mongoZ.optional(),
-  status: z.nativeEnum(BlogStatus).optional(),
+  status: z.enum(BlogStatus).optional(),
   tags: z.array(z.string()).optional(),
   views: moneyZ.default(0),
   publishedAt: z.coerce.date().optional(),
@@ -804,7 +793,7 @@ export const blogUpdateZ = blogZ.partial().refine(
 export const smsLogZ = z.object({
   _id: mongoZ.optional(),
   recipientId: mongoZ,
-  recipientRole: z.nativeEnum(UserRole),
+  recipientRole: z.enum(UserRole),
   phoneNumber: z
     .string()
     .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
@@ -892,8 +881,6 @@ export type IAttendance = z.infer<typeof attendanceZ>;
 export type IStaffAttendance = z.infer<typeof staffAttendanceZ>;
 export type IExam = z.infer<typeof examZ>;
 export type IResult = z.infer<typeof resultZ>;
-export type IBook = z.infer<typeof bookZ>;
-export type IBookIssue = z.infer<typeof bookIssueZ>;
 export type INotice = z.infer<typeof noticeZ>;
 export type IBlog = z.infer<typeof blogZ>;
 export type IBlogUpdate = z.infer<typeof blogUpdateZ>;
@@ -905,6 +892,7 @@ export interface IPagination {
   page: number;
   limit: number;
   total: number;
+  totalDocs: number;
   totalPages: number;
   nextPage: number | null;
   prevPage: number | null;
@@ -918,97 +906,6 @@ export const monthlyFees: FeeType[] = [
   FeeType.MEAL,
   FeeType.RESIDENTIAL,
 ];
-// ==================== MONGODB SCHEMAS & MODELS ====================
-
-// Book Model
-// const BookSchema = new Schema<IBook & Document>(
-//   {
-//     bookCode: { type: String, required: true, unique: true },
-//     title: { type: String, required: true },
-//     author: { type: String },
-//     publisher: { type: String },
-//     edition: { type: String },
-//     category: { type: String, required: true },
-//     quantity: { type: Number, required: true, min: 0 },
-//     availabelQuantity: { type: Number, required: true, min: 0 },
-//     status: {
-//       type: String,
-//       enum: Object.values(BookStatus),
-//       default: BookStatus.AVAIlabel,
-//     },
-//     branch: { type: String, enum: Object.values(Branch), required: true },
-//   },
-//   { timestamps: true }
-// );
-
-// BookSchema.index({ bookCode: 1 });
-// BookSchema.index({ branch: 1, status: 1 });
-
-// export const Book: Model<IBook & Document> =
-//   mongoose.models.Book || mongoose.model<IBook & Document>("Book", BookSchema);
-
-// Book Issue Model
-// const BookIssueSchema = new Schema<IBookIssue & Document>(
-//   {
-//     bookId: { type: Schema.Types.ObjectId, ref: "Book", required: true },
-//     studentId: { type: Schema.Types.ObjectId, ref: "Student", required: true },
-//     issueDate: { type: Date, default: Date.now },
-//     expectedReturnDate: { type: Date, required: true },
-//     actualReturnDate: { type: Date },
-//     status: {
-//       type: String,
-//       enum: ["issued", "returned", "lost"],
-//       default: "issued",
-//     },
-//     issuedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-//     returnedTo: { type: Schema.Types.ObjectId, ref: "User" },
-//     fineAmount: { type: Number, default: 0, min: 0 },
-//     remarks: { type: String },
-//   },
-//   { timestamps: true }
-// );
-
-// BookIssueSchema.index({ bookId: 1, status: 1 });
-// BookIssueSchema.index({ studentId: 1, status: 1 });
-
-// export const BookIssue: Model<IBookIssue & Document> =
-//   mongoose.models.BookIssue ||
-//   mongoose.model<IBookIssue & Document>("BookIssue", BookIssueSchema);
-
-// TODO explore kora hoy ni.
-// SMS Log Model
-// const SMSLogSchema = new Schema<ISMSLog & Document>(
-//   {
-//     recipientId: { type: Schema.Types.ObjectId, required: true },
-//     recipientRole: {
-//       type: String,
-//       enum: Object.values(UserRole),
-//       required: true,
-//     },
-//     phoneNumber: { type: String, required: true },
-//     message: { type: String, required: true },
-//     purpose: {
-//       type: String,
-//       enum: ["fee_due", "fee_paid", "attendance", "notice", "exam", "other"],
-//       required: true,
-//     },
-//     status: {
-//       type: String,
-//       enum: ["pending", "sent", "failed"],
-//       default: "pending",
-//     },
-//     sentAt: { type: Date },
-//     errorMessage: { type: String },
-//   },
-//   { timestamps: true }
-// );
-
-// SMSLogSchema.index({ recipientId: 1, createdAt: -1 });
-// SMSLogSchema.index({ status: 1 });
-
-// export const SMSLog: Model<ISMSLog & Document> =
-//   mongoose.models.SMSLog ||
-//   mongoose.model<ISMSLog & Document>("SMSLog", SMSLogSchema);
 
 // ==================== ZOD SCHEMAS FOR FRONTEND ====================
 

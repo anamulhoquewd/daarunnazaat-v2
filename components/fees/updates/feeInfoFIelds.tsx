@@ -29,12 +29,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { DateField } from "@/components/common/dateCalendar";
 import { PaymentMethod } from "@/validations";
-import { getYearOptions, MONTHS } from "@/lib/utils";
+import { PeriodPicker } from "@/components/common/datePeriod";
 
 interface Changes {
   receivedAmount?: { old: number; new: number };
-  month?: { old: string; new: string };
-  year?: { old: string; new: string };
+  period?: { old: string; new: string };
 }
 
 interface FeeFormFieldsProps {
@@ -42,8 +41,7 @@ interface FeeFormFieldsProps {
   changes: Changes;
   remarksError: string | null;
   onReceivedAmountChange: (value: string) => void;
-  onMonthChange: (value: string) => void;
-  onYearChange: (value: string) => void;
+  onPeriodChange: (value: string) => void;
 }
 
 export function FeeFormFields({
@@ -51,12 +49,9 @@ export function FeeFormFields({
   changes,
   remarksError,
   onReceivedAmountChange,
-  onMonthChange,
-  onYearChange,
+  onPeriodChange,
 }: FeeFormFieldsProps) {
   const hasChanges = Object.keys(changes).length > 0;
-
-  const years = getYearOptions();
 
   return (
     <Card>
@@ -86,7 +81,7 @@ export function FeeFormFields({
               </FormControl>
               {changes.receivedAmount && (
                 <FormDescription className="text-xs text-blue-600">
-                  Changed from PKR {changes.receivedAmount.old.toLocaleString()}
+                  Changed from BDT {changes.receivedAmount.old.toLocaleString()}
                 </FormDescription>
               )}
               <FormMessage />
@@ -124,6 +119,7 @@ export function FeeFormFields({
         />
 
         {/* Billing Period Section */}
+
         <Alert className="bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-700 text-amber-900 dark:text-amber-100">
           <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-300" />
           <AlertDescription className="text-amber-800 dark:text-amber-200 text-sm">
@@ -134,78 +130,14 @@ export function FeeFormFields({
           </AlertDescription>
         </Alert>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-amber-50 dark:bg-amber-900 rounded-lg border border-amber-200 dark:border-amber-700">
-          {/* Month */}
-          <FormField
-            control={form.control}
-            name="month"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                  Month
-                </FormLabel>
-                <Select
-                  value={String(field.value)}
-                  onValueChange={onMonthChange}
-                >
-                  <FormControl>
-                    <SelectTrigger className="border-amber-300 dark:border-amber-600 focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-slate-800">
-                      <SelectValue placeholder="Select month" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {MONTHS.map((month, index) => (
-                      <SelectItem key={index} value={String(index)}>
-                        {month}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {changes.month && (
-                  <FormDescription className="text-xs text-amber-700">
-                    Changed from {changes.month.old}
-                  </FormDescription>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <div className="p-4 bg-amber-50 dark:bg-amber-900 rounded-lg border border-amber-200 dark:border-amber-700">
+          <PeriodPicker form={form} onPeriodChange={onPeriodChange} />
 
-          {/* Year */}
-          <FormField
-            control={form.control}
-            name="year"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                  Year
-                </FormLabel>
-                <Select
-                  value={String(field.value)}
-                  onValueChange={onYearChange}
-                >
-                  <FormControl>
-                    <SelectTrigger className="border-amber-300 dark:border-amber-600 focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-slate-800">
-                      <SelectValue placeholder="Select year" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {years.map((year) => (
-                      <SelectItem key={year} value={year}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {changes.year && (
-                  <FormDescription className="text-xs text-amber-700">
-                    Changed from {changes.year.old}
-                  </FormDescription>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {changes.period && (
+            <p className="text-xs text-amber-700 mt-2.5 ml-1">
+              Changed from {changes.period.old}
+            </p>
+          )}
         </div>
 
         {/* Remarks */}
