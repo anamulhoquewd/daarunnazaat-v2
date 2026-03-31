@@ -37,9 +37,7 @@ export function StaffUserCombobox({ value, onChange }: Props) {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const res = await api.get(
-          `/users?search=${search}&role=staff&nullProfile=null`,
-        );
+        const res = await api.get(`/users?search=${search}&roles=staff`);
         setUsers(res.data.data);
       } catch (error) {
         console.error("Failed to fetch users:", error);

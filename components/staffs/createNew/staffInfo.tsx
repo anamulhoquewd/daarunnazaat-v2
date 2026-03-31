@@ -96,7 +96,7 @@ function StaffInformation() {
 
           <FormField
             control={control}
-            name="basicSalary"
+            name="baseSalary"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Salary *</FormLabel>

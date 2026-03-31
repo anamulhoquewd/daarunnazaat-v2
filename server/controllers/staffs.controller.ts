@@ -43,7 +43,7 @@ export const gets = async (c: Context) => {
     gender,
     search,
     joinDateRange,
-    basicSalaryRange: { min: minSalary, max: maxSalary },
+    baseSalaryRange: { min: minSalary, max: maxSalary },
     branch,
   });
 

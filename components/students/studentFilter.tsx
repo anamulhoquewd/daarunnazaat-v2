@@ -18,7 +18,7 @@ import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
 import { ClassFilterCombobox } from "../clasess/classFilterCombobox";
 import { GuardianFilterCombobox } from "../guardians/guardianFilterCombobox";
-import { Branch } from "@/validations";
+import { BatchType, Branch, Gender } from "@/validations";
 
 interface StudentFiltersProps {
   filters: Record<string, string | boolean | undefined>;
@@ -71,13 +71,11 @@ export default function StudentFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Branches</SelectItem>
-                  {Object.entries(Branch)
-                    .filter(([key]) => key !== "DEFAULT")
-                    .map(([key, value]) => (
-                      <SelectItem key={key} value={value}>
-                        {value}
-                      </SelectItem>
-                    ))}
+                  {Object.entries(Branch).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -93,8 +91,11 @@ export default function StudentFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Genders</SelectItem>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
+                  {Object.entries(Gender).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -112,12 +113,11 @@ export default function StudentFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Batches</SelectItem>
-                  <SelectItem value="january_december">
-                    January - December
-                  </SelectItem>
-                  <SelectItem value="ramadan-ramadan">
-                    Ramadan - Ramadan
-                  </SelectItem>
+                  {Object.entries(BatchType).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Branch, TransactionType } from "@/validations";
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
 
@@ -70,10 +71,11 @@ export default function TransactionsFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Type</SelectItem>
-                  <SelectItem value="income">Income</SelectItem>
-                  <SelectItem value="expense">Expense</SelectItem>
-                  <SelectItem value="reversal">Reversal</SelectItem>
-                  <SelectItem value="adjustment">Adjustment</SelectItem>
+                  {Object.entries(TransactionType).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -89,8 +91,11 @@ export default function TransactionsFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Branches</SelectItem>
-                  <SelectItem value="branch_1">Branch 1</SelectItem>
-                  <SelectItem value="branch_2">Branch 2</SelectItem>
+                  {Object.entries(Branch).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

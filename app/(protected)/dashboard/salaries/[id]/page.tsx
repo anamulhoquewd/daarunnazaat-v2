@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatMony } from "@/lib/utils";
-import { Branch, IFeeCollection, monthlyFees } from "@/validations";
+import {
+  Branch,
+  ISalaryPayment
+} from "@/validations";
 import { format, parse } from "date-fns";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -24,16 +27,12 @@ const statusConfig = {
     label: "Pending",
     className: "bg-blue-50 text-blue-700 border border-blue-200",
   },
-  overdue: {
-    label: "Overdue",
-    className: "bg-rose-50 text-rose-700 border border-rose-200",
-  },
 };
 
 export default function InvoicePage() {
   const params = useParams();
   const id = params?.id as string | undefined;
-  const [fee, setFee] = useState<IFeeCollection | null>(null);
+  const [salary, setSalary] = useState<ISalaryPayment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
@@ -58,18 +57,18 @@ export default function InvoicePage() {
       return;
     }
 
-    const fetchFee = async () => {
+    const fetchSalary = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        const response = await api.get(`/fees/${id}`);
+        const response = await api.get(`/salaries/${id}`);
 
         if (!response.data.success) {
           throw new Error(response.data.error.message);
         }
 
-        setFee(response.data.data);
+        setSalary(response.data.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
@@ -77,7 +76,7 @@ export default function InvoicePage() {
       }
     };
 
-    fetchFee();
+    fetchSalary();
   }, [id]);
 
   if (isLoading) {
@@ -98,7 +97,7 @@ export default function InvoicePage() {
     );
   }
 
-  if (error || !fee) {
+  if (error || !salary) {
     return (
       <div className="min-h-screen bg-white p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
@@ -114,14 +113,11 @@ export default function InvoicePage() {
     );
   }
 
-  let formatted = "_";
-  if (monthlyFees.includes(fee?.feeType) && fee?.period) {
-    const date = parse(fee?.period, "yyyy-MM", new Date());
-    formatted = format(date, "MMMM yyyy");
-  }
+  const date = parse(salary?.period, "yyyy-MM", new Date());
+  const formatted = format(date, "MMMM yyyy");
 
   const statusConfig_typed =
-    statusConfig[fee.paymentStatus as keyof typeof statusConfig];
+    statusConfig[salary.status as keyof typeof statusConfig];
 
   return (
     <div className="min-h-screen bg-white">
@@ -143,7 +139,7 @@ export default function InvoicePage() {
             <div className="flex justify-between items-start">
               <div>
                 <CardTitle className="text-3xl font-bold text-neutral-900 mb-2 uppercase">
-                  {`Darun Nazat ${fee.branch === Branch.BALIKA_BRANCH ? "Idial Girls " : ""}Madrasa`}
+                  {`Darun Nazat ${salary.branch === Branch.BALIKA_BRANCH ? "Idial Girls " : ""}Madrasa`}
                 </CardTitle>
                 <p className="text-sm text-neutral-600 font-medium">
                   Kawlar, Jomidar Bari, Dokshin Khan, Dhaka - 1229 <br />
@@ -152,17 +148,17 @@ export default function InvoicePage() {
               </div>
               <div>
                 <CardTitle className="text-3xl font-bold text-neutral-900 mb-2">
-                  {fee.receiptNumber}
+                  {salary.receiptNumber}
                 </CardTitle>
                 <p className="text-sm text-neutral-600 font-medium">
                   {format(
-                    new Date(fee?.paymentDate ?? new Date()),
+                    new Date(salary?.paymentDate ?? new Date()),
                     "dd LLL yyyy",
                   )}
                 </p>
               </div>
               <Badge className={statusConfig_typed?.className}>
-                {statusConfig_typed?.label || fee.paymentStatus}
+                {statusConfig_typed?.label || salary.status}
               </Badge>
             </div>
           </CardHeader>
@@ -179,7 +175,7 @@ export default function InvoicePage() {
                     Student Name
                   </p>
                   <p className="font-semibold text-neutral-900">
-                    {fee.studentId?.fullName ?? "Unknown"}
+                    {salary.staffId?.fullName ?? "Unknown"}
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -187,7 +183,7 @@ export default function InvoicePage() {
                     Student ID
                   </p>
                   <p className="font-semibold text-neutral-900">
-                    {fee.studentId?.studentId ?? "Unknown"}
+                    {salary.staffId?.staffId ?? "Unknown"}
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -195,7 +191,7 @@ export default function InvoicePage() {
                     Branch
                   </p>
                   <p className="font-semibold text-neutral-900 capitalize">
-                    {fee?.branch}
+                    {salary?.branch}
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -203,7 +199,7 @@ export default function InvoicePage() {
                     Gender
                   </p>
                   <p className="font-semibold text-neutral-900 capitalize">
-                    {fee.studentId?.gender ?? "Unknown"}
+                    {salary.staffId?.gender ?? "Unknown"}
                   </p>
                 </div>
               </div>
@@ -211,98 +207,48 @@ export default function InvoicePage() {
 
             <Separator className="bg-neutral-200" />
 
-            {/* Session Information */}
-            <div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-4 uppercase tracking-wide">
-                Session Information
-              </h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <p className="text-xs text-neutral-600 uppercase tracking-wide">
-                    Session Name
-                  </p>
-                  <p className="font-semibold text-neutral-900">
-                    {fee.sessionId.sessionName}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-neutral-600 uppercase tracking-wide">
-                    Session Status
-                  </p>
-                  <p className="font-semibold text-neutral-900">
-                    {fee.sessionId.isActive ? "Active" : "Inactive"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <Separator className="bg-neutral-200" />
-
+           
             {/* Fee Details */}
             <div>
               <h3 className="text-base font-semibold text-neutral-900 mb-4 uppercase tracking-wide">
                 Fee Details
               </h3>
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-neutral-700">Fee Type</span>
-                  <span className="font-medium text-neutral-900 capitalize">
-                    {fee.feeType.replace(/([A-Z])/g, " $1").trim()}
-                  </span>
-                </div>
-                {monthlyFees.includes(fee.feeType) && (
+                
                   <div className="flex justify-between items-center py-2">
                     <span className="text-neutral-700">Payment for</span>
                     <span className="font-medium text-neutral-900 capitalize">
                       {formatted}
                     </span>
                   </div>
-                )}
+
                 <div className="flex justify-between items-center py-2">
                   <span className="text-neutral-700">Base Amount</span>
                   <span className="font-medium text-neutral-900">
-                    {formatMony(fee?.baseAmount ?? 0)}
+                    {formatMony(salary?.baseSalary ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-neutral-700">Payable Amount</span>
                   <span className="font-medium text-neutral-900">
-                    {formatMony(fee?.payableAmount ?? 0)}
+                    {formatMony(salary?.staffId?.baseSalary ?? 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-neutral-700">Bonus Amount</span>
+                  <span className="font-medium text-neutral-900">
+                    {formatMony(salary?.bonus ?? 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-neutral-700">Net Amount</span>
+                  <span className="font-medium text-neutral-900">
+                    {formatMony(salary?.netSalary ?? 0)}
                   </span>
                 </div>
               </div>
             </div>
 
-            <Separator className="bg-neutral-200" />
-
-            {/* Payment Summary */}
-            <div>
-              <h3 className="text-base font-semibold text-neutral-900 mb-4 uppercase tracking-wide">
-                Payment Summary
-              </h3>
-              <div className="bg-neutral-50 p-6 rounded-lg space-y-4 border border-neutral-200">
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-neutral-700">Received Amount</span>
-                  <span className="font-medium text-neutral-900">
-                    {formatMony(fee.receivedAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-neutral-700">Due Amount</span>
-                  <span className="font-medium text-neutral-900">
-                    {formatMony(fee.dueAmount)}
-                  </span>
-                </div>
-                {fee.advanceAmount > 0 && (
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-neutral-700">Advance Amount</span>
-                    <span className="font-medium text-neutral-900 text-lg">
-                      {formatMony(fee.advanceAmount)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
 
             <Separator className="bg-neutral-200" />
 
@@ -311,33 +257,26 @@ export default function InvoicePage() {
               <h3 className="text-base font-semibold text-neutral-900 mb-4 uppercase tracking-wide">
                 Payment Information
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 <div className="space-y-1">
                   <p className="text-xs text-neutral-600 uppercase tracking-wide">
                     Payment Method
                   </p>
                   <p className="font-semibold text-neutral-900 capitalize">
-                    {fee.paymentMethod}
+                    {salary.paymentMethod}
                   </p>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-neutral-600 uppercase tracking-wide">
-                    Payment Source
-                  </p>
-                  <p className="font-semibold text-neutral-900 capitalize">
-                    {fee.paymentSource}
-                  </p>
-                </div>
+               
                 <div className="space-y-1">
                   <p className="text-xs text-neutral-600 uppercase tracking-wide">
                     Collected By
                   </p>
                   <p className="flex flex-col">
                     <span className="font-semibold text-neutral-900">
-                      {fee.collectedBy.phone}
+                      {salary.paidBy.phone}
                     </span>
                     <span className="text-xs text-neutral-600">
-                      {fee.collectedBy?.roles[0] || "-"}
+                      {salary.paidBy?.roles[0] || "-"}
                     </span>
                   </p>
                 </div>
@@ -352,13 +291,13 @@ export default function InvoicePage() {
 
             <Separator className="bg-neutral-200" />
 
-            {fee.remarks && (
+            {salary.remarks && (
               <>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     Remarks
                   </h3>
-                  <p className="text-gray-700">{fee.remarks}</p>
+                  <p className="text-gray-700">{salary.remarks}</p>
                 </div>
                 <Separator className="bg-neutral-200" />
               </>
@@ -377,13 +316,13 @@ export default function InvoicePage() {
               <div>
                 <p>Receipt Created</p>
                 <p>
-                  {format(new Date(fee.createdAt ?? new Date()), "dd LLL yyyy")}
+                  {format(new Date(salary.createdAt ?? new Date()), "dd LLL yyyy")}
                 </p>
               </div>
               <div>
                 <p>Last Updated</p>
                 <p>
-                  {format(new Date(fee.updatedAt ?? new Date()), "dd LLL yyyy")}
+                  {format(new Date(salary.updatedAt ?? new Date()), "dd LLL yyyy")}
                 </p>
               </div>
             </div>

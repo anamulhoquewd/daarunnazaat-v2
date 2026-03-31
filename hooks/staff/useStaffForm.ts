@@ -126,8 +126,7 @@ export const useStaffForm = () => {
       userId: "",
       auternativePhone: "",
       whatsApp: "",
-      firstName: "",
-      lastName: "",
+      fullName: "",
       dateOfBirth: null,
       gender: "",
       bloodGroup: "",
@@ -136,7 +135,7 @@ export const useStaffForm = () => {
       designation: "",
       department: "",
       joinDate: null,
-      basicSalary: "",
+      baseSalary: "",
       branch: "",
       resignationDate: null,
     });

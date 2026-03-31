@@ -8,7 +8,7 @@ const SalarySchema = new Schema<ISalaryPayment & Document>(
     staffId: { type: Schema.Types.ObjectId, ref: "Staff", required: true },
     branch: { type: String, enum: Object.values(Branch), required: true },
     period: { type: String, required: true }, // e.g. "2020-03", "2020-12", etc.
-    basicSalary: { type: Number, required: true, min: 0 },
+    baseSalary: { type: Number, required: true, min: 0 },
     bonus: { type: Number, default: 0, min: 0 },
     netSalary: {
       type: Number,
@@ -18,8 +18,8 @@ const SalarySchema = new Schema<ISalaryPayment & Document>(
     },
     status: {
       type: String,
-      enum: ["paid", "reversed", "adjusted"],
-      default: "paid",
+      enum: ["paid", "pending", "partial"],
+      default: "pending",
     },
     paymentDate: { type: Date, default: Date.now },
     paymentMethod: {
@@ -41,10 +41,10 @@ SalarySchema.index({ staffId: 1, period: 1 }, { unique: true });
 SalarySchema.pre("validate", function (next) {
   const doc = this as any;
 
-  const basicSalary = Number(doc.basicSalary) || 0;
+  const baseSalary = Number(doc.baseSalary) || 0;
   const bonus = Number(doc.bonus) || 0;
 
-  const netSalary = basicSalary + bonus;
+  const netSalary = baseSalary + bonus;
 
   if (Number.isNaN(netSalary)) {
     return next(new Error("Invalid salary calculation"));

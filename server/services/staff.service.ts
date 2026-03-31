@@ -112,7 +112,7 @@ export const gets = async (queryParams: {
     from?: string | Date;
     to?: string | Date;
   };
-  basicSalaryRange?: {
+  baseSalaryRange?: {
     min?: number;
     max?: number;
   };
@@ -131,12 +131,12 @@ export const gets = async (queryParams: {
 
     /* ------------------ SALARY RANGE ------------------ */
     if (
-      queryParams.basicSalaryRange?.min !== undefined &&
-      queryParams.basicSalaryRange?.max !== undefined
+      queryParams.baseSalaryRange?.min !== undefined &&
+      queryParams.baseSalaryRange?.max !== undefined
     ) {
-      matchStage.basicSalary = {
-        $gte: queryParams.basicSalaryRange.min,
-        $lte: queryParams.basicSalaryRange.max,
+      matchStage.baseSalary = {
+        $gte: queryParams.baseSalaryRange.min,
+        $lte: queryParams.baseSalaryRange.max,
       };
     }
 
@@ -158,8 +158,7 @@ export const gets = async (queryParams: {
       const search = queryParams.search;
 
       matchStage.$or = [
-        { firstName: { $regex: search, $options: "i" } },
-        { lastName: { $regex: search, $options: "i" } },
+        { fullName: { $regex: search, $options: "i" } },
         { nid: { $regex: search, $options: "i" } },
         { staffId: { $regex: search, $options: "i" } },
         { designation: { $regex: search, $options: "i" } },
@@ -175,7 +174,7 @@ export const gets = async (queryParams: {
     }
 
     /* ------------------ SORT ------------------ */
-    const allowedSortFields = ["createdAt", "updatedAt", "firstName"];
+    const allowedSortFields = ["createdAt", "updatedAt", "fullName"];
     const sortField = allowedSortFields.includes(queryParams.sortBy)
       ? queryParams.sortBy
       : "createdAt";
@@ -410,7 +409,7 @@ export const updateMe = async ({
   // Validate Body
   const bodyValidation = staffUpdateZ
     .omit({
-      basicSalary: true,
+      baseSalary: true,
       birthCertificateNumber: true,
       branch: true,
       department: true,

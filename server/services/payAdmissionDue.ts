@@ -40,8 +40,6 @@ export const payAdmissionDue = async ({
     };
   }
 
-  console.log("ID: ", validData.data);
-
   try {
     const student = await Student.findById(validData.data.studentId);
 
@@ -117,10 +115,6 @@ export const payAdmissionDue = async ({
         "feeBalance.admissionFee.advance": advanceAmount,
       },
     });
-
-    console.log("S: ", s);
-    console.log("Due: ", dueAmount);
-    console.log("Payable: ", payableAmount);
 
     // ===== TRANSACTION LOG =====
     await createTransactionLog({

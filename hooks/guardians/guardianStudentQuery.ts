@@ -7,7 +7,7 @@ import { useDebounce } from "../common/useDebounce";
 interface IFilter {
   sortType?: SortType;
   gender: "all" | Gender;
-  sortBy?: "createdAt" | "updatedAt" | "firstName" | "guardianId" | "email";
+  sortBy?: "createdAt" | "updatedAt" | "fullName" | "guardianId" | "email";
   limit?: string;
 }
 

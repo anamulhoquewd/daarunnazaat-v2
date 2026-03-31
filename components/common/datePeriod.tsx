@@ -40,6 +40,7 @@ function generatePeriods(yearsBack = 1, yearsForward = 1) {
 const periods = generatePeriods();
 
 export function PeriodPicker({ form, onPeriodChange }: { form: any; onPeriodChange?: (value: string) => void }) {
+  const error = form.formState.errors?.period;
   return (
     <FormItem>
       <FormLabel>Period</FormLabel>
@@ -69,6 +70,9 @@ export function PeriodPicker({ form, onPeriodChange }: { form: any; onPeriodChan
         </SelectContent>
       </Select>
 
+      {error && (
+        <p className="text-sm text-red-600 mt-1 ml-1">{error.message}</p>
+      )}
       <FormMessage />
     </FormItem>
   );

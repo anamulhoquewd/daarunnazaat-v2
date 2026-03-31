@@ -1,55 +1,62 @@
 import api from "@/axios/intercepter";
 import { handleAxiosError } from "@/lib/utils";
 import {
-  feeCollectionsUpdateZ,
-  IFeeCollection,
+  ISalaryPayment,
+  IStaff,
   PaymentMethod,
-  PaymentSource,
+  salaryPaymentZ,
 } from "@/validations";
-import { IStudentPopulated } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export function useFeeCenter() {
+export interface SfattWithUser extends IStaff {
+  user: {
+    email: string;
+    phone: string;
+  };
+}
+
+export function useSalaryCenter() {
   const router = useRouter();
 
-  const [students, setStudents] = useState<IStudentPopulated[]>([]);
-  const [selectedStudent, setSelectedStudent] =
-    useState<IStudentPopulated | null>(null);
+  const [staffs, setStaffs] = useState<SfattWithUser[]>([]);
+  const [selectedStaff, setSelectedStaff] = useState<SfattWithUser | null>(
+    null,
+  );
   const [searchLoading, setSearchLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
   const form = useForm({
-    resolver: zodResolver(feeCollectionsUpdateZ),
+    resolver: zodResolver(salaryPaymentZ),
     defaultValues: {
-      studentId: "",
+      staffId: "",
       paymentMethod: PaymentMethod.CASH,
       paymentDate: new Date(),
-      receivedAmount: 0,
-      paymentSource: PaymentSource.OFFICE,
+      baseSalary: 0,
+      bonus: 0,
       remarks: "",
     },
   });
 
   /* ---------------- SEARCH ---------------- */
-  const searchStudents = async (search: string) => {
+  const searchStaffs = async (search: string) => {
     if (!search.trim()) {
-      setStudents([]);
-      setSelectedStudent(null);
+      setStaffs([]);
+      setSelectedStaff(null);
       return;
     }
 
     // New search should clear any previously selected student
-    setSelectedStudent(null);
+    setSelectedStaff(null);
 
     setSearchLoading(true);
     try {
-      const res = await api.get(`/students?search=${search}`);
+      const res = await api.get(`/staffs?search=${search}`);
       if (!res.data.success) throw new Error(res.data.error.message);
-      setStudents(res.data.data);
+      setStaffs(res.data.data);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -58,48 +65,46 @@ export function useFeeCenter() {
   };
 
   /* ---------------- SELECT ---------------- */
-  const selectStudent = (student: IStudentPopulated) => {
-    setSelectedStudent(student);
+  const selectStaff = (staff: SfattWithUser) => {
+    setSelectedStaff(staff);
 
     form.reset({
       ...form.getValues(),
-      studentId: student._id,
+      staffId: staff._id,
     });
   };
 
   /* ---------------- SUBMIT ---------------- */
-  const submitFee = async (data: IFeeCollection) => {
-    if (!selectedStudent) {
-      toast.error("Please select a student");
+  const submitSalary = async (data: ISalaryPayment) => {
+    if (!selectedStaff) {
+      toast.error("Please select a staff member");
       return;
     }
 
     setSubmitLoading(true);
     try {
-      const res = await api.post("/fees/register", data);
+      const res = await api.post("/salaries/register", data);
       if (!res.data.success) throw new Error(res.data.error.message);
 
-      toast.success("Fee received successfully");
+      toast.success("Salary submitted successfully");
 
-      setSelectedStudent(null);
-      setStudents([]);
+      setSelectedStaff(null);
+      setStaffs([]);
       form.reset({
-        studentId: "",
+        staffId: "",
         paymentMethod: PaymentMethod.CASH,
         paymentDate: new Date(),
-        receivedAmount: 0,
-        paymentSource: PaymentSource.OFFICE,
+        baseSalary: 0,
+        bonus: 0,
         remarks: "",
       });
 
       toast.success(res.data.message);
 
-      const feeId = res.data.data._id;
-
-
+      const salaryId = res.data.data._id;
 
       // 🔥 Redirect to invoice page
-      router.push(`/dashboard/fees/${feeId}`);
+      router.push(`/dashboard/salaries/${salaryId}`);
     } catch (error: any) {
       handleAxiosError(error);
 
@@ -117,15 +122,15 @@ export function useFeeCenter() {
 
   return {
     /* state */
-    students,
-    selectedStudent,
+    staffs,
+    selectedStaff,
     searchLoading,
     submitLoading,
 
     /* actions */
-    searchStudents,
-    selectStudent,
-    submitFee,
+    searchStaffs,
+    selectStaff,
+    submitSalary,
 
     /* form */
     form,

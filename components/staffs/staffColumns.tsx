@@ -72,7 +72,7 @@ export const StaffColumns = ({
   },
   {
     header: "Salary",
-    cell: ({ row }) => row.original?.basicSalary || "-",
+    cell: ({ row }) => row.original?.baseSalary || "-",
   },
   {
     header: "Phone",

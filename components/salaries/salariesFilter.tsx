@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Branch, PaymentMethod } from "@/validations";
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
 
@@ -70,10 +71,11 @@ export default function SalariesFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Methods</SelectItem>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="bank_transfer">Bank transfer</SelectItem>
-                  <SelectItem value="mobile_banking">Mobile banking</SelectItem>
-                  <SelectItem value="cheque">Cheque</SelectItem>
+                  {Object.entries(PaymentMethod).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -89,8 +91,11 @@ export default function SalariesFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Branches</SelectItem>
-                  <SelectItem value="branch_1">Branch 1</SelectItem>
-                  <SelectItem value="branch_2">Branch 2</SelectItem>
+                  {Object.entries(Branch).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -98,7 +103,7 @@ export default function SalariesFilters({
             <div>
               <label className="text-sm font-medium mb-2 block">Staff ID</label>
               <Input
-                placeholder="Search class by id..."
+                placeholder="Search by staff id..."
                 value={(filters.staffId as string) || ""}
                 onChange={(e) => onChange("staffId", e.target.value)}
               />
@@ -109,7 +114,7 @@ export default function SalariesFilters({
                 PaidBy ID
               </label>
               <Input
-                placeholder="Search guardian by id..."
+                placeholder="Search by admin id..."
                 value={(filters.paidBy as string) || ""}
                 onChange={(e) => onChange("paidBy", e.target.value)}
               />

@@ -111,10 +111,10 @@ export const gets = async (queryParams: {
       Blog.find(query)
         .populate({
           path: "authorId",
-          select: "email phone whatsApp role profile",
+          select: "email phone whatsApp roles profile",
           populate: {
             path: "profile",
-            select: "firstName lastName avatar",
+            select: "fullName avatar",
           },
         })
         .sort({ [sortField]: sortDirection })
@@ -124,8 +124,6 @@ export const gets = async (queryParams: {
       Blog.countDocuments(query),
       Blog.countDocuments(),
     ]);
-
-    console.log("Query: ", query);
 
     // Pagination
     const createPagination = pagination({
@@ -163,10 +161,10 @@ export const get = async (slug: string) => {
       status: BlogStatus.PUBLISHED,
     }).populate({
       path: "authorId",
-      select: "email phone whatsApp role profile",
+      select: "email phone whatsApp roles profile",
       populate: {
         path: "profile",
-        select: "firstName lastName avatar",
+        select: "fullName avatar",
       },
     });
 
@@ -258,10 +256,10 @@ export const getDrafts = async (queryParams: {
       Blog.find(query)
         .populate({
           path: "authorId",
-          select: "email phone whatsApp role profile",
+          select: "email phone whatsApp roles profile",
           populate: {
             path: "profile",
-            select: "firstName lastName avatar",
+            select: "fullName avatar",
           },
         })
         .sort({ [sortField]: sortDirection })
@@ -311,10 +309,10 @@ export const getBlogById = async (_id: string) => {
     // Check if blog exists
     const blog = await Blog.findById(idValidation.data._id).populate({
       path: "authorId",
-      select: "email phone whatsApp role profile",
+      select: "email phone whatsApp roles profile",
       populate: {
         path: "profile",
-        select: "firstName lastName avatar",
+        select: "fullName avatar",
       },
     });
 
@@ -639,10 +637,10 @@ export const getUserBlogs = async ({
       Blog.find(query)
         .populate({
           path: "authorId",
-          select: "email phone whatsApp role profile",
+          select: "email phone whatsApp roles profile",
           populate: {
             path: "profile",
-            select: "firstName lastName avatar",
+            select: "fullName avatar",
           },
         })
         .sort({ [sortField]: sortDirection })
@@ -652,8 +650,6 @@ export const getUserBlogs = async ({
       Blog.countDocuments(query),
       Blog.countDocuments(),
     ]);
-
-    console.log("Query: ", query);
 
     // Pagination
     const createPagination = pagination({

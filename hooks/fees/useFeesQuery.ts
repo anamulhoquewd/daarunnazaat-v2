@@ -20,7 +20,7 @@ interface IFilter {
   sortBy?:
     | "createdAt"
     | "updatedAt"
-    | "firstName"
+    | "fullName"
     | "studentId"
     | "admissionDate";
   limit?: string;

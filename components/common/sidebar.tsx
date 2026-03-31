@@ -185,8 +185,8 @@ const data = {
       icon: CirclePercent,
       items: [
         {
-          title: "Registration",
-          url: null,
+          title: "Salary Center",
+          url: "/dashboard/salary-center",
         },
         {
           title: "Starred",

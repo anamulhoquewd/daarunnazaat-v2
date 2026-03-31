@@ -1,7 +1,6 @@
 export interface Guardian {
   guardianId: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   gender: string;
 }
 
@@ -21,8 +20,7 @@ export interface UserInfo {
 export interface Student {
   _id: string;
   studentId: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   gender: string;
   dateOfBirth: string;
   admissionDate: string;
