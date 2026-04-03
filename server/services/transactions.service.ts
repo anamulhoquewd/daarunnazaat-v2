@@ -61,12 +61,6 @@ export const gets = async (queryParams: {
       query.$or = [
         { description: { $regex: queryParams.search, $options: "i" } },
       ];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
 
     // Filter by referenceId

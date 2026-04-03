@@ -49,7 +49,9 @@ const StaffSchema = new Schema<IStaff & Document>(
         grade: { type: String },
       },
     ],
+    isActive: { type: Boolean, default: true },
   },
+
   { timestamps: true },
 );
 

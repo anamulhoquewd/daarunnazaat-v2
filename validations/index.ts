@@ -86,13 +86,14 @@ export enum TransactionType {
 }
 
 export enum ExpenseCategory {
-  SALARY = "salary",
   RENT = "rent",
   ELECTRICITY = "electricity",
   GAS = "gas",
   WATER = "water",
-  MAINTENANCE = "maintenance",
   SUPPLIES = "supplies",
+  TRAVEL = "travel",
+  MARKETING = "marketing",
+  EXOSORIZE = "exosorize",
   OTHER = "other",
 }
 
@@ -167,7 +168,6 @@ const moneyZ = z.coerce.number().min(0);
 // Image validation
 export const imageZ = z.object({
   url: z.string().url(),
-  publicId: z.string().optional(),
 });
 
 export const mongoZ = z
@@ -428,6 +428,7 @@ export const guardianZ = personBaseZ.omit({ dateOfBirth: true }).extend({
   guardianId: z.string().optional(),
   occupation: z.string().optional(),
   monthlyIncome: moneyZ.optional(),
+  isActive: z.boolean().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -461,6 +462,7 @@ export const staffZ = personBaseZ.extend({
       }),
     )
     .optional(),
+  isActive: z.boolean().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -618,17 +620,37 @@ export const salaryPaymentUpdateZ = salaryPaymentZ.partial();
 // Expense Schema
 export const expenseZ = z.object({
   _id: mongoZ.optional(),
-  voucherNumber: z.string(),
+  voucherNumber: z.string().optional(),
   category: z.enum(ExpenseCategory),
   description: z.string(),
   amount: moneyZ.min(0),
-  expenseDate: z.coerce.date().default(() => new Date()),
+  expenseDate: z.coerce.date().optional(),
   paymentMethod: z.enum(PaymentMethod),
-  branch: z.enum(Branch),
-  paidTo: z.string().optional(),
-  approvedBy: mongoZ.optional(),
+  branch: z.array(z.enum(Branch)),
+  createdBy: mongoZ.optional(),
+  paidTo: z.object({
+    name: z.string(),
+    phone: z
+      .string()
+      .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
+      .trim()
+      .optional(),
+  }),
+  items: z
+    .array(
+      z.object({
+        name: z.string().trim().min(2),
+        quantity: z.number().min(1),
+        unit: z.string().optional(),
+        unitPrice: moneyZ.min(0),
+        total: moneyZ.min(0),
+      }),
+    )
+    .min(1),
   remarks: z.string().optional(),
   attachments: z.array(imageZ).optional(),
+  isDeleted: z.boolean().optional(),
+  deletedAt: z.coerce.date().nullable().optional(),
 });
 
 // If you want a separate update  where fields can be optional:

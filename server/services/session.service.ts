@@ -88,12 +88,6 @@ export const gets = async (queryParams: {
       query.$or = [
         { sessionName: { $regex: queryParams.search, $options: "i" } },
       ];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "sessionName"].includes(
