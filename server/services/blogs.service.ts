@@ -66,12 +66,6 @@ export const gets = async (queryParams: {
 
     if (queryParams.search) {
       query.$or = [{ title: { $regex: queryParams.search, $options: "i" } }];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
     // Date filters: createdAt between fromDate and toDate
     if (queryParams.dateRange?.from && queryParams.dateRange?.to) {
@@ -211,12 +205,6 @@ export const getDrafts = async (queryParams: {
 
     if (queryParams.search) {
       query.$or = [{ title: { $regex: queryParams.search, $options: "i" } }];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
     // Date filters: createdAt between fromDate and toDate
     if (queryParams.dateRange?.from && queryParams.dateRange?.to) {
@@ -592,12 +580,6 @@ export const getUserBlogs = async ({
 
     if (queryParams.search) {
       query.$or = [{ title: { $regex: queryParams.search, $options: "i" } }];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
     // Date filters: createdAt between fromDate and toDate
     if (queryParams.dateRange?.from && queryParams.dateRange?.to) {

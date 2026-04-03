@@ -76,7 +76,7 @@ export async function generateVoucherNumber(): Promise<string> {
 
   let nextNumber = 1;
 
-  if (lastVoucher) {
+  if (lastVoucher && lastVoucher.voucherNumber) {
     const lastNumber = parseInt(lastVoucher.voucherNumber.split("-")[2]);
     nextNumber = lastNumber + 1;
   }
@@ -106,7 +106,7 @@ export async function generateSalaryReceiptNumber(): Promise<string> {
     nextNumber = lastNumber + 1;
   }
 
-  const paddedNumber = nextNumber.toString().padStart(6, "0");
+  const paddedNumber = nextNumber.toString().padStart(4, "0");
 
   return `${prefix}${paddedNumber}`;
 }

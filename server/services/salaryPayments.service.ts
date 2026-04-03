@@ -35,6 +35,13 @@ export const register = async (body: ISalaryPayment) => {
       return { error: { message: "Invalid staff on this branch or ID" } };
     }
 
+    // check if staff deactivated
+    if (staff.isActive === false) {
+      return {
+        error: { message: "Cannot process salary for deactivated staff" },
+      };
+    }
+
     // Check if salry is already exists
     const isExistSalary = await Salary.findOne({
       staffId: validData.data.staffId,
@@ -302,12 +309,6 @@ export const gets = async (queryParams: {
       query.$or = [
         { receiptNumber: { $regex: queryParams.search, $options: "i" } },
       ];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
 
     // Filter by branch
