@@ -590,6 +590,7 @@ export const feeCollectionsUpdateZ = feeCollectionZ.partial().refine(
 export const payAdmissionDueZ = z.object({
   studentId: mongoZ,
   receivedAmount: moneyZ,
+  paymentDate: z.coerce.date().optional(),
 });
 
 // Salary Payment Schema

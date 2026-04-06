@@ -106,7 +106,7 @@ export const register = async (body: IUser) => {
     };
 
     // Send Email
-    await transporter.sendMail(mailOptions);
+    // await transporter.sendMail(mailOptions);
 
     return {
       success: {

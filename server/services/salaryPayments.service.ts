@@ -52,7 +52,7 @@ export const register = async (body: ISalaryPayment) => {
       return {
         error: {
           message:
-            "Invalid salary values. Basic salary and bonus cannot both be zero.",
+            "Invalid salary values. Base salary and bonus cannot both be zero.",
         },
       };
     }
@@ -316,12 +316,17 @@ export const gets = async (queryParams: {
       query.branch = queryParams.branch;
     }
 
-    // Filter by staffId
-    if (
-      queryParams.staffId &&
-      mongoose.Types.ObjectId.isValid(queryParams.staffId)
-    ) {
-      query.staffId = new mongoose.Types.ObjectId(queryParams.staffId);
+    // find staff by name or staffId and get their IDs for filtering salary payments
+    if (queryParams.staffId) {
+      const staff = await Staff.find({
+        $or: [
+          { fullName: { $regex: queryParams.staffId, $options: "i" } },
+          { staffId: { $regex: queryParams.staffId, $options: "i" } },
+        ],
+      }).select("_id");
+
+      // Filter by staffId
+      query.staffId = { $in: staff.map((s) => s._id) };
     }
 
     // Filter by paidBy
