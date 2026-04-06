@@ -4,6 +4,7 @@ import {
   ArrowRightLeft,
   AudioWaveform,
   BadgeDollarSign,
+  BanknoteArrowDown,
   BookAudio,
   BriefcaseBusiness,
   CirclePercent,
@@ -220,7 +221,7 @@ const data = {
     {
       title: "Pay admission due ",
       url: "/dashboard/pay-admission-due ",
-      icon: ArrowRightLeft,
+      icon: BanknoteArrowDown,
       items: [
         {
           title: "Registration",

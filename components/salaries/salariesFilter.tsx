@@ -17,6 +17,7 @@ import {
 import { Branch, PaymentMethod } from "@/validations";
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
+import { StaffFilterCombobox } from "../staffs/staffFilterCombobox";
 
 interface SalariesFiltersProps {
   filters: Record<string, string | boolean | undefined>;
@@ -106,17 +107,6 @@ export default function SalariesFilters({
                 placeholder="Search by staff id..."
                 value={(filters.staffId as string) || ""}
                 onChange={(e) => onChange("staffId", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                PaidBy ID
-              </label>
-              <Input
-                placeholder="Search by admin id..."
-                value={(filters.paidBy as string) || ""}
-                onChange={(e) => onChange("paidBy", e.target.value)}
               />
             </div>
           </div>

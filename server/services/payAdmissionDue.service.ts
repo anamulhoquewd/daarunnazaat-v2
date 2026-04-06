@@ -63,7 +63,7 @@ export const payAdmissionDue = async ({
 
     if (!admissionFee) {
       return {
-        error: { message: "Admission fee record not found" },
+        error: { message: "Admission fee record not found or deleted" },
       };
     }
 

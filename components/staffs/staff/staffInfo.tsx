@@ -155,7 +155,7 @@ export function StaffInfoSection({
                           <Input
                             type="number"
                             min={0}
-                            placeholder="Basic Salary"
+                            placeholder="Base Salary"
                             {...field}
                             value={field.value ? String(field.value) : ""}
                           />

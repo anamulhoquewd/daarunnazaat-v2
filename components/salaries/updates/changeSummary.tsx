@@ -27,7 +27,7 @@ export function ChangesSummary({ changes }: ChangesSummaryProps) {
           <ul className="space-y-2 text-sm">
             {changes.baseSalary && (
               <li className="flex justify-between">
-                <span>Basic Salary:</span>
+                <span>Base Salary:</span>
                 <span>
                   BDT {changes.baseSalary.old.toLocaleString()} → BDT{" "}
                   {changes.baseSalary.new.toLocaleString()}

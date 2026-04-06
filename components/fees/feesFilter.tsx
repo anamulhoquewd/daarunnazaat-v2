@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -18,6 +17,7 @@ import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
 import { StaffFilterCombobox } from "../staffs/staffFilterCombobox";
 import { SttudentFilterCombobox } from "../students/studentFilterCombobox";
+import { Branch, FeeType, PaymentMethod } from "@/validations";
 
 interface FeesFiltersProps {
   filters: Record<string, string | boolean | undefined>;
@@ -72,10 +72,11 @@ export default function FeesFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Methods</SelectItem>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="bank_transfer">Bank transfer</SelectItem>
-                  <SelectItem value="mobile_banking">Mobile banking</SelectItem>
-                  <SelectItem value="cheque">Cheque</SelectItem>
+                  {Object.entries(PaymentMethod).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -93,14 +94,11 @@ export default function FeesFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Type of fees</SelectItem>
-                  <SelectItem value="admission">Admission</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="residential">Residential</SelectItem>
-                  <SelectItem value="coaching">Coaching</SelectItem>
-                  <SelectItem value="daycare">Daycare</SelectItem>
-                  <SelectItem value="utility">Utility</SelectItem>
-                  <SelectItem value="meal">Meal</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  {Object.entries(FeeType).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -116,8 +114,11 @@ export default function FeesFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Branches</SelectItem>
-                  <SelectItem value="branch_1">Branch 1</SelectItem>
-                  <SelectItem value="branch_2">Branch 2</SelectItem>
+                  {Object.entries(Branch).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -125,6 +126,7 @@ export default function FeesFilters({
             <StaffFilterCombobox
               value={filters.collectedBy as string}
               onChange={onChange}
+              fieldName="collectedBy"
             />
 
             <SttudentFilterCombobox

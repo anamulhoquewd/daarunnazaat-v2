@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Hind_Siliguri } from "next/font/google";
-import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Suspense } from "react";
 import LoadingPage from "@/components/common/loading";
 import { Toaster } from "sonner";
+import "./globals.css";
 
 const hindSiliguri = Hind_Siliguri({
   variable: "--font-hind-siliguri",
@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${hindSiliguri.className} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${hindSiliguri.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"

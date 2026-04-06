@@ -104,7 +104,7 @@ function StaffInformation() {
                   <Input
                     type="number"
                     min={0}
-                    placeholder="Basic Salary"
+                    placeholder="Base Salary"
                     {...field}
                   />
                 </FormControl>

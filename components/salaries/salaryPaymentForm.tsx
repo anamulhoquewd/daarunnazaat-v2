@@ -106,7 +106,7 @@ export function SalaryPaymentForm({
                 name="baseSalary"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Basic Salary</FormLabel>
+                    <FormLabel>Base Salary</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
