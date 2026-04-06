@@ -6,7 +6,12 @@ import {
   saveToStorage,
   scrollToFirstError,
 } from "@/lib/utils";
-import { IStudent, PaymentMethod, studentZ } from "@/validations";
+import {
+  IStudent,
+  PaymentMethod,
+  PaymentSource,
+  studentZ,
+} from "@/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -124,8 +129,7 @@ export const useStudentForm = (onSuccess?: () => void) => {
         district: "",
         division: "",
       },
-      firstName: "",
-      lastName: "",
+      fullName: "",
       userId: "",
       gender: "",
       dateOfBirth: null,

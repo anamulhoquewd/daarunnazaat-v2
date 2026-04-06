@@ -129,7 +129,7 @@ function SalariesPage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
-            <Link href={"#"}>
+            <Link href={"/dashboard/salary-center"}>
               <Button className="cursor-pointer">Add One</Button>
             </Link>
           </div>
@@ -149,10 +149,10 @@ function SalariesPage() {
         <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
           <div className="flex-1">
             <label className="text-sm font-medium mb-2 block">
-              Search by name, ID, nid, phone or email
+              Search by receipt number or ID
             </label>
             <Input
-              placeholder="Search students..."
+              placeholder="Search salaries..."
               value={search.global}
               onChange={(e) =>
                 setSearch((prev) => ({

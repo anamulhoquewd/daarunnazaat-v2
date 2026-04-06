@@ -3,6 +3,7 @@ import { changePasswordZ, TChangePassword } from "@/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const useChangePassword = (onClose: () => void) => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -31,7 +32,7 @@ const useChangePassword = (onClose: () => void) => {
           currentPassword: "",
           newPassword: "",
         });
-        console.log("Password changed successfully");
+        toast.success("Password changed successfully");
         onClose();
       }
     } catch (error: any) {

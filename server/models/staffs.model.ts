@@ -37,7 +37,7 @@ const StaffSchema = new Schema<IStaff & Document>(
     designation: { type: String, required: true },
     department: { type: String },
     joinDate: { type: Date, required: true },
-    basicSalary: { type: Number, required: true, min: 0 },
+    baseSalary: { type: Number, required: true, min: 0 },
     branch: { type: String, enum: Object.values(Branch), required: true },
     resignationDate: { type: Date },
     qualifications: [
@@ -49,7 +49,9 @@ const StaffSchema = new Schema<IStaff & Document>(
         grade: { type: String },
       },
     ],
+    isActive: { type: Boolean, default: true },
   },
+
   { timestamps: true },
 );
 

@@ -85,12 +85,6 @@ export const gets = async (queryParams: {
       query.$or = [
         { className: { $regex: queryParams.search, $options: "i" } },
       ];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "className"].includes(

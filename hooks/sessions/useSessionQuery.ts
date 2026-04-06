@@ -83,6 +83,14 @@ function useSessionQuery() {
         currentPage: pagination.page,
       });
       toast.success("Session created successfully!");
+
+      form.reset({
+        sessionName: "",
+        isActive: true,
+        startDate: undefined,
+        endDate: undefined,
+        batchType: undefined,
+      });
     } catch (error: any) {
       handleAxiosError(error);
 
@@ -151,8 +159,6 @@ function useSessionQuery() {
   const handleUpdate = async (data: IUpdateSession) => {
     setIsLoading(true);
 
-    console.log("Updating session with data:", data, "and ID:", selectedId);
-
     try {
       const response = await api.patch(`/sessions/${selectedId}`, data);
       if (!response.data.success) {
@@ -168,6 +174,13 @@ function useSessionQuery() {
         currentPage: pagination.page,
       });
       toast.success("Updated successfully");
+      form.reset({
+        sessionName: "",
+        isActive: true,
+        startDate: undefined,
+        endDate: undefined,
+        batchType: undefined,
+      });
     } catch (e) {
       toast.error("Update failed");
     } finally {

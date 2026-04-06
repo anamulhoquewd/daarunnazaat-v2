@@ -402,7 +402,7 @@ export const updates = async ({
         amount: Math.abs(diff),
         description: `Fee amount updated (${diff > 0 ? "+" : "-"}${Math.abs(diff)})`,
         performedBy: updatedByUserId,
-        branch: fee.branch ?? Branch.DEFAULT,
+        branch: fee.branch ?? Branch.BALIKA_BRANCH,
       });
     }
 
@@ -451,12 +451,6 @@ export const gets = async (queryParams: {
       query.$or = [
         { receiptNumber: { $regex: queryParams.search, $options: "i" } },
       ];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
 
     // Filter by studentId
@@ -553,7 +547,7 @@ export const gets = async (queryParams: {
         .limit(queryParams.limit)
         .populate("studentId")
         .populate("sessionId", "sessionName isActive")
-        .populate("collectedBy", "phone role")
+        .populate("collectedBy", "phone roles")
         .exec(),
       FeeCollection.countDocuments(query),
       FeeCollection.countDocuments(),
@@ -598,7 +592,7 @@ export const get = async (_id: string) => {
     const fee = await FeeCollection.findById(idValidation.data._id)
       .populate("studentId")
       .populate("sessionId", "sessionName isActive")
-      .populate("collectedBy", "phone role")
+      .populate("collectedBy", "phone roles")
       .exec();
 
     if (!fee) {

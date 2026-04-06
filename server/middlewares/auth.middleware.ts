@@ -73,7 +73,7 @@ export const authenticate = async (c: Context, next: Next) => {
 
     return next();
   } catch (error) {
-    console.log(error);
+    console.error("error: ", error);
     return authenticationError(c);
   }
 };
@@ -85,6 +85,11 @@ export const authorize = (...allowedRoles: UserRole[]) => {
 
     if (!user) {
       return authenticationError(c);
+    }
+
+    // if user has super admin role, allow access to everything
+    if (user.roles.includes(UserRole.SUPER_ADMIN)) {
+      return await next();
     }
 
     if (!allowedRoles.some((role) => user.roles.includes(role))) {

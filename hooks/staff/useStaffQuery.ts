@@ -12,7 +12,7 @@ interface IFilter {
   gender: "all" | Gender;
   branch: "all" | Branch;
   sortType?: SortType;
-  sortBy?: "createdAt" | "updatedAt" | "firstName" | "staffId" | "joinDate";
+  sortBy?: "createdAt" | "updatedAt" | "fullName" | "staffId" | "joinDate";
   limit?: string;
 }
 

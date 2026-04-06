@@ -27,10 +27,19 @@ export const register = async (body: ISalaryPayment) => {
   }
 
   try {
+    let status: "paid" | "pending" | "partial" = "pending";
+
     const staff = await Staff.findById(validData.data.staffId);
 
     if (!staff || staff.branch !== validData.data.branch) {
       return { error: { message: "Invalid staff on this branch or ID" } };
+    }
+
+    // check if staff deactivated
+    if (staff.isActive === false) {
+      return {
+        error: { message: "Cannot process salary for deactivated staff" },
+      };
     }
 
     // Check if salry is already exists
@@ -39,14 +48,32 @@ export const register = async (body: ISalaryPayment) => {
       period: validData.data.period,
     });
 
+    if (staff.baseSalary === 0 && validData.data.bonus === 0) {
+      return {
+        error: {
+          message:
+            "Invalid salary values. Base salary and bonus cannot both be zero.",
+        },
+      };
+    }
+
+    // Update status
+    if (validData.data.baseSalary === 0) {
+      status = "pending";
+    } else if (validData.data.baseSalary! < staff.baseSalary) {
+      status = "partial";
+    } else {
+      status = "paid";
+    }
+
     if (isExistSalary) {
       return {
         error: {
-          message: "Sorry! Salary already paid.",
+          message: "Sorry! already have a record of salaries.",
           fields: [
             {
               name: "period",
-              message: "Salary already paid for this period",
+              message: "We already have a record of salaries for this period.",
             },
           ],
         },
@@ -58,6 +85,7 @@ export const register = async (body: ISalaryPayment) => {
     // Create salry
     const salaryPayment = new Salary({
       ...validData.data,
+      status,
       paidBy: body.paidBy,
       receiptNumber,
     });
@@ -69,8 +97,8 @@ export const register = async (body: ISalaryPayment) => {
     await createTransactionLog({
       transactionType: TransactionType.EXPENSE,
       referenceId: docs._id,
-      referenceModel: "Salary",
-      amount: docs.netSalary || docs.basicSalary + docs.bonus,
+      referenceModel: "SalaryPayment",
+      amount: docs.netSalary || docs.baseSalary + docs.bonus,
       description: `Salary paid for ${docs.period}`,
       performedBy: body.paidBy,
       branch: docs.branch,
@@ -130,6 +158,34 @@ export const updates = async ({
       };
     }
 
+    // check if period is being updated and if it already exists for the staff
+    let existingSalary: ISalaryPayment | null = null;
+
+    if (
+      bodyValidation.data.period &&
+      bodyValidation.data.period !== salary.period
+    ) {
+      existingSalary = await Salary.findOne({
+        staffId: salary.staffId,
+        period: bodyValidation.data.period,
+      });
+    }
+
+    if (existingSalary) {
+      return {
+        error: {
+          message:
+            "A salary record for this period already exists for the staff.",
+          fields: [
+            {
+              name: "period",
+              message: "We already have a record of salaries for this period.",
+            },
+          ],
+        },
+      };
+    }
+
     // Check if all fields are empty
     if (Object.keys(bodyValidation.data).length === 0) {
       return {
@@ -145,8 +201,19 @@ export const updates = async ({
     const oldNetSalary = salary.netSalary || 0;
     const oldStatus = salary.status;
 
+    let status: "paid" | "pending" | "partial" = salary.status || "pending";
+
+    // Update status based on baseSalary
+    if (salary.baseSalary === 0) {
+      status = "pending";
+    } else if (salary.baseSalary < salary.baseSalary) {
+      status = "partial";
+    } else {
+      status = "paid";
+    }
+
     // Update only provided fields
-    Object.assign(salary, bodyValidation.data);
+    Object.assign(salary, { ...bodyValidation.data, status });
 
     // Save salary
     const docs = await salary.save();
@@ -155,29 +222,14 @@ export const updates = async ({
 
     const logs: Promise<any>[] = [];
 
-    // NetSalary changed → Adjustment
-    if (docs.netSalary !== oldNetSalary) {
-      logs.push(
-        createTransactionLog({
-          transactionType: TransactionType.ADJUSTMENT,
-          referenceId: docs._id,
-          referenceModel: "Salary",
-          amount: docs.netSalary! - oldNetSalary,
-          description: `Salary adjusted for ${docs.period}`,
-          performedBy: updatedByUserId,
-          branch: docs.branch,
-        }),
-      );
-    }
-
     // Status changed → Reversal / Paid / Adjusted
     if (docs.status !== oldStatus) {
-      if (docs.status === "reversed") {
+      if (docs.status === "partial" && oldStatus === "paid") {
         logs.push(
           createTransactionLog({
             transactionType: TransactionType.REVERSAL,
             referenceId: docs._id,
-            referenceModel: "Salary",
+            referenceModel: "SalaryPayment",
             amount: oldNetSalary,
             description: `Salary reversed for ${docs.period}`,
             performedBy: updatedByUserId,
@@ -189,21 +241,21 @@ export const updates = async ({
           createTransactionLog({
             transactionType: TransactionType.EXPENSE,
             referenceId: docs._id,
-            referenceModel: "Salary",
+            referenceModel: "SalaryPayment",
             amount: docs.netSalary!,
             description: `Salary marked as paid for ${docs.period}`,
             performedBy: updatedByUserId,
             branch: docs.branch,
           }),
         );
-      } else if (docs.status === "adjusted") {
+      } else if (docs.status === "partial") {
         logs.push(
           createTransactionLog({
             transactionType: TransactionType.ADJUSTMENT,
             referenceId: docs._id,
-            referenceModel: "Salary",
+            referenceModel: "SalaryPayment",
             amount: docs.netSalary! - oldNetSalary,
-            description: `Salary manually adjusted for ${docs.period}`,
+            description: `Salary manually updated for ${docs.period}`,
             performedBy: updatedByUserId,
             branch: docs.branch,
           }),
@@ -257,12 +309,6 @@ export const gets = async (queryParams: {
       query.$or = [
         { receiptNumber: { $regex: queryParams.search, $options: "i" } },
       ];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
 
     // Filter by branch
@@ -270,12 +316,17 @@ export const gets = async (queryParams: {
       query.branch = queryParams.branch;
     }
 
-    // Filter by staffId
-    if (
-      queryParams.staffId &&
-      mongoose.Types.ObjectId.isValid(queryParams.staffId)
-    ) {
-      query.staffId = new mongoose.Types.ObjectId(queryParams.staffId);
+    // find staff by name or staffId and get their IDs for filtering salary payments
+    if (queryParams.staffId) {
+      const staff = await Staff.find({
+        $or: [
+          { fullName: { $regex: queryParams.staffId, $options: "i" } },
+          { staffId: { $regex: queryParams.staffId, $options: "i" } },
+        ],
+      }).select("_id");
+
+      // Filter by staffId
+      query.staffId = { $in: staff.map((s) => s._id) };
     }
 
     // Filter by paidBy
@@ -300,7 +351,7 @@ export const gets = async (queryParams: {
       queryParams.netSalaryRange?.min !== undefined &&
       queryParams.netSalaryRange?.max !== undefined
     ) {
-      query.basicSalary = {
+      query.baseSalary = {
         $gte: queryParams.netSalaryRange.min,
         $lte: queryParams.netSalaryRange.max,
       };
@@ -341,9 +392,9 @@ export const gets = async (queryParams: {
         .limit(queryParams.limit)
         .populate(
           "staffId",
-          "firstName lastName gender designation basicSalary branch staffId whtasApp",
+          "fullName gender designation baseSalary branch staffId whtasApp",
         )
-        .populate("paidBy", "phone role")
+        .populate("paidBy", "phone")
         .exec(),
       Salary.countDocuments(query),
       Salary.countDocuments(),
@@ -385,12 +436,52 @@ export const get = async (_id: string) => {
 
   try {
     // Check if Salary payment exists
-    const salary = await Salary.findById(idValidation.data._id);
+    const salary = await Salary.findById(idValidation.data._id)
+      .populate("staffId")
+      .populate("paidBy", "phone roles")
+      .exec();
 
     if (!salary) {
       return {
         error: {
           message: `Salary payment not found with provided ID!`,
+        },
+      };
+    }
+
+    return {
+      success: {
+        success: true,
+        message: `Salary payment fetched successfully!`,
+        data: salary,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const salaryFindByStaffId = async (staffId: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id: staffId });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // Check if Salary payment exists
+    const salary = await Salary.find({ staffId: idValidation.data._id });
+
+    if (!salary || salary.length === 0) {
+      return {
+        error: {
+          message: `Salary payment not found with provided Staff ID!`,
         },
       };
     }

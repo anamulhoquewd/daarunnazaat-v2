@@ -39,6 +39,18 @@ function useClassQuery() {
     limit: "10",
   });
 
+  const form = useForm({
+    resolver: zodResolver(classZ),
+    shouldUnregister: false,
+    defaultValues: {
+      className: "",
+      description: "",
+      monthlyFee: 0,
+      capacity: 0,
+      isActive: true,
+    },
+  });
+
   // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
 
@@ -78,18 +90,6 @@ function useClassQuery() {
     }
   };
 
-  const form = useForm({
-    resolver: zodResolver(classZ),
-    shouldUnregister: false,
-    defaultValues: {
-      className: "",
-      description: "",
-      monthlyFee: 0,
-      capacity: 0,
-      isActive: true,
-    },
-  });
-
   const handleSubmit = async (data: IClass) => {
     setIsLoading(true);
 
@@ -111,6 +111,14 @@ function useClassQuery() {
       });
 
       setIsAddOpen(false);
+
+      form.reset({
+        className: "",
+        description: "",
+        monthlyFee: 0,
+        capacity: 0,
+        isActive: true,
+      });
 
       toast.success("Class created successfully!");
     } catch (error: any) {
@@ -166,8 +174,6 @@ function useClassQuery() {
 
   const handleUpdate = async (data: IUpdateClass) => {
     setIsLoading(true);
-
-    console.log("Updating user with data:", data, "and ID:", selectedId);
 
     try {
       const response = await api.patch(`/classes/${selectedId}`, data);
