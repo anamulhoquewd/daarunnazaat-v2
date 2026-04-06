@@ -54,7 +54,7 @@ function Header() {
 
       <div className="flex items-center gap-2 order-2 md:order-1">
         <Link
-          href="/"
+          href="/dashboard"
           className="flex items-center gap-2 font-semibold md:flex"
         >
           {/* <Image src={logo} width={50} height={50} alt="darunnazat" /> */}

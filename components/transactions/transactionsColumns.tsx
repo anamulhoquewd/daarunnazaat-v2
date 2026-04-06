@@ -56,7 +56,7 @@ export const TransactionsColumns = ({
   {
     accessorKey: "performedByRole",
     header: "Performed role",
-    cell: ({ row }) => row.original?.performedBy?.role,
+    cell: ({ row }) => row.original?.performedBy?.roles[0],
   },
   {
     id: "actions",

@@ -3,6 +3,7 @@ import { notFoundError } from "@/server/error";
 import authRoutes from "@/server/routes/auth.route";
 import blogRoutes from "@/server/routes/blog.route";
 import classRoutes from "@/server/routes/classes.route";
+import expenseRoutes from "@/server/routes/expense.route";
 import feeCollectionRoutes from "@/server/routes/feeCollection.route";
 import guardianRoutes from "@/server/routes/guardian.route";
 import payAdmissionDueRoutes from "@/server/routes/payAdmissionDue.route";
@@ -66,6 +67,9 @@ app.route("/sessions", sessionRoute);
 
 // Salaries routes
 app.route("/salaries", salaryPaymentRoutes);
+
+// Expenses routes
+app.route("/expenses", expenseRoutes);
 
 // Staff routes
 app.route("/staffs", staffRoutes);

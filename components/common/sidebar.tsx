@@ -4,6 +4,7 @@ import {
   ArrowRightLeft,
   AudioWaveform,
   BadgeDollarSign,
+  BanknoteArrowDown,
   BookAudio,
   BriefcaseBusiness,
   CirclePercent,
@@ -185,8 +186,8 @@ const data = {
       icon: CirclePercent,
       items: [
         {
-          title: "Registration",
-          url: null,
+          title: "Salary Center",
+          url: "/dashboard/salary-center",
         },
         {
           title: "Starred",
@@ -220,7 +221,7 @@ const data = {
     {
       title: "Pay admission due ",
       url: "/dashboard/pay-admission-due ",
-      icon: ArrowRightLeft,
+      icon: BanknoteArrowDown,
       items: [
         {
           title: "Registration",

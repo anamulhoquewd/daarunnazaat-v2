@@ -42,7 +42,8 @@ export const gets = async (c: Context) => {
   const paymentDateRange = { from: fromDate, to: toDate };
 
   const minSalary = parseInt(c.req.query("minSalary") as string, 10) || 0;
-  const maxSalary = parseInt(c.req.query("maxSalary") as string, 10) || 100000;
+  const maxSalary =
+    parseInt(c.req.query("maxSalary") as string, 10) || 10000000;
 
   const response = await salaryService.gets({
     page,
@@ -71,6 +72,22 @@ export const get = async (c: Context) => {
   const _id = c.req.param("_id");
 
   const response = await salaryService.get(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+export const getByStaffId = async (c: Context) => {
+  const staffId = c.req.param("staffId");
+
+  const response = await salaryService.salaryFindByStaffId(staffId);
 
   if (response.error) {
     return badRequestError(c, response.error);

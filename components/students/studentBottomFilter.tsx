@@ -27,7 +27,7 @@ export function StudentBottomFilter({ filters, onChange }: Props) {
             <SelectItem value="createdAt">Created Date</SelectItem>
             <SelectItem value="updatedAt">Updated Date</SelectItem>
             <SelectItem value="admissionDate">Admission Date</SelectItem>
-            <SelectItem value="firstName">First name</SelectItem>
+            <SelectItem value="fullName">Full Name</SelectItem>
             <SelectItem value="studentId">Student Id</SelectItem>
           </SelectContent>
         </Select>

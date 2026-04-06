@@ -12,7 +12,6 @@ export enum UserRole {
 export enum Gender {
   MALE = "male",
   FEMALE = "female",
-  DEFAULT = "non", // for those who don't want to disclose
 }
 
 export enum BloodGroup {
@@ -25,13 +24,11 @@ export enum BloodGroup {
   AB_POSITIVE = "AB+",
   AB_NEGATIVE = "AB-",
   NON = "NON", // for those who don't want to disclose
-  DEFAULT = "NON",
 }
 
 export enum Branch {
   BALIKA_BRANCH = "Balika Branch",
   BALOK_BRANCH = "Balok Branch",
-  DEFAULT = "Balika Branch",
 }
 
 export enum GuardianRelation {
@@ -44,7 +41,6 @@ export enum GuardianRelation {
   GRAND_FATHER = "Grandfather",
   GRAND_MOTHER = "Grandmother",
   OTHER = "Other",
-  DEFAULT = "Father",
 }
 
 export enum BatchType {
@@ -80,7 +76,6 @@ export enum PaymentMethod {
   BANK_TRANSFER = "bank_transfer",
   MOBILE_BANKING = "mobile_banking",
   CHEQUE = "cheque",
-  DEFAULT = "cash",
 }
 
 export enum TransactionType {
@@ -88,19 +83,18 @@ export enum TransactionType {
   EXPENSE = "expense",
   REVERSAL = "reversal",
   ADJUSTMENT = "adjustment",
-  DEFAULT = "default",
 }
 
 export enum ExpenseCategory {
-  SALARY = "salary",
   RENT = "rent",
   ELECTRICITY = "electricity",
   GAS = "gas",
   WATER = "water",
-  MAINTENANCE = "maintenance",
   SUPPLIES = "supplies",
+  TRAVEL = "travel",
+  MARKETING = "marketing",
+  EXOSORIZE = "exosorize",
   OTHER = "other",
-  DEFAULT = "other",
 }
 
 export enum AttendanceStatus {
@@ -117,7 +111,6 @@ export enum ExamType {
   MIDTERM = "midterm",
   FINAL = "final",
   ANNUAL = "annual",
-  DEFAULT = "default",
 }
 
 export enum NoticeType {
@@ -129,7 +122,6 @@ export enum NoticeType {
   EXAM = "exam",
   ADMISSION = "admission",
   RESULT = "result",
-  DEFAULT = "general",
 }
 
 export enum NoticePriority {
@@ -137,7 +129,6 @@ export enum NoticePriority {
   MEDIUM = "medium",
   HIGH = "high",
   URGENT = "urgent",
-  DEFAULT = "medium",
 }
 
 export enum NoticeAudience {
@@ -147,14 +138,12 @@ export enum NoticeAudience {
   GUARDIANS = "guardians",
   SPECIFIC_CLASS = "specific_class",
   SPECIFIC_BRANCH = "specific_branch",
-  DEFAULT = "all",
 }
 
 export enum BlogStatus {
   DRAFT = "draft",
   PUBLISHED = "published",
   ARCHIVED = "archived",
-  DEFAULT = "draft",
 }
 
 // ==================== ZOD SCHEMAS ====================
@@ -179,7 +168,6 @@ const moneyZ = z.coerce.number().min(0);
 // Image validation
 export const imageZ = z.object({
   url: z.string().url(),
-  publicId: z.string().optional(),
 });
 
 export const mongoZ = z
@@ -395,8 +383,8 @@ export const studentZ = personBaseZ
     passoutDate: z.coerce.date().optional(),
     avatar: z.string().optional(),
 
-    paymentMethod: z.enum(PaymentMethod),
-    paymentSource: z.enum(PaymentSource),
+    paymentMethod: z.enum(PaymentMethod).default(PaymentMethod.CASH),
+    paymentSource: z.enum(PaymentSource).default(PaymentSource.OFFICE),
     remarks: z.string().optional(),
 
     isActive: z.boolean().optional(),
@@ -440,6 +428,7 @@ export const guardianZ = personBaseZ.omit({ dateOfBirth: true }).extend({
   guardianId: z.string().optional(),
   occupation: z.string().optional(),
   monthlyIncome: moneyZ.optional(),
+  isActive: z.boolean().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -459,7 +448,7 @@ export const staffZ = personBaseZ.extend({
   designation: z.string(),
   department: z.string().optional(),
   joinDate: z.coerce.date(),
-  basicSalary: moneyZ.min(0),
+  baseSalary: moneyZ.min(0),
   branch: z.enum(Branch),
   resignationDate: z.coerce.date().optional(),
   qualifications: z
@@ -473,6 +462,7 @@ export const staffZ = personBaseZ.extend({
       }),
     )
     .optional(),
+  isActive: z.boolean().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -600,6 +590,7 @@ export const feeCollectionsUpdateZ = feeCollectionZ.partial().refine(
 export const payAdmissionDueZ = z.object({
   studentId: mongoZ,
   receivedAmount: moneyZ,
+  paymentDate: z.coerce.date().optional(),
 });
 
 // Salary Payment Schema
@@ -608,7 +599,7 @@ export const salaryPaymentZ = z.object({
   receiptNumber: z.string().optional(),
   staffId: mongoZ,
   period: periodSchema,
-  basicSalary: moneyZ.min(0),
+  baseSalary: moneyZ.min(0),
   bonus: moneyZ.min(0).default(0),
   netSalary: moneyZ.optional(),
   paymentDate: z.coerce.date().default(() => new Date()),
@@ -616,34 +607,51 @@ export const salaryPaymentZ = z.object({
   branch: z.enum(Branch),
   paidBy: mongoZ.optional(),
   remarks: z.string().optional(),
-  status: z.enum(["paid", "reversed", "adjusted"]).optional(),
+  status: z.enum(["paid", "partial", "pending"]).optional(),
   isDeleted: z.boolean().optional(),
   deletedAt: z.coerce.date().nullable().optional(),
+
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
-export const salaryPaymentUpdateZ = salaryPaymentZ.partial().refine(
-  (data) => {
-    // ensure at least one field present on update
-    return Object.keys(data).length > 0;
-  },
-  { message: "At least one field must be provided for update" },
-);
+export const salaryPaymentUpdateZ = salaryPaymentZ.partial();
 
 // Expense Schema
 export const expenseZ = z.object({
   _id: mongoZ.optional(),
-  voucherNumber: z.string(),
+  voucherNumber: z.string().optional(),
   category: z.enum(ExpenseCategory),
   description: z.string(),
   amount: moneyZ.min(0),
-  expenseDate: z.coerce.date().default(() => new Date()),
+  expenseDate: z.coerce.date().optional(),
   paymentMethod: z.enum(PaymentMethod),
-  branch: z.enum(Branch),
-  paidTo: z.string().optional(),
-  approvedBy: mongoZ.optional(),
+  branch: z.array(z.enum(Branch)),
+  createdBy: mongoZ.optional(),
+  paidTo: z.object({
+    name: z.string(),
+    phone: z
+      .string()
+      .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
+      .trim()
+      .optional(),
+  }),
+  items: z
+    .array(
+      z.object({
+        name: z.string().trim().min(2),
+        quantity: z.number().min(1),
+        unit: z.string().optional(),
+        unitPrice: moneyZ.min(0),
+        total: moneyZ.min(0),
+      }),
+    )
+    .min(1),
   remarks: z.string().optional(),
   attachments: z.array(imageZ).optional(),
+  isDeleted: z.boolean().optional(),
+  deletedAt: z.coerce.date().nullable().optional(),
 });
 
 // If you want a separate update  where fields can be optional:
@@ -659,7 +667,7 @@ export const expenseUpdateZ = expenseZ.partial().refine(
 export const transactionLogZ = z.object({
   transactionType: z.enum(TransactionType),
   referenceId: mongoZ,
-  referenceModel: z.enum(["FeeCollection", "Salary", "Expense"]),
+  referenceModel: z.enum(["FeeCollection", "SalaryPayment", "Expense"]),
   amount: moneyZ,
   description: z.string(),
   performedBy: mongoZ.optional(),

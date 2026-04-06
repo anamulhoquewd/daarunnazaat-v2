@@ -21,16 +21,17 @@ import { useEffect, useState } from "react";
 
 type StaffItem = {
   _id: string;
-  staffId: string;
+  paidBy: string;
   user: { _id: string };
 };
 
 interface Props {
-  value?: string; // collectedBy
-  onChange: (key: "collectedBy", value: string) => void;
+  value?: string;
+  onChange: (key: "collectedBy" | "paidBy", value: string) => void;
+  fieldName: "collectedBy" | "paidBy";
 }
 
-export function StaffFilterCombobox({ value, onChange }: Props) {
+export function StaffFilterCombobox({ value, onChange, fieldName }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -77,9 +78,7 @@ export function StaffFilterCombobox({ value, onChange }: Props) {
 
   return (
     <div>
-      <label className="text-sm font-medium mb-2 block">
-        Collected By (Staff ID)
-      </label>
+      <label className="text-sm font-medium mb-2 block">Paid By</label>
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -88,7 +87,7 @@ export function StaffFilterCombobox({ value, onChange }: Props) {
             role="combobox"
             className="w-full justify-between"
           >
-            {selectedStaff?.staffId || "Select class..."}
+            {selectedStaff?.paidBy || "Select admin..."}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -100,7 +99,7 @@ export function StaffFilterCombobox({ value, onChange }: Props) {
         <PopoverContent className="w-full p-0">
           <Command>
             <CommandInput
-              placeholder="Search class..."
+              placeholder="Search admin..."
               value={search}
               onValueChange={setSearch}
             />
@@ -121,9 +120,9 @@ export function StaffFilterCombobox({ value, onChange }: Props) {
                 {staffs.map((item) => (
                   <CommandItem
                     key={item._id}
-                    value={item.staffId}
+                    value={item.paidBy}
                     onSelect={() => {
-                      onChange("collectedBy", item.user._id);
+                      onChange(fieldName, item.user._id);
                       setOpen(false);
                     }}
                   >
@@ -133,7 +132,7 @@ export function StaffFilterCombobox({ value, onChange }: Props) {
                         value === item.user._id ? "opacity-100" : "opacity-0",
                       )}
                     />
-                    {item.staffId}
+                    {item.paidBy}
                   </CommandItem>
                 ))}
               </CommandGroup>

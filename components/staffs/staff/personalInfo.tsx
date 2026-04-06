@@ -59,8 +59,6 @@ export function PersonalInfoSection({
     }
   }, [data, form.reset]);
 
-  console.log("Data: ", data);
-
   const handleSave = async (formData: PersonalInfo) => {
     try {
       if (onSave) {

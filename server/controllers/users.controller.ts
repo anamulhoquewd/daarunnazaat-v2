@@ -407,7 +407,7 @@ export const refreshToken = async (c: Context) => {
       200,
     );
   } catch (error: any) {
-    console.log("Error during token refresh:", error);
+    console.error("Error during token refresh:", error);
     if (error.name === "JwtTokenExpired") {
       return authorizationError(
         c,

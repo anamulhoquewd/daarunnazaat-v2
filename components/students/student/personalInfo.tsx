@@ -44,9 +44,6 @@ export function PersonalInfoSection({
     resolver: zodResolver(personalInfoSchema),
   });
 
-  console.log("form errors", form.formState.errors);
-  console.log("values: ", form.getValues());
-
   useEffect(() => {
     if (data) {
       form.reset({
