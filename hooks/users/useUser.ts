@@ -261,6 +261,8 @@ function useUser() {
 
       setIsAddOpen(false);
 
+      form.reset({ email: "", phone: "" });
+
       toast.success("User created successfully!");
     } catch (error: any) {
       toast.error("User creation failed!");
@@ -321,12 +323,13 @@ function useUser() {
       toast.success(
         response.data.success.message || "User deleted successfully",
       );
+
+      setIsDelOpen(false);
     } catch (error) {
       toast.error("An error occurred while deleting the user.");
       handleAxiosError(error);
     } finally {
       setIsLoading(false);
-      setIsDelOpen(false);
     }
   };
 

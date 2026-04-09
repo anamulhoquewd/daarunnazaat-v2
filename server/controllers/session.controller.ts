@@ -84,7 +84,6 @@ export const updates = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
-
 export const activate = async (c: Context) => {
   const _id = c.req.param("_id");
 
@@ -107,6 +106,21 @@ export const deactivate = async (c: Context) => {
 
   const response = await sessionService.deactivate(_id);
 
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+export const deleteSession = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await sessionService.deleteSession(_id);
   if (response.error) {
     return badRequestError(c, response.error);
   }

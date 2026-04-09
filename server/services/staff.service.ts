@@ -1,4 +1,5 @@
 import {
+  BloodGroup,
   Branch,
   Gender,
   IStaff,
@@ -9,11 +10,11 @@ import {
   UserRole,
 } from "@/validations";
 import mongoose, { PipelineStage } from "mongoose";
-import { schemaValidationError } from "@/server/error";
-import { Staff } from "@/server/models/staffs.model";
-import { User } from "@/server/models/users.model";
-import pagination from "@/server/utils/pagination";
-import { generateStaffId } from "@/server/utils/string-generator";
+import { schemaValidationError } from "../error";
+import { Staff } from "../models/staffs.model";
+import { User } from "../models/users.model";
+import pagination from "../utils/pagination";
+import { generateStaffId } from "../utils/string-generator";
 
 export const createStaff = async (body: IStaff) => {
   const validData = staffZ.safeParse(body);
@@ -133,7 +134,7 @@ export const gets = async (queryParams: {
       queryParams.baseSalaryRange?.min !== undefined &&
       queryParams.baseSalaryRange?.max !== undefined
     ) {
-      matchStage.baseSalary = {
+      matchStage.basicSalary = {
         $gte: queryParams.baseSalaryRange.min,
         $lte: queryParams.baseSalaryRange.max,
       };
@@ -157,7 +158,8 @@ export const gets = async (queryParams: {
       const search = queryParams.search;
 
       matchStage.$or = [
-        { fullName: { $regex: search, $options: "i" } },
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
         { nid: { $regex: search, $options: "i" } },
         { staffId: { $regex: search, $options: "i" } },
         { designation: { $regex: search, $options: "i" } },
@@ -173,7 +175,7 @@ export const gets = async (queryParams: {
     }
 
     /* ------------------ SORT ------------------ */
-    const allowedSortFields = ["createdAt", "updatedAt", "fullName"];
+    const allowedSortFields = ["createdAt", "updatedAt", "firstName"];
     const sortField = allowedSortFields.includes(queryParams.sortBy)
       ? queryParams.sortBy
       : "createdAt";
@@ -408,7 +410,7 @@ export const updateMe = async ({
   // Validate Body
   const bodyValidation = staffUpdateZ
     .omit({
-      baseSalary: true,
+      basicSalary: true,
       birthCertificateNumber: true,
       branch: true,
       department: true,

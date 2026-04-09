@@ -3,6 +3,7 @@
 import { ClassBottomFilter } from "@/components/clasess/classBottomFilter";
 import { ClassColumns } from "@/components/clasess/classColumns";
 import ClassRegistrationForm from "@/components/clasess/classRegistrationForm";
+import DeleteAlert from "@/components/common/deleteAlert";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
 import { AlertDialogHeader } from "@/components/ui/alert-dialog";
@@ -52,10 +53,7 @@ import { useState } from "react";
 function ClassesPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    description: false,
-    status: false,
-  });
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const {
     pagination,
@@ -79,6 +77,9 @@ function ClassesPage() {
     handleSubmit,
     isLoading,
     setIsDelOpen,
+    isDelOpen,
+    deleteClass,
+    selectedId,
   } = useClassQuery();
 
   const columns = ClassColumns({
@@ -295,6 +296,16 @@ function ClassesPage() {
               setPagination={setPagination}
             />
           </div>
+        )}
+
+        {selectedId && (
+          <DeleteAlert
+            isOpen={isDelOpen}
+            setIsOpen={setIsDelOpen}
+            cb={deleteClass.bind(null, selectedId)}
+            setSelectedId={setSelectedId}
+            isLoading={isLoading}
+          />
         )}
       </CardContent>
     </Card>

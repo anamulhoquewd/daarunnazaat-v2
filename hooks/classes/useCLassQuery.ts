@@ -199,6 +199,33 @@ function useClassQuery() {
     }
   };
 
+  const deleteClass = async (classId: string) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.delete(`/classes/${classId}`);
+      if (!response.data.success) {
+        toast.error("Delete failed");
+        throw new Error(response.data.error.message || "Failed to delete user");
+      }
+
+      toast.success("Class deleted successfully");
+
+      getClasses({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+      setIsDelOpen(false);
+    } catch (error: any) {
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 🔥 API call only when debounced search OR page/limit changes
   useEffect(() => {
     getClasses({
@@ -246,6 +273,8 @@ function useClassQuery() {
     handleSubmit,
     setIsDelOpen,
     isDelOpen,
+    deleteClass,
+    selectedId,
   };
 }
 

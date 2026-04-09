@@ -58,29 +58,6 @@ export const useGuardianActions = () => {
     }
   };
 
-  const handleDelete = async (guardianId: string) => {
-    setLoading((p) => ({ ...p, delete: true }));
-    try {
-      const response = await api.delete(`/guardians/${guardianId}`);
-
-      if (!response.data.success) {
-        toast.error(response.data.error.message || "Failed to delete guardian");
-        throw new Error(
-          response.data.error.message || "Failed to delete guardian",
-        );
-      }
-
-      toast.success(
-        response.data.success.message || "guardian deleted successfully",
-      );
-    } catch (error) {
-      toast.error("An error occurred while deleting the guardian.");
-      handleAxiosError(error);
-    } finally {
-      setLoading((p) => ({ ...p, delete: false }));
-    }
-  };
-
   useEffect(() => {
     getGuardianById(id);
   }, [id]);
@@ -90,6 +67,5 @@ export const useGuardianActions = () => {
     loading,
     handleUpdate,
     getGuardianById,
-    handleDelete,
   };
 };
