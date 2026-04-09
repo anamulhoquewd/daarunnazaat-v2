@@ -656,8 +656,6 @@ export const restoreStudent = async (_id: string) => {
       return { error: { message: "student not deleted." } };
     }
 
-    console.log("Restoring student:", student);
-
     student.isDeleted = false;
     student.deletedAt = null;
 

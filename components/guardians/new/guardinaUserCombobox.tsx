@@ -39,9 +39,7 @@ export function GuardianUserCombobox({ value, onChange }: Props) {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const res = await api.get(
-          `/users?search=${search}&role=guardian&nullProfile=null`,
-        );
+        const res = await api.get(`/users?search=${search}&roles=guardian`);
         setUsers(res.data.data);
       } catch (error) {
         console.error("Failed to fetch users:", error);

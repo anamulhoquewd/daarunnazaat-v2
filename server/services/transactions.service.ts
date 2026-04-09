@@ -61,12 +61,6 @@ export const gets = async (queryParams: {
       query.$or = [
         { description: { $regex: queryParams.search, $options: "i" } },
       ];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
 
     // Filter by referenceId
@@ -134,7 +128,7 @@ export const gets = async (queryParams: {
         .skip((queryParams.page - 1) * queryParams.limit)
         .limit(queryParams.limit)
         .populate("referenceId")
-        .populate("performedBy", "role phone")
+        .populate("performedBy", "roles phone")
         .exec(),
       TransactionLog.countDocuments(query),
       TransactionLog.countDocuments(),

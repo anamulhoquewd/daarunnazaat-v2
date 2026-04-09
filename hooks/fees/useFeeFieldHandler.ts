@@ -51,8 +51,6 @@ export function useFeeFieldHandlers(
     }
   };
 
-  console.log("Current Changes:", form.getValues());
-
   return {
     handleReceivedAmountChange,
     handlePeriodChange,

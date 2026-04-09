@@ -83,12 +83,20 @@ export function useFeeCenter() {
 
       setSelectedStudent(null);
       setStudents([]);
-      form.reset();
+      form.reset({
+        studentId: "",
+        paymentMethod: PaymentMethod.CASH,
+        paymentDate: new Date(),
+        receivedAmount: 0,
+        paymentSource: PaymentSource.OFFICE,
+        remarks: "",
+      });
 
-      console.log("Res: ", res);
       toast.success(res.data.message);
 
       const feeId = res.data.data._id;
+
+
 
       // 🔥 Redirect to invoice page
       router.push(`/dashboard/fees/${feeId}`);

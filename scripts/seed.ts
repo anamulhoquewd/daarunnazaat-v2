@@ -1,6 +1,7 @@
 import { User } from "@/server/models/users.model";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import { toast } from "sonner";
 dotenv.config();
 
 const registerSuperAdmin = async () => {
@@ -24,10 +25,11 @@ const registerSuperAdmin = async () => {
     });
 
     await user.save();
-    console.log("Super admin created successfully!");
+    toast.success("Super admin created successfully!");
     process.exit(0);
   } catch (err: any) {
     console.error("Seed error:", err);
+    toast.error("Failed to create super admin.");
     process.exit(1);
   }
 };

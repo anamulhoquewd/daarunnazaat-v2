@@ -6,7 +6,7 @@ export const staffInfoSchema = staffZ.pick({
   joinDate: true,
   designation: true,
   department: true,
-  basicSalary: true,
+  baseSalary: true,
 });
 
 export type StaffInfo = z.infer<typeof staffInfoSchema>;

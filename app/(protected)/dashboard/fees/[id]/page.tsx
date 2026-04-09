@@ -337,7 +337,7 @@ export default function InvoicePage() {
                       {fee.collectedBy.phone}
                     </span>
                     <span className="text-xs text-neutral-600">
-                      {fee.collectedBy.role}
+                      {fee.collectedBy?.roles[0] || "-"}
                     </span>
                   </p>
                 </div>

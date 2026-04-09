@@ -8,6 +8,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 // Define Props Interface
 interface ColumnsProps {
@@ -17,14 +18,24 @@ interface ColumnsProps {
   setValues: (values: any) => void;
 }
 export const SalariesColumns = ({
-  setIsEditing,
   setIsDelOpen,
-  setValues,
   setSelectedId,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
     header: "Receipt number",
-    cell: ({ row }) => row.original?.receiptNumber || "-",
+    cell: ({ row }) => {
+      const { _id, receiptNumber } = row.original;
+
+      return (
+        <Link
+          href={`/dashboard/salaries/${_id}`}
+          className="text-blue-600 hover:underline font-medium"
+          target="_blank"
+        >
+          {receiptNumber ?? "-"}
+        </Link>
+      );
+    },
   },
   {
     accessorKey: "staffId",
@@ -33,10 +44,7 @@ export const SalariesColumns = ({
   },
   {
     header: "Staff name",
-    cell: ({ row }) =>
-      `${row.original?.staffId?.firstName || ""} ${
-        row.original?.staffId?.lastName || ""
-      }`,
+    cell: ({ row }) => `${row.original?.staffId?.fullName || ""}` || "-",
   },
   {
     accessorKey: "branch",
@@ -46,7 +54,7 @@ export const SalariesColumns = ({
   {
     accessorKey: "staff_salary",
     header: "Staff Salary",
-    cell: ({ row }) => row.original?.staffId?.basicSalary || "-",
+    cell: ({ row }) => row.original?.staffId?.baseSalary || "-",
   },
   {
     accessorKey: "designation",
@@ -71,7 +79,7 @@ export const SalariesColumns = ({
   {
     accessorKey: "salary",
     header: "Salary",
-    cell: ({ row }) => row.original?.basicSalary || "-",
+    cell: ({ row }) => row.original?.baseSalary || "-",
   },
   {
     accessorKey: "bonus",
@@ -106,11 +114,6 @@ export const SalariesColumns = ({
     cell: ({ row }) => row.original?.paidBy?.phone,
   },
   {
-    accessorKey: "paidByRole",
-    header: "Paid by role",
-    cell: ({ row }) => row.original?.paidBy?.role,
-  },
-  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
@@ -122,16 +125,12 @@ export const SalariesColumns = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onClick={() => {
-              setValues(row.original);
-              setSelectedId(row.original._id);
-              setIsEditing(true);
-            }}
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
+          <Link href={`/dashboard/salaries/edit/${row.original._id}`}>
+            <DropdownMenuItem>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+          </Link>
 
           <DropdownMenuItem
             className="text-destructive"
@@ -141,7 +140,7 @@ export const SalariesColumns = ({
             }}
           >
             <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+            Delete Flag
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

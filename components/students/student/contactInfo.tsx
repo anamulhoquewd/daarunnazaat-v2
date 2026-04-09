@@ -41,8 +41,6 @@ export function ContactInfoSection({
     resolver: zodResolver(contactInfoSchema),
   });
 
-  console.log("Guardian: ", data);
-
   useEffect(() => {
     if (data) {
       form.reset({
@@ -62,9 +60,6 @@ export function ContactInfoSection({
       console.error("Error saving contact info:", error);
     }
   };
-
-  console.log("Form values: ", form.getValues());
-  console.log("Form errors: ", form.formState.errors);
 
   return (
     <EditableSection

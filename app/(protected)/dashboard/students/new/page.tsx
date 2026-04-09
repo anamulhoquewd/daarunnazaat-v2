@@ -5,7 +5,6 @@ import AddressInformation from "@/components/students/new/steps/addressInformati
 import ContactInformation from "@/components/students/new/steps/contactInformation";
 import FeesTab from "@/components/students/new/steps/feesTab";
 import PersonalInformation from "@/components/students/new/steps/personalInformation";
-import UserSelection from "@/components/students/new/steps/userSelection";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useStudentForm } from "@/hooks/students/useStudentForm";
@@ -13,9 +12,6 @@ import { FormProvider } from "react-hook-form";
 
 export default function StudentRegistrationPage() {
   const { form, handleSubmit, isLoading, clearForm } = useStudentForm();
-
-  console.log("Form values: ", form.getValues());
-  console.log("Errors: ", form.formState.errors);
 
   return (
     <main className="w-full flex flex-col overflow-hidden gap-8">

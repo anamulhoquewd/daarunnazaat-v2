@@ -56,7 +56,7 @@ export const SessionColumns = ({
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (row.original?.isActive ? "Active" : "Inactive"),
+    cell: ({ row }) => (row.original?.isActive ? "Active" : "Deactive"),
   },
   {
     id: "actions",

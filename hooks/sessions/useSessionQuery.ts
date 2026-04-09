@@ -83,6 +83,14 @@ function useSessionQuery() {
         currentPage: pagination.page,
       });
       toast.success("Session created successfully!");
+
+      form.reset({
+        sessionName: "",
+        isActive: true,
+        startDate: undefined,
+        endDate: undefined,
+        batchType: undefined,
+      });
     } catch (error: any) {
       handleAxiosError(error);
 
@@ -151,8 +159,6 @@ function useSessionQuery() {
   const handleUpdate = async (data: IUpdateSession) => {
     setIsLoading(true);
 
-    console.log("Updating session with data:", data, "and ID:", selectedId);
-
     try {
       const response = await api.patch(`/sessions/${selectedId}`, data);
       if (!response.data.success) {
@@ -168,6 +174,13 @@ function useSessionQuery() {
         currentPage: pagination.page,
       });
       toast.success("Updated successfully");
+      form.reset({
+        sessionName: "",
+        isActive: true,
+        startDate: undefined,
+        endDate: undefined,
+        batchType: undefined,
+      });
     } catch (e) {
       toast.error("Update failed");
     } finally {
@@ -204,6 +217,36 @@ function useSessionQuery() {
       ...prev,
       page: 1,
     }));
+  };
+
+  const deleteSession = async (sessionId: string) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.delete(`/sessions/${sessionId}`);
+      if (!response.data.success) {
+        toast.error("Delete failed");
+        throw new Error(
+          response.data.error.message || "Failed to delete session",
+        );
+      }
+
+      toast.success("Session deleted successfully");
+
+      getSessions({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+
+      setIsDelOpen(false);
+    } catch (error: any) {
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 🔥 API call only when debounced search OR page/limit changes
@@ -244,6 +287,7 @@ function useSessionQuery() {
     combinedFilters,
     isAddOpen,
     setIsAddOpen,
+    selectedId,
     setIsEditing,
     setSelectedId,
     values,
@@ -253,6 +297,7 @@ function useSessionQuery() {
     handleSubmit,
     setIsDelOpen,
     isDelOpen,
+    deleteSession,
   };
 }
 

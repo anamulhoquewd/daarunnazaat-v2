@@ -1,5 +1,6 @@
 "use client";
 
+import DeleteAlert from "@/components/common/deleteAlert";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
 import { GuardianBottomFilter } from "@/components/guardians/guardianBottomFilter";
@@ -27,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useGuardianQuery from "@/hooks/guardians/guardianStudentQuery";
+import { useGuardianActions } from "@/hooks/guardians/useGuardianActions";
 import {
   ColumnFiltersState,
   SortingState,
@@ -41,10 +43,6 @@ import Link from "next/link";
 import { useState } from "react";
 
 function GuardianPage() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
-  const [selectId, setSelectedId] = useState<string | null>(null);
-
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
@@ -62,13 +60,21 @@ function GuardianPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    activeGuardian,
+    deactiveGuardian,
+    isLoading,
+    handleDelete,
+    setSelectedId,
+    selectedId,
+    setIsDelOpen,
+    isDelOpen,
   } = useGuardianQuery();
 
   const columns = GuardianColumns({
-    setIsEditing,
     setIsDelOpen,
-    setValues,
     setSelectedId,
+    activeGuardian,
+    deactiveGuardian,
   });
 
   const table = useReactTable({
@@ -224,6 +230,16 @@ function GuardianPage() {
               setPagination={setPagination}
             />
           </div>
+        )}
+
+        {selectedId && (
+          <DeleteAlert
+            isOpen={isDelOpen}
+            setIsOpen={setIsDelOpen}
+            cb={handleDelete.bind(null, selectedId)}
+            setSelectedId={setSelectedId}
+            isLoading={isLoading}
+          />
         )}
       </CardContent>
     </Card>

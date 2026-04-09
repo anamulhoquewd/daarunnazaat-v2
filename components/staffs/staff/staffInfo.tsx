@@ -61,7 +61,7 @@ export function StaffInfoSection({
         joinDate: new Date(),
         designation: data?.designation ?? "",
         department: data?.department ?? "",
-        basicSalary: data?.basicSalary ?? 0,
+        baseSalary: data?.baseSalary ?? 0,
       });
     }
   }, [data, form.reset]);
@@ -147,7 +147,7 @@ export function StaffInfoSection({
 
                   <FormField
                     control={form.control}
-                    name="basicSalary"
+                    name="baseSalary"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Salary *</FormLabel>
@@ -155,7 +155,7 @@ export function StaffInfoSection({
                           <Input
                             type="number"
                             min={0}
-                            placeholder="Basic Salary"
+                            placeholder="Base Salary"
                             {...field}
                             value={field.value ? String(field.value) : ""}
                           />
@@ -200,7 +200,7 @@ export function StaffInfoSection({
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Salary</p>
-              <p className="font-medium">{data?.basicSalary || "N/A"}</p>
+              <p className="font-medium">{data?.baseSalary || "N/A"}</p>
             </div>
           </div>
         </CardContent>

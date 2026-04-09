@@ -8,19 +8,20 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { Separator } from "../ui/separator";
 
 // Define Props Interface
 interface ColumnsProps {
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setValues: (values: any) => void;
+  activeGuardian: (guardianId: string) => Promise<void>;
+  deactiveGuardian: (guardianId: string) => Promise<void>;
 }
 export const GuardianColumns = ({
-  setIsEditing,
   setIsDelOpen,
-  setValues,
   setSelectedId,
+  activeGuardian,
+  deactiveGuardian,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
     header: "Guardian ID",
@@ -68,32 +69,48 @@ export const GuardianColumns = ({
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (row.original?.userId?.isActive ? "Active" : "Inactive"),
+    cell: ({ row }) => (row.original?.isActive ? "Active" : "Deactivated"),
   },
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
+    cell: ({ row }) => {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            className="text-destructive"
-            onClick={() => {
-              setSelectedId(row.original._id);
-              setIsDelOpen(true);
-            }}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => {
+                if (row.original.isActive) {
+                  deactiveGuardian!(row.original._id);
+                } else {
+                  activeGuardian!(row.original._id);
+                }
+              }}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              {row.original.isActive ? "Deactivate" : "Activate"}
+            </DropdownMenuItem>
+            <Separator className="my-1" />
+
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => {
+                setSelectedId(row.original._id);
+                setIsDelOpen(true);
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
   },
 ];

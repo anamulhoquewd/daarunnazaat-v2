@@ -25,7 +25,7 @@ export function GuardianBottomFilter({ filters, onChange }: Props) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="guardianId">Guardian ID</SelectItem>
-            <SelectItem value="firstName">First name</SelectItem>
+            <SelectItem value="fullName">Full Name</SelectItem>
             <SelectItem value="email">Email</SelectItem>
             <SelectItem value="createdAt">Created Date</SelectItem>
             <SelectItem value="updatedAt">Updated Date</SelectItem>

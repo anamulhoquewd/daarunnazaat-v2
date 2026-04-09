@@ -91,7 +91,7 @@ export const register = async (body: IUser) => {
     const user = new User({
       ...validData.data,
       password,
-      role: validData.data.roles,
+      roles: validData.data.roles,
     });
 
     // Save user
@@ -106,7 +106,7 @@ export const register = async (body: IUser) => {
     };
 
     // Send Email
-    await transporter.sendMail(mailOptions);
+    // await transporter.sendMail(mailOptions);
 
     return {
       success: {
@@ -298,6 +298,7 @@ export const updateUser = async ({
     .pick({
       email: true,
       phone: true,
+      roles: true,
     })
     .safeParse(body);
 
@@ -924,8 +925,6 @@ export const resetPassword = async ({
       passwordResetExpires: { $gt: Date.now() },
     });
 
-    console.log("Data found for reset token:", data);
-
     if (!data) {
       return {
         error: {
@@ -984,7 +983,7 @@ export const login = async (body: {
     // Check if user exists
     const user = await User.findOne({
       $or: [{ email }, { phone }],
-    }).select("password email role isActive isBlocked refreshTokens");
+    }).select("password email roles isActive isBlocked refreshTokens");
 
     if (!user) {
       return {

@@ -1,6 +1,5 @@
 import {
   BatchType,
-  Branch,
   ISession,
   IUpdateSession,
   mongoIdZ,
@@ -10,7 +9,6 @@ import {
 import { schemaValidationError } from "../error";
 import { Session } from "../models/sessions.model";
 import pagination from "../utils/pagination";
-import mongoose from "mongoose";
 
 export const register = async (body: ISession) => {
   // Safe Parse for better error handling
@@ -36,6 +34,25 @@ export const register = async (body: ISession) => {
             {
               name: "name",
               message: "session name must be unique",
+            },
+          ],
+        },
+      };
+    }
+
+    // session end date should be greater than start date
+    if (
+      validData.data.startDate &&
+      validData.data.endDate &&
+      validData.data.endDate <= validData.data.startDate
+    ) {
+      return {
+        error: {
+          message: "End date must be greater than start date",
+          fields: [
+            {
+              name: "endDate",
+              message: "End date must be greater than start date",
             },
           ],
         },
@@ -88,12 +105,6 @@ export const gets = async (queryParams: {
       query.$or = [
         { sessionName: { $regex: queryParams.search, $options: "i" } },
       ];
-
-      if (mongoose.Types.ObjectId.isValid(queryParams.search)) {
-        query.$or.push({
-          _id: new mongoose.Types.ObjectId(queryParams.search),
-        });
-      }
     }
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "sessionName"].includes(
@@ -319,6 +330,38 @@ export const deactivate = async (_id: string) => {
       success: {
         success: true,
         message: "session deactivated successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const deleteSession = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const session = await Session.findById(idValidation.data._id);
+
+    if (!session) {
+      return { error: { message: "session not found!" } };
+    }
+
+    await session.deleteOne();
+
+    return {
+      success: {
+        success: true,
+        message: "session deleted successfully",
       },
     };
   } catch (error: any) {

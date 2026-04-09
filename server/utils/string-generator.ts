@@ -35,153 +35,154 @@ export function stringGenerator(strLength: number) {
 
 /**
  * Generate Receipt Number for Fee Collection
- * Format: FEE-YYYY-NNNNNN
- * Example: FEE-2024-000001, FEE-2024-000002
+ * Format: FEE-YYYY-NNN
+ * Example: FEE-2024-001
  */
 export async function generateFeeReceiptNumber(): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `FEE-${year}-`;
 
-  // Find last receipt number for current year
-  const lastReceipt = await FeeCollection.findOne({
-    receiptNumber: { $regex: `^${prefix}` },
-  }).sort({ receiptNumber: -1 });
+  const result = await FeeCollection.aggregate([
+    { $match: { receiptNumber: { $regex: `^${prefix}` } } },
+    {
+      $addFields: {
+        numericPart: {
+          $toInt: { $arrayElemAt: [{ $split: ["$receiptNumber", "-"] }, 2] },
+        },
+      },
+    },
+    { $sort: { numericPart: -1 } },
+    { $limit: 1 },
+  ]);
 
-  let nextNumber = 1;
-
-  if (lastReceipt && lastReceipt.receiptNumber) {
-    // Extract number from last receipt (FEE-2024-000001 -> 000001)
-    const lastNumber = parseInt(lastReceipt.receiptNumber.split("-")[2]);
-    nextNumber = lastNumber + 1;
-  }
-
-  // Pad with zeros (6 digits)
-  const paddedNumber = nextNumber.toString().padStart(6, "0");
-
-  return `${prefix}${paddedNumber}`;
+  const lastNumber = result.length > 0 ? result[0].numericPart : 0;
+  return `${prefix}${(lastNumber + 1).toString().padStart(3, "0")}`;
 }
 
 /**
  * Generate Voucher Number for Expense
- * Format: EXP-YYYY-NNNNNN
- * Example: EXP-2024-000001, EXP-2024-000002
+ * Format: EXP-YYYY-NNN
+ * Example: EXP-2024-001
  */
 export async function generateVoucherNumber(): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `EXP-${year}-`;
 
-  const lastVoucher = await Expense.findOne({
-    voucherNumber: { $regex: `^${prefix}` },
-  }).sort({ voucherNumber: -1 });
+  const result = await Expense.aggregate([
+    { $match: { voucherNumber: { $regex: `^${prefix}` } } },
+    {
+      $addFields: {
+        numericPart: {
+          $toInt: { $arrayElemAt: [{ $split: ["$voucherNumber", "-"] }, 2] },
+        },
+      },
+    },
+    { $sort: { numericPart: -1 } },
+    { $limit: 1 },
+  ]);
 
-  let nextNumber = 1;
-
-  if (lastVoucher) {
-    const lastNumber = parseInt(lastVoucher.voucherNumber.split("-")[2]);
-    nextNumber = lastNumber + 1;
-  }
-
-  const paddedNumber = nextNumber.toString().padStart(6, "0");
-
-  return `${prefix}${paddedNumber}`;
+  const lastNumber = result.length > 0 ? result[0].numericPart : 0;
+  return `${prefix}${(lastNumber + 1).toString().padStart(3, "0")}`;
 }
 
 /**
  * Generate Salary Receipt Number
- * Format: SAL-YYYY-NNNNNN
- * Example: SAL-2024-000001
+ * Format: SAL-YYYY-NNN
+ * Example: SAL-2024-001
  */
 export async function generateSalaryReceiptNumber(): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `SAL-${year}-`;
 
-  const lastReceipt = await Salary.findOne({
-    receiptNumber: { $regex: `^${prefix}` },
-  }).sort({ receiptNumber: -1 });
+  const result = await Salary.aggregate([
+    { $match: { receiptNumber: { $regex: `^${prefix}` } } },
+    {
+      $addFields: {
+        numericPart: {
+          $toInt: { $arrayElemAt: [{ $split: ["$receiptNumber", "-"] }, 2] },
+        },
+      },
+    },
+    { $sort: { numericPart: -1 } },
+    { $limit: 1 },
+  ]);
 
-  let nextNumber = 1;
-
-  if (lastReceipt && lastReceipt.receiptNumber) {
-    const lastNumber = parseInt(lastReceipt.receiptNumber.split("-")[2]);
-    nextNumber = lastNumber + 1;
-  }
-
-  const paddedNumber = nextNumber.toString().padStart(6, "0");
-
-  return `${prefix}${paddedNumber}`;
+  const lastNumber = result.length > 0 ? result[0].numericPart : 0;
+  return `${prefix}${(lastNumber + 1).toString().padStart(3, "0")}`;
 }
 
 /**
  * Generate Student ID
- * Format: STU-YYYY-NNNN
- * Example: STU-2024-0001
+ * Format: STU-YYYY-NNN
+ * Example: STU-2024-001
  */
 export async function generateStudentId(): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `STU-${year}-`;
 
-  const lastStudent = await Student.findOne({
-    studentId: { $regex: `^${prefix}` },
-  }).sort({ studentId: -1 });
+  const result = await Student.aggregate([
+    { $match: { studentId: { $regex: `^${prefix}` } } },
+    {
+      $addFields: {
+        numericPart: {
+          $toInt: { $arrayElemAt: [{ $split: ["$studentId", "-"] }, 2] },
+        },
+      },
+    },
+    { $sort: { numericPart: -1 } },
+    { $limit: 1 },
+  ]);
 
-  let nextNumber = 1;
-
-  if (lastStudent && lastStudent.studentId) {
-    const lastNumber = parseInt(lastStudent.studentId.split("-")[2]);
-    nextNumber = lastNumber + 1;
-  }
-
-  const paddedNumber = nextNumber.toString().padStart(4, "0");
-
-  return `${prefix}${paddedNumber}`;
+  const lastNumber = result.length > 0 ? result[0].numericPart : 0;
+  return `${prefix}${(lastNumber + 1).toString().padStart(3, "0")}`;
 }
 
 /**
  * Generate Guardian ID
- * Format: GRD-YYYY-NNNN
- * Example: GRD-2024-0001
+ * Format: GRD-NNN
+ * Example: GRD-001
  */
 export async function generateGuardianId(): Promise<string> {
-  const year = new Date().getFullYear();
-  const prefix = `GRD-${year}-`;
+  const prefix = `GRD-`;
 
-  const lastGuardian = await Guardian.findOne({
-    guardianId: { $regex: `^${prefix}` },
-  }).sort({ guardianId: -1 });
+  const result = await Guardian.aggregate([
+    { $match: { guardianId: { $regex: `^${prefix}` } } },
+    {
+      $addFields: {
+        numericPart: {
+          $toInt: { $arrayElemAt: [{ $split: ["$guardianId", "-"] }, 1] },
+        },
+      },
+    },
+    { $sort: { numericPart: -1 } },
+    { $limit: 1 },
+  ]);
 
-  let nextNumber = 1;
-
-  if (lastGuardian && lastGuardian.guardianId) {
-    const lastNumber = parseInt(lastGuardian.guardianId.split("-")[2]);
-    nextNumber = lastNumber + 1;
-  }
-
-  const paddedNumber = nextNumber.toString().padStart(4, "0");
-
-  return `${prefix}${paddedNumber}`;
+  const lastNumber = result.length > 0 ? result[0].numericPart : 0;
+  return `${prefix}${(lastNumber + 1).toString().padStart(3, "0")}`;
 }
 
 /**
  * Generate Staff ID
- * Format: STF-YYYY-NNNN
- * Example: STF-2024-0001
+ * Format: STF-NNN
+ * Example: STF-001
  */
 export async function generateStaffId(): Promise<string> {
-  const year = new Date().getFullYear();
-  const prefix = `STF-${year}-`;
+  const prefix = `STF-`;
 
-  const lastStaff = await Staff.findOne({
-    staffId: { $regex: `^${prefix}` },
-  }).sort({ staffId: -1 });
+  const result = await Staff.aggregate([
+    { $match: { staffId: { $regex: `^${prefix}` } } },
+    {
+      $addFields: {
+        numericPart: {
+          $toInt: { $arrayElemAt: [{ $split: ["$staffId", "-"] }, 1] },
+        },
+      },
+    },
+    { $sort: { numericPart: -1 } },
+    { $limit: 1 },
+  ]);
 
-  let nextNumber = 1;
-
-  if (lastStaff && lastStaff.staffId) {
-    const lastNumber = parseInt(lastStaff.staffId.split("-")[2]);
-    nextNumber = lastNumber + 1;
-  }
-
-  const paddedNumber = nextNumber.toString().padStart(4, "0");
-
-  return `${prefix}${paddedNumber}`;
+  const lastNumber = result.length > 0 ? result[0].numericPart : 0;
+  return `${prefix}${(lastNumber + 1).toString().padStart(3, "0")}`;
 }

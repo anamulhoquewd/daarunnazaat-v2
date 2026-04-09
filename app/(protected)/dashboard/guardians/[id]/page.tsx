@@ -7,11 +7,10 @@ import { AddressSection } from "@/components/students/student/addressInfo";
 import { ContactInfoSection } from "@/components/students/student/contactInfo";
 import { ProfileHeaderSkeleton } from "@/components/students/student/headerSkeleton";
 import { InfoSectionSkeleton } from "@/components/students/student/InfoSectionSkeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGuardianActions } from "@/hooks/guardians/useGuardianActions";
 import { useState } from "react";
 
-export default function StaffProfilePage() {
+export default function GuardianProfilePage() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
   const { guardian, loading, handleUpdate } = useGuardianActions();

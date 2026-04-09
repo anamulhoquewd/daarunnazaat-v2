@@ -49,6 +49,11 @@ function useSalariesQuery() {
     branch: "all",
   });
 
+  console.log(
+    "🚀 ~ file: useSalariesQuery.ts:94 ~ useSalariesQuery ~ filterBy:",
+    filterBy,
+  );
+
   // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
   const debouncedStaffSearch = useDebounce(search.staffId, 700);
@@ -146,8 +151,8 @@ function useSalariesQuery() {
   };
 
   const updateFilter = (key: string, value: string) => {
-    // Handle search fields (staffId, paidBy) - these go to search state
-    if (key === "staffId" || key === "paidBy") {
+    // Handle search fields (staffId) - these go to search state
+    if (key === "staffId") {
       setSearch((prev) => ({ ...prev, [key]: value }));
       return;
     }

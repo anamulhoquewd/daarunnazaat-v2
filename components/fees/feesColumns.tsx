@@ -28,6 +28,7 @@ export const FeesColumns = ({
         <Link
           href={`/dashboard/fees/${_id}`}
           className="text-blue-600 hover:underline font-medium"
+          target="_blank"
         >
           {receiptNumber ?? "-"}
         </Link>
@@ -110,11 +111,6 @@ export const FeesColumns = ({
     accessorKey: "collectedByPhone",
     header: "collected by phone",
     cell: ({ row }) => row.original?.collectedBy?.phone,
-  },
-  {
-    accessorKey: "collectedByRole",
-    header: "Collect role",
-    cell: ({ row }) => row.original?.collectedBy?.role,
   },
   {
     id: "actions",

@@ -112,7 +112,7 @@ export const gets = async (queryParams: {
     from?: string | Date;
     to?: string | Date;
   };
-  basicSalaryRange?: {
+  baseSalaryRange?: {
     min?: number;
     max?: number;
   };
@@ -131,12 +131,12 @@ export const gets = async (queryParams: {
 
     /* ------------------ SALARY RANGE ------------------ */
     if (
-      queryParams.basicSalaryRange?.min !== undefined &&
-      queryParams.basicSalaryRange?.max !== undefined
+      queryParams.baseSalaryRange?.min !== undefined &&
+      queryParams.baseSalaryRange?.max !== undefined
     ) {
       matchStage.basicSalary = {
-        $gte: queryParams.basicSalaryRange.min,
-        $lte: queryParams.basicSalaryRange.max,
+        $gte: queryParams.baseSalaryRange.min,
+        $lte: queryParams.baseSalaryRange.max,
       };
     }
 

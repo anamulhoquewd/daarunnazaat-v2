@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Branch, Gender } from "@/validations";
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
 
@@ -67,8 +68,15 @@ export default function StaffFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Branches</SelectItem>
-                  <SelectItem value="branch_1">Branch 1</SelectItem>
-                  <SelectItem value="branch_2">Branch 2</SelectItem>
+                  {Object.keys(Branch).map((key) => (
+                    <SelectItem
+                      className="capitalize"
+                      key={key}
+                      value={Branch[key as keyof typeof Branch]}
+                    >
+                      {Branch[key as keyof typeof Branch]}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -84,8 +92,15 @@ export default function StaffFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Genders</SelectItem>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
+                  {Object.keys(Gender).map((key) => (
+                    <SelectItem
+                      className="capitalize"
+                      key={key}
+                      value={Gender[key as keyof typeof Gender]}
+                    >
+                      {Gender[key as keyof typeof Gender]}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

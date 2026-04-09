@@ -79,7 +79,7 @@ export const StudentColumns = ({
   },
   {
     header: "G. Phone",
-    cell: ({ row }) => row.original.guardianId?.phone || "-",
+    cell: ({ row }) => row.original.guardian?.user?.phone || "-",
   },
   {
     accessorKey: "residential",

@@ -1,8 +1,8 @@
 import { Gender } from "@/validations";
 import type { Context } from "hono";
-import { badRequestError, serverError } from "../error";
-import { guardanService } from "../services";
-import { Guardian } from "../models/guardians.model";
+import { badRequestError, serverError } from "@/server/error";
+import { guardanService } from "@/server/services";
+import { Guardian } from "@/server/models/guardians.model";
 
 export const register = async (c: Context) => {
   const body = await c.req.json();
@@ -60,7 +60,6 @@ export const get = async (c: Context) => {
 
   return c.json(response.success, 200);
 };
-
 
 export const getByUser = async (c: Context) => {
   const id = c.req.query("userId") as string;
@@ -140,3 +139,36 @@ export const deletes = async (c: Context) => {
   return c.json(response.success, 200);
 };
 
+// deactivate
+export const deactivateGuardian = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await guardanService.deactivateGuardian(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+// activate
+export const activateGuardian = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await guardanService.activateGuardian(_id);
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
