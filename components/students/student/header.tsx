@@ -43,7 +43,7 @@ export function StudentProfileHeader({ data }: { data: IStudent }) {
                   </Badge>
                 ) : (
                   <Badge variant="destructive" className="text-sm">
-                    Inactive
+                    Deactive
                   </Badge>
                 )}
                 {data?.isBlocked ? (

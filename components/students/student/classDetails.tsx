@@ -14,6 +14,7 @@ interface ClassDetailsProps {
 }
 
 export function ClassDetails({ data }: ClassDetailsProps) {
+  console.log("class details", data);
   return (
     <Card className="p-6 border border-border">
       <CardHeader>
@@ -39,7 +40,7 @@ export function ClassDetails({ data }: ClassDetailsProps) {
           <div>
             <p className="text-sm text-muted-foreground">Activity</p>
             <p className="font-medium">
-              {data?.classId?.isActive ? "Active" : "Inactive"}
+              {data?.classId?.isActive ? "Active" : "Deactive"}
             </p>
           </div>
           <div>

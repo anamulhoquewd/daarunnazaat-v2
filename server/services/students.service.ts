@@ -75,7 +75,7 @@ export const createStudent = async ({
       return {
         error: {
           message:
-            "Session not found,  inactive Session or do not match 'batchType'",
+            "Session not found,  deactive Session or do not match 'batchType'",
         },
       };
     }

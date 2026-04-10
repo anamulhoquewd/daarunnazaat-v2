@@ -38,7 +38,7 @@ export function GuardianProfileHeader({ data }: { data: IGuardian }) {
                   </Badge>
                 ) : (
                   <Badge variant="destructive" className="text-sm">
-                    Inactive
+                    Deactive
                   </Badge>
                 )}
               </div>

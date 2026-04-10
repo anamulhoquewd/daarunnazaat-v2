@@ -185,7 +185,7 @@ function useGuardianQuery() {
   const handleDelete = async (guardianId: string) => {
     setIsLoading(true);
     try {
-      const response = await api.delete(`/guardians/${guardianId}`);
+      const response = await api.delete(`/guardians/${guardianId}/permanently`);
 
       if (!response.data.success) {
         toast.error(response.data.error.message || "Failed to delete guardian");

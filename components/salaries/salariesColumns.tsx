@@ -62,11 +62,6 @@ export const SalariesColumns = ({
     cell: ({ row }) => row.original?.staffId?.designation || "-",
   },
   {
-    accessorKey: "gender",
-    header: "Gender",
-    cell: ({ row }) => row.original?.staffId.gender || "-",
-  },
-  {
     accessorKey: "wahtsApp",
     header: "WhatsApp",
     cell: ({ row }) => row.original?.staffId?.phone || "-",

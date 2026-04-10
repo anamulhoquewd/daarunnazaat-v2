@@ -53,11 +53,11 @@ export const authenticate = async (c: Context, next: Next) => {
       return authenticationError(c);
     }
 
-    // if user is inactive, return error immediately
+    // if user is deactive, return error immediately
     if (!user.isActive) {
       return authenticationError(
         c,
-        "Your account is inactive. Please contact support.",
+        "Your account is deactive. Please contact support.",
       );
     }
 

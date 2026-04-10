@@ -27,9 +27,10 @@ export const gets = async (c: Context) => {
   const search = c.req.query("search") as string;
   const branch = c.req.query("branch") as Branch;
   const gender = c.req.query("gender") as Gender;
-  const minSalary = parseInt(c.req.query("minSalary") as string, 10) || 0;
+  const minSalary =
+    parseInt(c.req.query("minSalary") as string, 10) || undefined;
   const maxSalary =
-    parseInt(c.req.query("maxSalary") as string, 10) || 99999999;
+    parseInt(c.req.query("maxSalary") as string, 10) || undefined;
   const fromDate = c.req.query("fromDate") as string;
   const toDate = c.req.query("toDate") as string;
 
@@ -110,6 +111,22 @@ export const updateMe = async (c: Context) => {
   const body = await c.req.json();
 
   const response = await staffService.updateMe({ userId: user.profile, body });
+
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+};
+
+export const permanentDelete = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await staffService.permanentDelete(_id);
 
   if (response.error) {
     return badRequestError(c, response.error);

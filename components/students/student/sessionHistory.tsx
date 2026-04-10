@@ -43,7 +43,7 @@ export function SessionHistorySection({ data }: SessionHistorySectionProps) {
                 <div>
                   <p className="text-sm text-muted-foreground">Activity</p>
                   <p className="font-medium">
-                    {session?.sessionId?.isActive ? "Active" : "Inactive"}
+                    {session?.sessionId?.isActive ? "Active" : "Deactive"}
                   </p>
                 </div>
               </div>

@@ -61,7 +61,7 @@ export const useStudentActions = () => {
   const handleDelete = async (studentId: string) => {
     setLoading((p) => ({ ...p, delete: true }));
     try {
-      const response = await api.delete(`/students/${studentId}`);
+      const response = await api.delete(`/students/${studentId}/permanently`);
 
       if (!response.data.success) {
         toast.error(response.data.error.message || "Failed to delete student");

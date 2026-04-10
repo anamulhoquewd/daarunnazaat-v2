@@ -61,7 +61,7 @@ export const useStaffActions = () => {
   const handleDelete = async (staffId: string) => {
     setLoading((p) => ({ ...p, delete: true }));
     try {
-      const response = await api.delete(`/staffs/${staffId}`);
+      const response = await api.delete(`/staffs/${staffId}/permanently`);
 
       if (!response.data.success) {
         toast.error(response.data.error.message || "Failed to delete staff");

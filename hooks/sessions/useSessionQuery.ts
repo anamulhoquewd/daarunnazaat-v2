@@ -223,7 +223,7 @@ function useSessionQuery() {
     setIsLoading(true);
 
     try {
-      const response = await api.delete(`/sessions/${sessionId}`);
+      const response = await api.delete(`/sessions/${sessionId}/permanently`);
       if (!response.data.success) {
         toast.error("Delete failed");
         throw new Error(
