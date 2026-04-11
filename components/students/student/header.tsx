@@ -9,12 +9,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IStudent } from "@/validations";
+import { StudentProfile } from "@/hooks/students/useStudentActions";
 import { format } from "date-fns";
 import { ArrowLeft, Expand, MoreVertical } from "lucide-react";
 import Link from "next/link";
 
-export function StudentProfileHeader({ data }: { data: IStudent }) {
+export function StudentProfileHeader({ data }: { data: StudentProfile }) {
   return (
     <div className="border-b border-border bg-card">
       <div className="container max-w-6xl mx-auto px-4 py-8">
@@ -29,8 +29,8 @@ export function StudentProfileHeader({ data }: { data: IStudent }) {
 
             <Avatar className="h-20 w-20 border-2 border-green-300">
               <AvatarImage alt={data?.fullName} src={data?.avatar || ""} />
-              <AvatarFallback className="text-lg font-semibold">
-                {data ? `${data.fullName.charAt(0)}` : "NA"}
+              <AvatarFallback className="text-lg font-semibold uppercase">
+                {data ? `${data.fullName?.charAt(0)}` : "DN"}
               </AvatarFallback>
             </Avatar>
 
@@ -46,28 +46,19 @@ export function StudentProfileHeader({ data }: { data: IStudent }) {
                     Deactive
                   </Badge>
                 )}
-                {data?.isBlocked ? (
+                {data?.isBlocked ?? (
                   <Badge variant="destructive" className="text-sm">
                     Blocked
                   </Badge>
-                ) : (
-                  <Badge variant="secondary" className="text-sm">
-                    Not Blocked
-                  </Badge>
                 )}
-                {data?.isDeleted ? (
+                {data?.isDeleted ?? (
                   <Badge variant="destructive" className="text-sm">
                     Delete
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="text-sm">
-                    Not Deleted
                   </Badge>
                 )}
               </div>
               <p className="text-muted-foreground">
-                {data?.studentId} • {data?.classId?.className} •{" "}
-                {data?.batchType}
+                {data?.studentId} • {data?.class?.className} • {data?.batchType}
               </p>
               <p className="text-sm text-muted-foreground">
                 Date of Birth:{" "}

@@ -10,6 +10,8 @@ import * as userServices from "./users.service";
 import * as transactionService from "./transactions.service";
 import * as payAdmissionDueService from "./payAdmissionDue.service";
 import * as expenseService from "./expense.service";
+import * as exportService from "./export.service";
+import * as generatePDFService from "./generatePDF.service";
 
 export {
   blogService,
@@ -24,4 +26,6 @@ export {
   transactionService,
   payAdmissionDueService,
   expenseService,
+  exportService,
+  generatePDFService,
 };

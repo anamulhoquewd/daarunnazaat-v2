@@ -4,6 +4,7 @@ import authRoutes from "@/server/routes/auth.route";
 import blogRoutes from "@/server/routes/blog.route";
 import classRoutes from "@/server/routes/classes.route";
 import expenseRoutes from "@/server/routes/expense.route";
+import exportRoutes from "@/server/routes/export.route";
 import feeCollectionRoutes from "@/server/routes/feeCollection.route";
 import guardianRoutes from "@/server/routes/guardian.route";
 import payAdmissionDueRoutes from "@/server/routes/payAdmissionDue.route";
@@ -13,7 +14,6 @@ import staffRoutes from "@/server/routes/staff.route";
 import studentRoutes from "@/server/routes/students.route";
 import transactionRoutes from "@/server/routes/transaction.route";
 import userRoutes from "@/server/routes/users.route";
-import { userServices } from "@/server/services";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -85,6 +85,9 @@ app.route("/blogs", blogRoutes);
 
 // blogs routes
 app.route("/pay-admission-due", payAdmissionDueRoutes);
+
+// blogs routes
+app.route("/exports", exportRoutes);
 
 // Global Error Handler
 app.onError((error: any, c) => {

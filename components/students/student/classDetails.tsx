@@ -14,7 +14,6 @@ interface ClassDetailsProps {
 }
 
 export function ClassDetails({ data }: ClassDetailsProps) {
-  console.log("class details", data);
   return (
     <Card className="p-6 border border-border">
       <CardHeader>

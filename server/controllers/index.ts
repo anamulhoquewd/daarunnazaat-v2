@@ -10,9 +10,11 @@ import * as usersController from "./users.controller";
 import * as transactionController from "./transaction.controller";
 import * as payAdmissionDueController from "./payAdmissionDue.controller";
 import * as expenseController from "./expense.controller";
+import * as exportController from "./export.controller";
 
 export {
   blogController,
+  exportController,
   classController,
   feeCollectionController,
   guardianController,

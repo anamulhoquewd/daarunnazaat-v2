@@ -7,11 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { StudentProfile } from "@/hooks/students/useStudentActions";
 import { IStudent } from "@/validations";
 import { format } from "date-fns";
 
 interface SessionHistorySectionProps {
-  data?: IStudent;
+  data?: StudentProfile;
 }
 
 export function SessionHistorySection({ data }: SessionHistorySectionProps) {
