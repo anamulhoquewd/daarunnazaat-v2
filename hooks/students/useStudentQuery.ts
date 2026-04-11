@@ -10,6 +10,7 @@ import {
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
+import { toast } from "sonner";
 import { useDebounce } from "../common/useDebounce";
 
 interface IFilter {
@@ -114,6 +115,70 @@ function useStudentQuery() {
       setIsLoading(false);
     }
   };
+
+  const handleExportAsPDF = async ({
+    search,
+    filters,
+  }: {
+    search: ISearch;
+    filters: IFilter;
+  }) => {
+    setIsLoading(true);
+
+    try {
+      const query = buildQuery({
+        search: search.global,
+        classId: search.classId,
+        sessionId: search.sessionId,
+        guardianId: search.guardianId,
+        fromDate: filters?.dateRange?.from
+          ? format(filters.dateRange.from, "yyyy-MM-dd")
+          : undefined,
+        toDate: filters?.dateRange?.to
+          ? format(filters.dateRange.to, "yyyy-MM-dd")
+          : undefined,
+        isResidential:
+          filters?.residential === "all" ? undefined : filters?.residential,
+        batchType:
+          filters?.batchType === "all" ? undefined : filters?.batchType,
+        branch: filters?.branch === "all" ? undefined : filters?.branch,
+        gender: filters?.gender === "all" ? undefined : filters?.gender,
+        sortBy: filters?.sortBy,
+        sortType: filters?.sortType,
+      });
+
+      const res = await api.post(`/exports/students/pdf?${query}`, null, {
+        responseType: "blob",
+      });
+
+      // PDF download
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `students_${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success("PDF downloaded successfully!");
+    } catch (err) {
+      handleAxiosError(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExportAsSheet = async ({
+    search,
+    filters,
+    currentPage,
+  }: {
+    search: ISearch;
+    filters: IFilter;
+    currentPage: number;
+  }) => {};
 
   const activeFilterCount = () => {
     let count = 0;
@@ -221,6 +286,8 @@ function useStudentQuery() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    handleExportAsPDF,
+    handleExportAsSheet,
   };
 }
 

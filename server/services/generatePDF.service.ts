@@ -1,5 +1,5 @@
+import { FilterQuery, Model } from "mongoose";
 import puppeteer from "puppeteer";
-import { Model, FilterQuery } from "mongoose";
 
 interface PDFOptions {
   title: string;
@@ -12,7 +12,7 @@ export const generateTablePDF = async <T>(
   Model: Model<T>,
   filter: FilterQuery<T> = {},
   pipeline: any[] = [],
-  options: PDFOptions
+  options: PDFOptions,
 ) => {
   try {
     const data =
@@ -55,9 +55,7 @@ function buildHTML(data: any[], options: PDFOptions) {
     columns,
   } = options;
 
-  const tableHeaders = columns
-    .map((col) => `<th>${col.label}</th>`)
-    .join("");
+  const tableHeaders = columns.map((col) => `<th>${col.label}</th>`).join("");
 
   const tableRows = data
     .map(
@@ -66,9 +64,7 @@ function buildHTML(data: any[], options: PDFOptions) {
           <td>${index + 1}</td>
           ${columns
             .map((col) => {
-              const val = col.key
-                .split(".")
-                .reduce((obj, k) => obj?.[k], doc);
+              const val = col.key.split(".").reduce((obj, k) => obj?.[k], doc);
               if (val === null || val === undefined) return "<td>-</td>";
               if (val instanceof Date)
                 return `<td>${new Date(val).toLocaleDateString("bn-BD")}</td>`;
@@ -76,7 +72,7 @@ function buildHTML(data: any[], options: PDFOptions) {
             })
             .join("")}
         </tr>
-      `
+      `,
     )
     .join("");
 
