@@ -1,5 +1,4 @@
 import {
-  BloodGroup,
   Branch,
   Gender,
   IStaff,
@@ -10,11 +9,11 @@ import {
   UserRole,
 } from "@/validations";
 import mongoose, { PipelineStage } from "mongoose";
-import { schemaValidationError } from "../error";
-import { Staff } from "../models/staffs.model";
-import { User } from "../models/users.model";
-import pagination from "../utils/pagination";
-import { generateStaffId } from "../utils/string-generator";
+import { schemaValidationError } from "@/server/error";
+import { Staff } from "@/server/models/staffs.model";
+import { User } from "@/server/models/users.model";
+import pagination from "@/server/utils/pagination";
+import { generateStaffId } from "@/server/utils/string-generator";
 
 export const createStaff = async (body: IStaff) => {
   const validData = staffZ.safeParse(body);
