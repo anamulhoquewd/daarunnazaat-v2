@@ -203,7 +203,7 @@ function useClassQuery() {
     setIsLoading(true);
 
     try {
-      const response = await api.delete(`/classes/${classId}`);
+      const response = await api.delete(`/classes/${classId}/permanently`);
       if (!response.data.success) {
         toast.error("Delete failed");
         throw new Error(response.data.error.message || "Failed to delete user");

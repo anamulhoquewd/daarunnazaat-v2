@@ -39,7 +39,7 @@ export function ClassDetails({ data }: ClassDetailsProps) {
           <div>
             <p className="text-sm text-muted-foreground">Activity</p>
             <p className="font-medium">
-              {data?.classId?.isActive ? "Active" : "Inactive"}
+              {data?.classId?.isActive ? "Active" : "Deactive"}
             </p>
           </div>
           <div>

@@ -60,7 +60,7 @@ guardianRoutes.patch(
 
 // Guardian deletion is not allowed as it may cause data inconsistency. Instead, we can deactivate the guardian account.
 guardianRoutes.delete(
-  "/:_id",
+  "/:_id/permanently",
   authenticate,
   authorize(UserRole.SUPER_ADMIN),
   (c) => guardianController.deletes(c),

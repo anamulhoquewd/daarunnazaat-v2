@@ -50,7 +50,7 @@ export const payAdmissionDue = async ({
     const session = await Session.findById(student.currentSessionId);
 
     if (!session || !session.isActive) {
-      return { error: { message: "Invalid or inactive session" } };
+      return { error: { message: "Invalid or deactive session" } };
     }
 
     // Fetch existing admission fee collection

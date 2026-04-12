@@ -105,44 +105,6 @@ const data = {
       ],
     },
     {
-      title: "Classes",
-      url: "/dashboard/classes",
-      icon: School2,
-      items: [
-        {
-          title: "Registration",
-          url: null,
-        },
-        {
-          title: "Starred",
-          url: null,
-        },
-        {
-          title: "Settings",
-          url: null,
-        },
-      ],
-    },
-    {
-      title: "Sessions",
-      url: "/dashboard/sessions",
-      icon: ShieldPlus,
-      items: [
-        {
-          title: "Registration",
-          url: null,
-        },
-        {
-          title: "Starred",
-          url: null,
-        },
-        {
-          title: "Settings",
-          url: null,
-        },
-      ],
-    },
-    {
       title: "Guardians",
       url: "/dashboard/guardians",
       icon: ShieldCheck,
@@ -199,6 +161,66 @@ const data = {
         },
       ],
     },
+
+    {
+      title: "Expenses ",
+      url: "/dashboard/expenses ",
+      icon: CirclePercent,
+      items: [
+        {
+          title: "Create",
+          url: "/dashboard/expenses/new",
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+
+    {
+      title: "Classes",
+      url: "/dashboard/classes",
+      icon: School2,
+      items: [
+        {
+          title: "Registration",
+          url: null,
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+    {
+      title: "Sessions",
+      url: "/dashboard/sessions",
+      icon: ShieldPlus,
+      items: [
+        {
+          title: "Registration",
+          url: null,
+        },
+        {
+          title: "Starred",
+          url: null,
+        },
+        {
+          title: "Settings",
+          url: null,
+        },
+      ],
+    },
+
     {
       title: "Transactions ",
       url: "/dashboard/transactions ",

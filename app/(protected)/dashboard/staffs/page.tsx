@@ -1,6 +1,7 @@
 "use client";
 
 import { DateRangePicker } from "@/components/common/dateRange";
+import DeleteAlert from "@/components/common/deleteAlert";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
 import { StaffColumns } from "@/components/staffs/staffColumns";
@@ -36,10 +37,6 @@ import Link from "next/link";
 import { useState } from "react";
 
 function StaffsPage() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
-  const [selectId, setSelectedId] = useState<string | null>(null);
-
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
@@ -64,10 +61,15 @@ function StaffsPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    deleteStaff,
+    isLoading,
+    selectedId,
+    setSelectedId,
+    isDelOpen,
+    setIsDelOpen,
   } = useStaffQuery();
 
   const columns = StaffColumns({
-    setIsEditing,
     setIsDelOpen,
     setValues,
     setSelectedId,
@@ -279,6 +281,16 @@ function StaffsPage() {
               setPagination={setPagination}
             />
           </div>
+        )}
+
+        {selectedId && (
+          <DeleteAlert
+            isOpen={isDelOpen}
+            setIsOpen={setIsDelOpen}
+            cb={deleteStaff.bind(null, selectedId)}
+            setSelectedId={setSelectedId}
+            isLoading={isLoading}
+          />
         )}
       </CardContent>
     </Card>

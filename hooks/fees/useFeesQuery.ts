@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
 import { useDebounce } from "../common/useDebounce";
+import { toast } from "sonner";
 
 interface IFilter {
   dateRange: DateRange | undefined;
@@ -39,6 +40,8 @@ type SortType = "asc" | "desc";
 
 function useFeesQuery() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [fees, setFees] = useState<IFeeCollection[]>([]);
   const [pagination, setPagination] = useState<IPagination>(defaultPagination);
   const [search, setSearch] = useState<ISearch>({
@@ -176,6 +179,37 @@ function useFeesQuery() {
     }));
   };
 
+  const handleDelete = async (feeId: string) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.delete(`/fees/${feeId}/permanently`);
+      if (!response.data.success) {
+        toast.error("Delete failed");
+        throw new Error(response.data.error.message || "Failed to delete fee");
+      }
+
+      toast.success("Fee deleted successfully");
+
+      getFees({
+        search: {
+          global: debouncedGlobalSearch,
+          collectedBy: debouncedCollectedBySearch,
+          studentId: debouncedStudentIdSearch,
+          sessionId: debouncedSessionIdSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+
+      setIsDelOpen(false);
+    } catch (error: any) {
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 🔥 API call only when debounced search OR page/limit changes
   useEffect(() => {
     getFees({
@@ -222,6 +256,11 @@ function useFeesQuery() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    isDelOpen,
+    setIsDelOpen,
+    selectedId,
+    setSelectedId,
+    handleDelete,
   };
 }
 

@@ -19,18 +19,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BloodGroup, Gender, IStudent, IUpdateStudent } from "@/validations";
+import { StudentProfile } from "@/hooks/students/useStudentActions";
+import { BloodGroup, Gender, IUpdateStudent } from "@/validations";
 import { PersonalInfo, personalInfoSchema } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { EditableSection } from "./editableSection";
-import { format } from "date-fns";
 
 interface PersonalInfoSectionProps {
   isEditing: boolean;
   onEditChange: (value: boolean) => void;
-  data?: IStudent;
+  data?: StudentProfile;
   onSave?: (data: IUpdateStudent) => Promise<void>;
 }
 

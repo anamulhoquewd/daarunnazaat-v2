@@ -39,7 +39,7 @@ export function StaffProfileHeader({ data }: { data: IStaff }) {
                   </Badge>
                 ) : (
                   <Badge variant="destructive" className="text-sm">
-                    Inactive
+                    Deactive
                   </Badge>
                 )}
               </div>

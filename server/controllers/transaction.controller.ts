@@ -14,8 +14,10 @@ export const gets = async (c: Context) => {
   const transactionType = c.req.query("transactionType") as TransactionType;
   const branch = c.req.query("branch") as Branch;
 
-  const minAmount = parseInt(c.req.query("minAmount") as string, 10);
-  const maxAmount = parseInt(c.req.query("maxAmount") as string, 10);
+  const minAmount =
+    parseInt(c.req.query("minAmount") as string, 10) || undefined;
+  const maxAmount =
+    parseInt(c.req.query("maxAmount") as string, 10) || undefined;
 
   const fromDate = c.req.query("fromDate") as string;
   const toDate = c.req.query("toDate") as string;

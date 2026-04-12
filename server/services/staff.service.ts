@@ -1,5 +1,4 @@
 import {
-  BloodGroup,
   Branch,
   Gender,
   IStaff,
@@ -10,11 +9,11 @@ import {
   UserRole,
 } from "@/validations";
 import mongoose, { PipelineStage } from "mongoose";
-import { schemaValidationError } from "../error";
-import { Staff } from "../models/staffs.model";
-import { User } from "../models/users.model";
-import pagination from "../utils/pagination";
-import { generateStaffId } from "../utils/string-generator";
+import { schemaValidationError } from "@/server/error";
+import { Staff } from "@/server/models/staffs.model";
+import { User } from "@/server/models/users.model";
+import pagination from "@/server/utils/pagination";
+import { generateStaffId } from "@/server/utils/string-generator";
 
 export const createStaff = async (body: IStaff) => {
   const validData = staffZ.safeParse(body);
@@ -163,15 +162,19 @@ export const gets = async (queryParams: {
         { nid: { $regex: search, $options: "i" } },
         { staffId: { $regex: search, $options: "i" } },
         { designation: { $regex: search, $options: "i" } },
-        { "user.phone": { $regex: search, $options: "i" } },
-        { "user.email": { $regex: search, $options: "i" } },
+        {
+          $and: [
+            { user: { $ne: null } },
+            { "user.phone": { $regex: search, $options: "i" } },
+          ],
+        },
+        {
+          $and: [
+            { user: { $ne: null } },
+            { "user.email": { $regex: search, $options: "i" } },
+          ],
+        },
       ];
-
-      if (mongoose.Types.ObjectId.isValid(search)) {
-        matchStage.$or.push({
-          _id: new mongoose.Types.ObjectId(search),
-        });
-      }
     }
 
     /* ------------------ SORT ------------------ */
@@ -186,17 +189,24 @@ export const gets = async (queryParams: {
     const skip = (queryParams.page - 1) * queryParams.limit;
     const limit = queryParams.limit;
 
+    console.log("Match Stage:", JSON.stringify(matchStage, null, 2));
+
     /* ------------------ AGGREGATION PIPELINE ------------------ */
     const pipeline: PipelineStage[] = [
       {
         $lookup: {
-          from: "users", // collection name
+          from: "users",
           localField: "userId",
           foreignField: "_id",
           as: "user",
         },
       },
-      { $unwind: "$user" },
+      {
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       { $match: matchStage },
       { $sort: { [sortField]: sortDirection } },
       {
@@ -464,6 +474,44 @@ export const updateMe = async ({
         success: true,
         message: "Staff updated successfully",
         data: docs,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const permanentDelete = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // Check if staff exists
+    const staff = await Staff.findById(idValidation.data._id);
+
+    if (!staff) {
+      return {
+        error: {
+          message: `Staff not found with provided ID!`,
+        },
+      };
+    }
+
+    await staff.deleteOne();
+
+    return {
+      success: {
+        success: true,
+        message: `Staff deleted successfully!`,
       },
     };
   } catch (error: any) {

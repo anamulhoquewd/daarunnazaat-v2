@@ -44,4 +44,11 @@ staffRoutes.patch(
   (c) => staffController.updates(c)
 );
 
+staffRoutes.delete(
+  "/:_id/permanently",
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  (c) => staffController.permanentDelete(c),
+);
+
 export default staffRoutes;

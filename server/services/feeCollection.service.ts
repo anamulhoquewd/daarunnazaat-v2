@@ -48,7 +48,7 @@ export const register = async ({
 
     if (!session || !session.isActive) {
       return {
-        error: { message: "Invalid or inactive student current session" },
+        error: { message: "Invalid or deactive student current session" },
       };
     }
 
@@ -434,7 +434,7 @@ export const gets = async (queryParams: {
   period: string;
   paymentMethod: PaymentMethod;
   paymentDate: { from: Date | string; to: Date | string };
-  feeRange: { min: number; max: number };
+  feeRange: { min: number | undefined; max: number | undefined };
   collectedBy: string;
   studentId: string;
   sessionId: string;
