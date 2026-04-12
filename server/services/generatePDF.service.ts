@@ -83,13 +83,13 @@ function buildPDF(data: any[], options: PDFOptions): Promise<Buffer> {
 
     const pageWidth = doc.page.width - 80;
     const pageHeight = doc.page.height;
-    const rowHeight = 24;
+    const rowHeight = 32;
     const fontSize = 9;
     const colCount = columns.length + 1;
     const colWidth = pageWidth / colCount;
 
     // Row এর ভেতরে text vertically center করার জন্য
-    const textY = (y: number) => y + (rowHeight - fontSize) / 2;
+    const textY = (y: number) => y + 3; // + (rowHeight - fontSize) / 2;
 
     /* =========================
        HEADER
@@ -102,7 +102,7 @@ function buildPDF(data: any[], options: PDFOptions): Promise<Buffer> {
         .text(madrasaName, 40, 40, { align: "center", width: pageWidth });
 
       doc
-        .font(FONT_REGULAR)
+        .font(FONT_EXTRABOLD)
         .fontSize(11)
         .text(madrasaAddress, 40, doc.y + 4, {
           align: "center",
@@ -208,7 +208,7 @@ function buildPDF(data: any[], options: PDFOptions): Promise<Buffer> {
     ========================= */
     data.forEach((row, rowIndex) => {
       // Page শেষ হলে নতুন page
-      if (currentY + rowHeight > pageHeight - 80) {
+      if (currentY + rowHeight > pageHeight - 50) {
         drawFooter();
         doc.addPage();
         drawHeader();
