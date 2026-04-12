@@ -1,5 +1,6 @@
 import { FilterQuery, Model } from "mongoose";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 
 interface PDFOptions {
   title: string;
@@ -50,8 +51,8 @@ export const generateTablePDF = async <T>(
 function buildHTML(data: any[], options: PDFOptions) {
   const {
     title,
-    madrasaName = "দারুননাজাত মাদ্রাসা",
-    madrasaAddress = "ঢাকা, বাংলাদেশ",
+    madrasaName = "দারুন নাজাত মাদরাসা",
+    madrasaAddress = "কাওলার, দক্ষিণখান, ঢাকা-১২২৯",
     columns,
   } = options;
 
@@ -197,9 +198,17 @@ function buildHTML(data: any[], options: PDFOptions) {
 }
 
 async function htmlToPDF(html: string): Promise<Buffer> {
+  const isProduction = process.env.NODE_ENV === "production";
+
   const browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: { width: 1280, height: 720 },
+    executablePath: isProduction
+      ? await chromium.executablePath()
+      : process.platform === "win32"
+        ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+        : "/usr/bin/google-chrome",
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   const page = await browser.newPage();
