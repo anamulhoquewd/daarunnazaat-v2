@@ -5,13 +5,16 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __dirname = path.dirname(__filename);
 
 const FONT_REGULAR = path.join(
-  __dirname,
-  "../fonts/NotoSerifBengali-Regular.ttf",
+  process.cwd(),
+  "server/fonts/NotoSerifBengali-Regular.ttf",
 );
-const FONT_BOLD = path.join(__dirname, "../fonts/NotoSerifBengali-Bold.ttf");
+const FONT_BOLD = path.join(
+  process.cwd(),
+  "server/fonts/NotoSerifBengali-Bold.ttf",
+);
 
 interface PDFOptions {
   title: string;
