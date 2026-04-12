@@ -2,10 +2,6 @@ import PDFDocument from "pdfkit";
 import { Model, FilterQuery } from "mongoose";
 
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 
 const FONT_REGULAR = path.join(
   process.cwd(),
@@ -14,6 +10,10 @@ const FONT_REGULAR = path.join(
 const FONT_BOLD = path.join(
   process.cwd(),
   "server/fonts/NotoSerifBengali-Bold.ttf",
+);
+const FONT_EXTRABOLD = path.join(
+  process.cwd(),
+  "server/fonts/NotoSerifBengali-ExtraBold.ttf",
 );
 
 interface PDFOptions {
@@ -70,102 +70,171 @@ function buildPDF(data: any[], options: PDFOptions): Promise<Buffer> {
       columns,
     } = options;
 
-    const doc = new PDFDocument({ margin: 40, size: "A4" });
+    const doc = new PDFDocument({
+      margin: 0,
+      size: "A4",
+      autoFirstPage: true,
+    });
     const buffers: Buffer[] = [];
 
     doc.on("data", (chunk) => buffers.push(chunk));
     doc.on("end", () => resolve(Buffer.concat(buffers)));
     doc.on("error", reject);
 
-    const pageWidth = doc.page.width - 80; // margin বাদে
+    const pageWidth = doc.page.width - 80;
+    const pageHeight = doc.page.height;
+    const rowHeight = 24;
+    const fontSize = 9;
+    const colCount = columns.length + 1;
+    const colWidth = pageWidth / colCount;
+
+    // Row এর ভেতরে text vertically center করার জন্য
+    const textY = (y: number) => y + (rowHeight - fontSize) / 2;
 
     /* =========================
        HEADER
     ========================= */
-    doc.fontSize(18).font(FONT_BOLD).text(madrasaName, { align: "center" });
+    const drawHeader = () => {
+      doc
+        .font(FONT_EXTRABOLD)
+        .fontSize(18)
+        .fillColor("black")
+        .text(madrasaName, 40, 40, { align: "center", width: pageWidth });
 
-    doc
-      .fontSize(11)
-      .font(FONT_REGULAR)
-      .text(madrasaAddress, { align: "center" });
+      doc
+        .font(FONT_REGULAR)
+        .fontSize(11)
+        .text(madrasaAddress, 40, doc.y + 4, {
+          align: "center",
+          width: pageWidth,
+        });
 
-    doc.moveDown(0.5);
+      doc.moveDown(0.5);
 
-    // divider
-    doc
-      .moveTo(40, doc.y)
-      .lineTo(doc.page.width - 40, doc.y)
-      .lineWidth(1.5)
-      .stroke();
+      doc
+        .moveTo(40, doc.y)
+        .lineTo(doc.page.width - 40, doc.y)
+        .lineWidth(1.5)
+        .stroke("black");
 
-    doc.moveDown(0.5);
+      doc.moveDown(0.5);
+
+      doc
+        .font(FONT_EXTRABOLD)
+        .fontSize(14)
+        .fillColor("black")
+        .text(title, 40, doc.y, {
+          align: "center",
+          width: pageWidth,
+          underline: true,
+        });
+
+      doc.moveDown(0.3);
+
+      doc
+        .font(FONT_REGULAR)
+        .fontSize(10)
+        .fillColor("black")
+        .text(`Total Records: ${data.length}`, 40, doc.y, {
+          continued: true,
+          width: pageWidth,
+        })
+        .text(`Date: ${new Date().toLocaleDateString("en-BD")}`, {
+          align: "right",
+        });
+
+      doc.moveDown(0.5);
+    };
 
     /* =========================
-       TITLE
+       TABLE HEADER ROW
     ========================= */
-    doc
-      .fontSize(14)
-      .font(FONT_BOLD)
-      .text(title, { align: "center", underline: true });
+    const drawTableHeader = (y: number) => {
+      doc.rect(40, y, pageWidth, rowHeight).fill("#1a1a2e");
 
-    doc.moveDown(0.3);
+      doc.fillColor("white").font(FONT_BOLD).fontSize(fontSize);
 
-    // meta
-    doc
-      .fontSize(10)
-      .font(FONT_REGULAR)
-      .text(`Total Records: ${data.length}`, 40, doc.y, { continued: true })
-      .text(`Date: ${new Date().toLocaleDateString("en-BD")}`, {
-        align: "right",
-      });
-
-    doc.moveDown(0.5);
-
-    /* =========================
-       TABLE
-    ========================= */
-    const colCount = columns.length + 1; // +1 for serial
-    const colWidth = pageWidth / colCount;
-    const rowHeight = 24;
-    const tableTop = doc.y;
-
-    // Header row background
-    doc.rect(40, tableTop, pageWidth, rowHeight).fill("#1a1a2e");
-
-    // Header text
-    doc.fillColor("white").fontSize(10).font(FONT_BOLD);
-
-    doc.text("NO", 40 + 4, tableTop + 7, { width: colWidth, align: "left" });
-
-    columns.forEach((col, i) => {
-      doc.text(col.label, 40 + colWidth * (i + 1) + 4, tableTop + 7, {
-        width: colWidth,
+      doc.text("#", 44, textY(y), {
+        width: colWidth - 8,
         align: "left",
+        lineBreak: false,
       });
-    });
 
-    // Data rows
-    doc.font(FONT_REGULAR).fontSize(9);
+      columns.forEach((col, i) => {
+        doc.text(col.label, 40 + colWidth * (i + 1) + 4, textY(y), {
+          width: colWidth - 8,
+          align: "left",
+          lineBreak: false,
+        });
+      });
+    };
 
+    /* =========================
+       FOOTER
+    ========================= */
+    const drawFooter = () => {
+      const footerY = pageHeight - 40;
+
+      doc
+        .moveTo(40, footerY)
+        .lineTo(doc.page.width - 40, footerY)
+        .lineWidth(0.5)
+        .stroke("#cccccc");
+
+      doc
+        .font(FONT_REGULAR)
+        .fontSize(9)
+        .fillColor("#666666")
+        .text(madrasaName, 40, footerY + 8, {
+          continued: true,
+          width: pageWidth,
+        })
+        .text(`Printed: ${new Date().toLocaleString("en-BD")}`, {
+          align: "right",
+        });
+    };
+
+    /* =========================
+       FIRST PAGE
+    ========================= */
+    drawHeader();
+
+    let currentY = doc.y;
+    drawTableHeader(currentY);
+    currentY += rowHeight;
+
+    /* =========================
+       DATA ROWS
+    ========================= */
     data.forEach((row, rowIndex) => {
-      const y = tableTop + rowHeight * (rowIndex + 1);
-
-      // Alternate row color
-      if (rowIndex % 2 === 0) {
-        doc.rect(40, y, pageWidth, rowHeight).fill("#f5f5f5");
-      } else {
-        doc.rect(40, y, pageWidth, rowHeight).fill("white");
+      // Page শেষ হলে নতুন page
+      if (currentY + rowHeight > pageHeight - 80) {
+        drawFooter();
+        doc.addPage();
+        drawHeader();
+        currentY = doc.y;
+        drawTableHeader(currentY);
+        currentY += rowHeight;
       }
 
-      // Row border
-      doc.rect(40, y, pageWidth, rowHeight).stroke("#dddddd");
+      // Alternate row background
+      doc
+        .rect(40, currentY, pageWidth, rowHeight)
+        .fill(rowIndex % 2 === 0 ? "#f5f5f5" : "white");
 
-      doc.fillColor("black");
+      // Row border
+      doc
+        .rect(40, currentY, pageWidth, rowHeight)
+        .lineWidth(0.5)
+        .stroke("#dddddd");
+
+      doc.fillColor("black").font(FONT_REGULAR).fontSize(fontSize);
 
       // Serial number
-      doc.text(String(rowIndex + 1), 40 + 4, y + 7, {
-        width: colWidth,
+      doc.text(String(rowIndex + 1), 44, textY(currentY), {
+        width: colWidth - 8,
         align: "left",
+        lineBreak: false,
       });
 
       // Data cells
@@ -174,40 +243,29 @@ function buildPDF(data: any[], options: PDFOptions): Promise<Buffer> {
 
         let displayVal = "-";
         if (val !== null && val !== undefined) {
-          if (val instanceof Date) {
-            displayVal = new Date(val).toLocaleDateString("en-BD");
-          } else {
-            displayVal = String(val);
-          }
+          displayVal =
+            val instanceof Date
+              ? new Date(val).toLocaleDateString("en-BD")
+              : String(val);
         }
 
-        doc.text(displayVal, 40 + colWidth * (colIndex + 1) + 4, y + 7, {
-          width: colWidth - 8,
-          align: "left",
-          ellipsis: true,
-        });
+        doc.text(
+          displayVal,
+          40 + colWidth * (colIndex + 1) + 4,
+          textY(currentY),
+          {
+            width: colWidth - 8,
+            align: "left",
+            ellipsis: true,
+            lineBreak: false,
+          },
+        );
       });
+
+      currentY += rowHeight;
     });
 
-    /* =========================
-       FOOTER
-    ========================= */
-    const footerY = tableTop + rowHeight * (data.length + 1) + 20;
-
-    doc
-      .moveTo(40, footerY)
-      .lineTo(doc.page.width - 40, footerY)
-      .lineWidth(0.5)
-      .stroke("#cccccc");
-
-    doc
-      .fontSize(9)
-      .fillColor("#666666")
-      .text(madrasaName, 40, footerY + 8, { continued: true })
-      .text(`Printed: ${new Date().toLocaleString("en-BD")}`, {
-        align: "right",
-      });
-
+    drawFooter();
     doc.end();
   });
 }
