@@ -1,6 +1,7 @@
 "use client";
 
 import { DateRangePicker } from "@/components/common/dateRange";
+import DeleteAlert from "@/components/common/deleteAlert";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
 import { FeesBottomFilter } from "@/components/fees/feesBottomFilter";
@@ -36,9 +37,6 @@ import Link from "next/link";
 import { useState } from "react";
 
 function FeesPage() {
-  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
-  const [selectId, setSelectedId] = useState<string | null>(null);
-
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
@@ -65,6 +63,12 @@ function FeesPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    isDelOpen,
+    setIsDelOpen,
+    selectedId,
+    setSelectedId,
+    handleDelete,
+    isLoading,
   } = useFeesQuery();
 
   const columns = FeesColumns({
@@ -236,6 +240,16 @@ function FeesPage() {
               setPagination={setPagination}
             />
           </div>
+        )}
+
+        {selectedId && (
+          <DeleteAlert
+            isOpen={isDelOpen}
+            setIsOpen={setIsDelOpen}
+            cb={handleDelete.bind(null, selectedId)}
+            setSelectedId={setSelectedId}
+            isLoading={isLoading}
+          />
         )}
       </CardContent>
     </Card>

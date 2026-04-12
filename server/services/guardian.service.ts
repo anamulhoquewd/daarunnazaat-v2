@@ -391,3 +391,88 @@ export const deletes = async (_id: string) => {
   }
 };
 
+
+export const deactivateGuardian = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const guardian = await Guardian.findById(idValidation.data._id);
+
+    if (!guardian) {
+      return { error: { message: "Guardian not found!" } };
+    }
+
+    if (!guardian.isActive) {
+      return { error: { message: "Guardian already deactivated." } };
+    }
+
+    await Guardian.updateOne(
+      { _id: idValidation.data._id },
+      { isActive: false },
+    );
+
+    return {
+      success: {
+        success: true,
+        message: "Guardian deactivated successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const activateGuardian = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // optional: check guardian exists
+    const guardian = await Guardian.findById(idValidation.data._id);
+
+    if (!guardian) {
+      return {
+        error: {
+          message: `guardian not found with provided ID!`,
+        },
+      };
+    }
+
+    console.log(guardian);
+
+    if (guardian.isActive) {
+      return { error: { message: "guardian is already active." } };
+    }
+    await Guardian.updateOne(
+      { _id: idValidation.data._id },
+      { isActive: true },
+    );
+
+    return {
+      success: {
+        success: true,
+        message: "guardian activated successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};

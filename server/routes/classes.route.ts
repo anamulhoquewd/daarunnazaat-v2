@@ -47,4 +47,11 @@ classRoutes.patch(
   (c) => classController.deactivate(c),
 );
 
+classRoutes.delete(
+  "/:_id/permanently",
+  authenticate,
+  authorize(UserRole.SUPER_ADMIN),
+  (c) => classController.permanentlyDelete(c),
+);
+
 export default classRoutes;

@@ -133,7 +133,7 @@ export const gets = async (queryParams: {
       queryParams.baseSalaryRange?.min !== undefined &&
       queryParams.baseSalaryRange?.max !== undefined
     ) {
-      matchStage.baseSalary = {
+      matchStage.basicSalary = {
         $gte: queryParams.baseSalaryRange.min,
         $lte: queryParams.baseSalaryRange.max,
       };
@@ -157,23 +157,28 @@ export const gets = async (queryParams: {
       const search = queryParams.search;
 
       matchStage.$or = [
-        { fullName: { $regex: search, $options: "i" } },
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
         { nid: { $regex: search, $options: "i" } },
         { staffId: { $regex: search, $options: "i" } },
         { designation: { $regex: search, $options: "i" } },
-        { "user.phone": { $regex: search, $options: "i" } },
-        { "user.email": { $regex: search, $options: "i" } },
+        {
+          $and: [
+            { user: { $ne: null } },
+            { "user.phone": { $regex: search, $options: "i" } },
+          ],
+        },
+        {
+          $and: [
+            { user: { $ne: null } },
+            { "user.email": { $regex: search, $options: "i" } },
+          ],
+        },
       ];
-
-      if (mongoose.Types.ObjectId.isValid(search)) {
-        matchStage.$or.push({
-          _id: new mongoose.Types.ObjectId(search),
-        });
-      }
     }
 
     /* ------------------ SORT ------------------ */
-    const allowedSortFields = ["createdAt", "updatedAt", "fullName"];
+    const allowedSortFields = ["createdAt", "updatedAt", "firstName"];
     const sortField = allowedSortFields.includes(queryParams.sortBy)
       ? queryParams.sortBy
       : "createdAt";
@@ -184,17 +189,24 @@ export const gets = async (queryParams: {
     const skip = (queryParams.page - 1) * queryParams.limit;
     const limit = queryParams.limit;
 
+    console.log("Match Stage:", JSON.stringify(matchStage, null, 2));
+
     /* ------------------ AGGREGATION PIPELINE ------------------ */
     const pipeline: PipelineStage[] = [
       {
         $lookup: {
-          from: "users", // collection name
+          from: "users",
           localField: "userId",
           foreignField: "_id",
           as: "user",
         },
       },
-      { $unwind: "$user" },
+      {
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       { $match: matchStage },
       { $sort: { [sortField]: sortDirection } },
       {
@@ -408,7 +420,7 @@ export const updateMe = async ({
   // Validate Body
   const bodyValidation = staffUpdateZ
     .omit({
-      baseSalary: true,
+      basicSalary: true,
       birthCertificateNumber: true,
       branch: true,
       department: true,
@@ -462,6 +474,44 @@ export const updateMe = async ({
         success: true,
         message: "Staff updated successfully",
         data: docs,
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const permanentDelete = async (_id: string) => {
+  // Validate ID
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    // Check if staff exists
+    const staff = await Staff.findById(idValidation.data._id);
+
+    if (!staff) {
+      return {
+        error: {
+          message: `Staff not found with provided ID!`,
+        },
+      };
+    }
+
+    await staff.deleteOne();
+
+    return {
+      success: {
+        success: true,
+        message: `Staff deleted successfully!`,
       },
     };
   } catch (error: any) {

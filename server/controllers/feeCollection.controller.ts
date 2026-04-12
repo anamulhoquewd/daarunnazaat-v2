@@ -40,8 +40,8 @@ export const gets = async (c: Context) => {
   const sessionId = c.req.query("sessionId") as string;
   const paymentSource = c.req.query("paymentSource") as PaymentSource;
 
-  const minFee = parseInt(c.req.query("minFee") as string, 10);
-  const maxFee = parseInt(c.req.query("maxFee") as string, 10);
+  const minFee = parseInt(c.req.query("minFee") as string, 10) || undefined;
+  const maxFee = parseInt(c.req.query("maxFee") as string, 10) || undefined;
 
   const fromDate = c.req.query("fromDate") as string;
   const toDate = c.req.query("toDate") as string;

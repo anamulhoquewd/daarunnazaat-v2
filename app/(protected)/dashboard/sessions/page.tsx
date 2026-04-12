@@ -1,5 +1,6 @@
 "use client";
 
+import DeleteAlert from "@/components/common/deleteAlert";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
 import { SessionBottomFilter } from "@/components/sessions/sessionBottomFilter";
@@ -77,6 +78,9 @@ function SessionsPage() {
     handleSubmit,
     isLoading,
     setIsDelOpen,
+    selectedId,
+    deleteSession,
+    isDelOpen,
   } = useSessionQuery();
 
   const columns = SessionColumns({
@@ -231,7 +235,7 @@ function SessionsPage() {
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
                 <SelectItem value="true">Active</SelectItem>
-                <SelectItem value="false">Inactive</SelectItem>
+                <SelectItem value="false">Deactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -314,6 +318,16 @@ function SessionsPage() {
               setPagination={setPagination}
             />
           </div>
+        )}
+
+        {selectedId && (
+          <DeleteAlert
+            isOpen={isDelOpen}
+            setIsOpen={setIsDelOpen}
+            cb={deleteSession.bind(null, selectedId)}
+            setSelectedId={setSelectedId}
+            isLoading={isLoading}
+          />
         )}
       </CardContent>
     </Card>

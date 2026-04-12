@@ -53,7 +53,7 @@ export function AdministrationSection({ data }: AdministrationSectionProps) {
           <div>
             <p className="text-sm text-muted-foreground">Activity</p>
             <p className="font-medium">
-              {data?.isActive ? "Active" : "Inactive"}
+              {data?.isActive ? "Active" : "Deactive"}
             </p>
           </div>
           <div>

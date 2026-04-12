@@ -3,7 +3,7 @@
 import { DuePaymentForm } from "@/components/due-admission-payment/form";
 import { FeeStudentSearch } from "@/components/feeCenter/studentSearch";
 import { Button } from "@/components/ui/button";
-import { useDuePayCenter } from "@/hooks/pay-admission-due+/usePayAdmissionDue";
+import { useDuePayCenter } from "@/hooks/pay-admission-due/usePayAdmissionDue";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 

@@ -219,6 +219,36 @@ function useSessionQuery() {
     }));
   };
 
+  const deleteSession = async (sessionId: string) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.delete(`/sessions/${sessionId}/permanently`);
+      if (!response.data.success) {
+        toast.error("Delete failed");
+        throw new Error(
+          response.data.error.message || "Failed to delete session",
+        );
+      }
+
+      toast.success("Session deleted successfully");
+
+      getSessions({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+
+      setIsDelOpen(false);
+    } catch (error: any) {
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 🔥 API call only when debounced search OR page/limit changes
   useEffect(() => {
     getSessions({
@@ -257,6 +287,7 @@ function useSessionQuery() {
     combinedFilters,
     isAddOpen,
     setIsAddOpen,
+    selectedId,
     setIsEditing,
     setSelectedId,
     values,
@@ -266,6 +297,7 @@ function useSessionQuery() {
     handleSubmit,
     setIsDelOpen,
     isDelOpen,
+    deleteSession,
   };
 }
 

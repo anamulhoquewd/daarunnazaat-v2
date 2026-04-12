@@ -7,11 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { StudentProfile } from "@/hooks/students/useStudentActions";
 import { IStudent } from "@/validations";
 import { format } from "date-fns";
 
 interface SessionHistorySectionProps {
-  data?: IStudent;
+  data?: StudentProfile;
 }
 
 export function SessionHistorySection({ data }: SessionHistorySectionProps) {
@@ -43,7 +44,7 @@ export function SessionHistorySection({ data }: SessionHistorySectionProps) {
                 <div>
                   <p className="text-sm text-muted-foreground">Activity</p>
                   <p className="font-medium">
-                    {session?.sessionId?.isActive ? "Active" : "Inactive"}
+                    {session?.sessionId?.isActive ? "Active" : "Deactive"}
                   </p>
                 </div>
               </div>

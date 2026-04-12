@@ -113,3 +113,19 @@ export const deactivate = async (c: Context) => {
 
   return c.json(response.success, 200);
 };
+
+// delete
+export const permanentlyDelete = async (c: Context) => {
+  const _id = c.req.param("_id");
+
+  const response = await classService.permanentlyDelete(_id);
+  if (response.error) {
+    return badRequestError(c, response.error);
+  }
+
+  if (response.serverError) {
+    return serverError(c, response.serverError);
+  }
+
+  return c.json(response.success, 200);
+}

@@ -48,7 +48,7 @@ export const gets = async (queryParams: {
   transactionType: TransactionType;
   referenceModel: string;
   createdDate: { from: Date | string; to: Date | string };
-  amountRange: { min: number; max: number };
+  amountRange?: { min?: number; max?: number };
   referenceId: string;
   branch: Branch;
 }) => {
@@ -101,7 +101,7 @@ export const gets = async (queryParams: {
     }
 
     // Filter by Amount range
-    if (queryParams.amountRange.min && queryParams.amountRange.max) {
+    if (queryParams?.amountRange?.min && queryParams?.amountRange?.max) {
       const transactionFilter: any = {};
       if (queryParams.amountRange.min != null) {
         transactionFilter.$gte = queryParams.amountRange.min;

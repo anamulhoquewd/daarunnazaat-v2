@@ -5,7 +5,6 @@ import {
   IUpdateClass,
   mongoIdZ,
 } from "@/validations";
-import mongoose from "mongoose";
 import { schemaValidationError } from "../error";
 import { Class } from "../models/classes.model";
 import pagination from "../utils/pagination";
@@ -308,6 +307,38 @@ export const deactivate = async (_id: string) => {
       success: {
         success: true,
         message: "class deactivated successfully",
+      },
+    };
+  } catch (error: any) {
+    return {
+      serverError: {
+        success: false,
+        message: error.message,
+        stack: process.env.NODE_ENV === "production" ? null : error.stack,
+      },
+    };
+  }
+};
+
+export const permanentlyDelete = async (_id: string) => {
+  const idValidation = mongoIdZ.safeParse({ _id });
+  if (!idValidation.success) {
+    return { error: schemaValidationError(idValidation.error, "Invalid ID") };
+  }
+
+  try {
+    const classData = await Class.findById(idValidation.data._id);
+
+    if (!classData) {
+      return { error: { message: "class not found!" } };
+    }
+
+    await classData.deleteOne();
+
+    return {
+      success: {
+        success: true,
+        message: "class permanently deleted successfully",
       },
     };
   } catch (error: any) {

@@ -91,7 +91,7 @@ export default function UserFilters({
                 <SelectContent>
                   <SelectItem value="all">All</SelectItem>
                   <SelectItem value="true">Active</SelectItem>
-                  <SelectItem value="false">Inactive</SelectItem>
+                  <SelectItem value="false">Deactive</SelectItem>
                 </SelectContent>
               </Select>
             </div>

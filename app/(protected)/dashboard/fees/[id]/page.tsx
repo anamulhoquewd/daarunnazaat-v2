@@ -230,7 +230,7 @@ export default function InvoicePage() {
                     Session Status
                   </p>
                   <p className="font-semibold text-neutral-900">
-                    {fee.sessionId.isActive ? "Active" : "Inactive"}
+                    {fee.sessionId.isActive ? "Active" : "Deactive"}
                   </p>
                 </div>
               </div>

@@ -7,20 +7,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 // Define Props Interface
 interface ColumnsProps {
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  // setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
 }
 export const StaffColumns = ({
-  setIsEditing,
   setIsDelOpen,
-  setValues,
   setSelectedId,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
@@ -90,7 +88,7 @@ export const StaffColumns = ({
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (row.original.user?.isActive ? "Active" : "Inactive"),
+    cell: ({ row }) => (row.original.user?.isActive ? "Active" : "Deactive"),
   },
   {
     id: "actions",

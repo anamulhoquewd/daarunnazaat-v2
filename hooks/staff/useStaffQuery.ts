@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
 import { useDebounce } from "../common/useDebounce";
+import { toast } from "sonner";
 
 interface IFilter {
   dateRange: DateRange | undefined;
@@ -24,6 +25,9 @@ type SortType = "asc" | "desc";
 
 function useStaffQuery() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const [staffs, setStaffs] = useState<IStaff[]>([]);
   const [pagination, setPagination] = useState<IPagination>(defaultPagination);
   const [search, setSearch] = useState<ISearch>({
@@ -130,6 +134,40 @@ function useStaffQuery() {
     });
   };
 
+  const deleteStaff = async (staffId: string) => {
+    setIsLoading(true);
+
+    try {
+      const res = await api.delete(`/staffs/${staffId}/permanently`);
+
+      if (!res.data.success) {
+        toast.error(res.data.error.message || "Failed to delete staff");
+        throw new Error(res.data.error.message);
+      }
+
+      toast.success("Staff deleted successfully");
+
+      // Refetch staffs after deletion
+      getStaffs({
+        search: {
+          global: debouncedGlobalSearch,
+        },
+        filters: {
+          ...filterBy,
+          salaryRange: {
+            min: debouncedSalaryMin,
+            max: debouncedSalaryMax,
+          },
+        },
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const updateFilter = (key: string, value: string) => {
     // Handle search fields (classId, guardianId) - these go to search state
     if (key === "classId" || key === "guardianId") {
@@ -183,6 +221,8 @@ function useStaffQuery() {
     filterBy.sortType,
   ]);
 
+  console.log("Staffs:", staffs);
+
   // Combined filters for component usage (excluding dateRange as it's handled separately)
   const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
     const { dateRange, salaryRange, ...restFilters } = filterBy;
@@ -206,6 +246,11 @@ function useStaffQuery() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    selectedId,
+    setSelectedId,
+    isDelOpen,
+    setIsDelOpen,
+    deleteStaff,
   };
 }
 

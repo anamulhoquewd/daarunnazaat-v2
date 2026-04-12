@@ -41,9 +41,10 @@ export const gets = async (c: Context) => {
 
   const paymentDateRange = { from: fromDate, to: toDate };
 
-  const minSalary = parseInt(c.req.query("minSalary") as string, 10) || 0;
+  const minSalary =
+    parseInt(c.req.query("minSalary") as string, 10) || undefined;
   const maxSalary =
-    parseInt(c.req.query("maxSalary") as string, 10) || 10000000;
+    parseInt(c.req.query("maxSalary") as string, 10) || undefined;
 
   const response = await salaryService.gets({
     page,

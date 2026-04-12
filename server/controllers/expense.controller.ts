@@ -40,9 +40,10 @@ export const gets = async (c: Context) => {
 
   const expenseDateRange = { from: fromDate, to: toDate };
 
-  const minAmount = parseInt(c.req.query("minAmount") as string, 10) || 0;
+  const minAmount =
+    parseInt(c.req.query("minAmount") as string, 10) || undefined;
   const maxAmount =
-    parseInt(c.req.query("maxAmount") as string, 10) || 10000000;
+    parseInt(c.req.query("maxAmount") as string, 10) || undefined;
 
   const response = await expenseService.gets({
     page,

@@ -19,6 +19,9 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -66,6 +69,9 @@ function StudentPage() {
     handleClearFilters,
     updateFilter,
     combinedFilters,
+    handleExportAsPDF,
+    handleExportAsSheet,
+    isLoading,
   } = useStudentQuery();
 
   const {
@@ -133,9 +139,42 @@ function StudentPage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
+
             <Link href={"/dashboard/students/new"}>
               <Button className="cursor-pointer">Add One</Button>
             </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                {isLoading ? (
+                  <Button variant="outline" disabled>
+                    Exporting...
+                  </Button>
+                ) : (
+                  <Button variant="outline">Export</Button>
+                )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Export Options</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleExportAsPDF.bind(null, {
+                    search,
+                    filters: filterBy,
+                  })}
+                >
+                  Export as PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleExportAsSheet.bind(null, {
+                    search,
+                    filters: filterBy,
+                    currentPage: pagination.page,
+                  })}
+                >
+                  Export as Sheet
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardHeader>

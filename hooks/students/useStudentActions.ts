@@ -1,15 +1,20 @@
 import api from "@/axios/intercepter";
 import { handleAxiosError } from "@/lib/utils";
-import { IStudent, IUpdateStudent } from "@/validations";
+import { IClass, IGuardian, IStudent, IUpdateStudent } from "@/validations";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+export interface StudentProfile extends IStudent {
+  class?: IClass;
+  guardian?: IGuardian;
+}
 
 export const useStudentActions = () => {
   const params = useParams();
   const id = params.id as string;
 
-  const [student, setStudent] = useState<IStudent | null>(null);
+  const [student, setStudent] = useState<StudentProfile | null>(null);
   const [loading, setLoading] = useState<{
     fetch: boolean;
     update: boolean;
@@ -61,7 +66,7 @@ export const useStudentActions = () => {
   const handleDelete = async (studentId: string) => {
     setLoading((p) => ({ ...p, delete: true }));
     try {
-      const response = await api.delete(`/students/${studentId}`);
+      const response = await api.delete(`/students/${studentId}/permanently`);
 
       if (!response.data.success) {
         toast.error(response.data.error.message || "Failed to delete student");

@@ -17,16 +17,16 @@ import {
 } from "@/validations";
 import mongoose, { PipelineStage, Types } from "mongoose";
 import z from "zod";
-import { schemaValidationError } from "../error";
-import { FeeCollection } from "../models/feeCollections.model";
-import { Guardian } from "../models/guardians.model";
-import { Session } from "../models/sessions.model";
-import { Student } from "../models/students.model";
-import pagination from "../utils/pagination";
+import { schemaValidationError } from "@/server/error";
+import { FeeCollection } from "@/server/models/feeCollections.model";
+import { Guardian } from "@/server/models/guardians.model";
+import { Session } from "@/server/models/sessions.model";
+import { Student } from "@/server/models/students.model";
+import pagination from "@/server/utils/pagination";
 import {
   generateFeeReceiptNumber,
   generateStudentId,
-} from "../utils/string-generator";
+} from "@/server/utils/string-generator";
 import { createTransactionLog } from "./transactions.service";
 
 export const createStudent = async ({
@@ -75,7 +75,7 @@ export const createStudent = async ({
       return {
         error: {
           message:
-            "Session not found,  inactive Session or do not match 'batchType'",
+            "Session not found,  deactive Session or do not match 'batchType'",
         },
       };
     }
@@ -353,6 +353,26 @@ export const gets = async (queryParams: {
       },
     });
 
+    // sessionHistory - populate sessionId
+    pipeline.push({
+      $lookup: {
+        from: "sessions",
+        localField: "sessionHistory.sessionId",
+        foreignField: "_id",
+        as: "sessionHistory.session",
+      },
+    });
+
+    // sessionHistory - populate classId
+    pipeline.push({
+      $lookup: {
+        from: "classes",
+        localField: "sessionHistory.classId",
+        foreignField: "_id",
+        as: "sessionHistory.class",
+      },
+    });
+
     /* =========================
        MATCH (FILTERS)
     ========================= */
@@ -472,13 +492,95 @@ export const get = async (_id: string) => {
   }
 
   try {
-    // Find student with populated data
-    const student = await Student.findById(idValidation.data._id)
-      .populate("guardianId")
-      .populate("classId")
-      .populate("currentSessionId")
-      .populate("sessionHistory.sessionId")
-      .populate("sessionHistory.classId");
+    const pipeline: PipelineStage[] = [];
+
+    /* =========================
+       LOOKUPS
+    ========================= */
+
+    // class
+    pipeline.push({
+      $lookup: {
+        from: "classes",
+        localField: "classId",
+        foreignField: "_id",
+        as: "class",
+      },
+    });
+
+    pipeline.push({
+      $unwind: { path: "$class", preserveNullAndEmptyArrays: true },
+    });
+
+    // guardian
+    pipeline.push({
+      $lookup: {
+        from: "guardians",
+        let: { guardianId: "$guardianId" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$_id", "$$guardianId"] },
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "userId",
+              foreignField: "_id",
+              as: "user",
+            },
+          },
+          {
+            $unwind: {
+              path: "$user",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ],
+        as: "guardian",
+      },
+    });
+
+    pipeline.push({
+      $unwind: {
+        path: "$guardian",
+        preserveNullAndEmptyArrays: true,
+      },
+    });
+
+    // session
+    pipeline.push({
+      $lookup: {
+        from: "sessions",
+        localField: "currentSessionId",
+        foreignField: "_id",
+        as: "currentSession",
+      },
+    });
+
+    pipeline.push({
+      $unwind: { path: "$currentSession", preserveNullAndEmptyArrays: true },
+    });
+
+    // sessionHistory - populate sessionId
+    pipeline.push({
+      $lookup: {
+        from: "sessions",
+        localField: "sessionHistory.sessionId",
+        foreignField: "_id",
+        as: "sessionHistory",
+      },
+    });
+
+    pipeline.push({
+      $match: { _id: new mongoose.Types.ObjectId(idValidation.data._id) },
+    });
+
+    // Find single student with populated data
+    const student = await Student.aggregate(pipeline).then(
+      (results) => results[0],
+    );
 
     if (!student) {
       return {

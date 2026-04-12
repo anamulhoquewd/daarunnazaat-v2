@@ -48,4 +48,11 @@ sessionRoute.patch(
   (c) => sessionController.deactivate(c),
 );
 
+sessionRoute.delete(
+  "/:_id/permanently",
+  authenticate,
+  authorize(UserRole.SUPER_ADMIN),
+  (c) => sessionController.deleteSession(c),
+);
+
 export default sessionRoute;
