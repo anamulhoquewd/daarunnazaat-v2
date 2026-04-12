@@ -1,6 +1,17 @@
-import { FilterQuery, Model } from "mongoose";
-import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+import PDFDocument from "pdfkit";
+import { Model, FilterQuery } from "mongoose";
+
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const FONT_REGULAR = path.join(
+  __dirname,
+  "../fonts/NotoSerifBengali-Regular.ttf",
+);
+const FONT_BOLD = path.join(__dirname, "../fonts/NotoSerifBengali-Bold.ttf");
 
 interface PDFOptions {
   title: string;
@@ -27,14 +38,13 @@ export const generateTablePDF = async <T>(
       };
     }
 
-    const html = buildHTML(data, options);
-    const pdf = await htmlToPDF(html);
+    const pdf = await buildPDF(data, options);
 
     return {
       success: {
         success: true,
         message: `PDF generated with ${data.length} records`,
-        pdf, // ← Buffer
+        pdf,
       },
     };
   } catch (error: any) {
@@ -48,178 +58,153 @@ export const generateTablePDF = async <T>(
   }
 };
 
-function buildHTML(data: any[], options: PDFOptions) {
-  const {
-    title,
-    madrasaName = "দারুন নাজাত মাদরাসা",
-    madrasaAddress = "কাওলার, দক্ষিণখান, ঢাকা-১২২৯",
-    columns,
-  } = options;
+function buildPDF(data: any[], options: PDFOptions): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const {
+      title,
+      madrasaName = "দারুন নাজাত আদর্শ বালিকা মাদরাসা",
+      madrasaAddress = "কাওলার, জমিদার বাড়ী, দক্ষিণখান, ঢাকা-১২২৯",
+      columns,
+    } = options;
 
-  const tableHeaders = columns.map((col) => `<th>${col.label}</th>`).join("");
+    const doc = new PDFDocument({ margin: 40, size: "A4" });
+    const buffers: Buffer[] = [];
 
-  const tableRows = data
-    .map(
-      (doc, index) => `
-        <tr>
-          <td>${index + 1}</td>
-          ${columns
-            .map((col) => {
-              const val = col.key.split(".").reduce((obj, k) => obj?.[k], doc);
-              if (val === null || val === undefined) return "<td>-</td>";
-              if (val instanceof Date)
-                return `<td>${new Date(val).toLocaleDateString("bn-BD")}</td>`;
-              return `<td>${val}</td>`;
-            })
-            .join("")}
-        </tr>
-      `,
-    )
-    .join("");
+    doc.on("data", (chunk) => buffers.push(chunk));
+    doc.on("end", () => resolve(Buffer.concat(buffers)));
+    doc.on("error", reject);
 
-  return `
-    <!DOCTYPE html>
-    <html lang="bn">
-    <head>
-      <meta charset="UTF-8"/>
-      <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali&display=swap');
+    const pageWidth = doc.page.width - 80; // margin বাদে
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* =========================
+       HEADER
+    ========================= */
+    doc.fontSize(18).font(FONT_BOLD).text(madrasaName, { align: "center" });
 
-        body {
-          font-family: 'Noto Serif Bengali', serif;
-          font-size: 12px;
-          color: #000;
-          padding: 24px;
+    doc
+      .fontSize(11)
+      .font(FONT_REGULAR)
+      .text(madrasaAddress, { align: "center" });
+
+    doc.moveDown(0.5);
+
+    // divider
+    doc
+      .moveTo(40, doc.y)
+      .lineTo(doc.page.width - 40, doc.y)
+      .lineWidth(1.5)
+      .stroke();
+
+    doc.moveDown(0.5);
+
+    /* =========================
+       TITLE
+    ========================= */
+    doc
+      .fontSize(14)
+      .font(FONT_BOLD)
+      .text(title, { align: "center", underline: true });
+
+    doc.moveDown(0.3);
+
+    // meta
+    doc
+      .fontSize(10)
+      .font(FONT_REGULAR)
+      .text(`Total Records: ${data.length}`, 40, doc.y, { continued: true })
+      .text(`Date: ${new Date().toLocaleDateString("en-BD")}`, {
+        align: "right",
+      });
+
+    doc.moveDown(0.5);
+
+    /* =========================
+       TABLE
+    ========================= */
+    const colCount = columns.length + 1; // +1 for serial
+    const colWidth = pageWidth / colCount;
+    const rowHeight = 24;
+    const tableTop = doc.y;
+
+    // Header row background
+    doc.rect(40, tableTop, pageWidth, rowHeight).fill("#1a1a2e");
+
+    // Header text
+    doc.fillColor("white").fontSize(10).font(FONT_BOLD);
+
+    doc.text("NO", 40 + 4, tableTop + 7, { width: colWidth, align: "left" });
+
+    columns.forEach((col, i) => {
+      doc.text(col.label, 40 + colWidth * (i + 1) + 4, tableTop + 7, {
+        width: colWidth,
+        align: "left",
+      });
+    });
+
+    // Data rows
+    doc.font(FONT_REGULAR).fontSize(9);
+
+    data.forEach((row, rowIndex) => {
+      const y = tableTop + rowHeight * (rowIndex + 1);
+
+      // Alternate row color
+      if (rowIndex % 2 === 0) {
+        doc.rect(40, y, pageWidth, rowHeight).fill("#f5f5f5");
+      } else {
+        doc.rect(40, y, pageWidth, rowHeight).fill("white");
+      }
+
+      // Row border
+      doc.rect(40, y, pageWidth, rowHeight).stroke("#dddddd");
+
+      doc.fillColor("black");
+
+      // Serial number
+      doc.text(String(rowIndex + 1), 40 + 4, y + 7, {
+        width: colWidth,
+        align: "left",
+      });
+
+      // Data cells
+      columns.forEach((col, colIndex) => {
+        const val = col.key.split(".").reduce((obj: any, k) => obj?.[k], row);
+
+        let displayVal = "-";
+        if (val !== null && val !== undefined) {
+          if (val instanceof Date) {
+            displayVal = new Date(val).toLocaleDateString("en-BD");
+          } else {
+            displayVal = String(val);
+          }
         }
 
-        .header {
-          text-align: center;
-          margin-bottom: 20px;
-          border-bottom: 2px solid #000;
-          padding-bottom: 12px;
-        }
+        doc.text(displayVal, 40 + colWidth * (colIndex + 1) + 4, y + 7, {
+          width: colWidth - 8,
+          align: "left",
+          ellipsis: true,
+        });
+      });
+    });
 
-        .header h1 {
-          font-size: 22px;
-          font-weight: bold;
-          margin-bottom: 4px;
-        }
+    /* =========================
+       FOOTER
+    ========================= */
+    const footerY = tableTop + rowHeight * (data.length + 1) + 20;
 
-        .header p {
-          font-size: 13px;
-          color: #444;
-        }
+    doc
+      .moveTo(40, footerY)
+      .lineTo(doc.page.width - 40, footerY)
+      .lineWidth(0.5)
+      .stroke("#cccccc");
 
-        .document-title {
-          text-align: center;
-          font-size: 16px;
-          font-weight: bold;
-          margin: 16px 0;
-          text-decoration: underline;
-        }
+    doc
+      .fontSize(9)
+      .fillColor("#666666")
+      .text(madrasaName, 40, footerY + 8, { continued: true })
+      .text(`Printed: ${new Date().toLocaleString("en-BD")}`, {
+        align: "right",
+      });
 
-        .meta {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 12px;
-          font-size: 11px;
-          color: #555;
-        }
-
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 8px;
-        }
-
-        th {
-          background-color: #1a1a2e;
-          color: #fff;
-          padding: 8px 10px;
-          text-align: left;
-          font-size: 11px;
-        }
-
-        td {
-          padding: 7px 10px;
-          border-bottom: 1px solid #ddd;
-          font-size: 11px;
-        }
-
-        tr:nth-child(even) td {
-          background-color: #f5f5f5;
-        }
-
-        .footer {
-          margin-top: 24px;
-          display: flex;
-          justify-content: space-between;
-          font-size: 11px;
-          color: #555;
-          border-top: 1px solid #ccc;
-          padding-top: 10px;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>${madrasaName}</h1>
-        <p>${madrasaAddress}</p>
-      </div>
-
-      <div class="document-title">${title}</div>
-
-      <div class="meta">
-        <span>মোট রেকর্ড: ${data.length}</span>
-        <span>তারিখ: ${new Date().toLocaleDateString("bn-BD")}</span>
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            ${tableHeaders}
-          </tr>
-        </thead>
-        <tbody>
-          ${tableRows}
-        </tbody>
-      </table>
-
-      <div class="footer">
-        <span>দারুননাজাত মাদ্রাসা</span>
-        <span>Printed: ${new Date().toLocaleString("bn-BD")}</span>
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-async function htmlToPDF(html: string): Promise<Buffer> {
-  const isProduction = process.env.NODE_ENV === "production";
-
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: { width: 1280, height: 720 },
-    executablePath: isProduction
-      ? await chromium.executablePath()
-      : process.platform === "win32"
-        ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-        : "/usr/bin/google-chrome",
-    headless: true,
+    doc.end();
   });
-
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: "networkidle0" });
-
-  const pdf = await page.pdf({
-    format: "A4",
-    printBackground: true,
-    margin: { top: "20mm", bottom: "20mm", left: "15mm", right: "15mm" },
-  });
-
-  await browser.close();
-  return Buffer.from(pdf);
 }
