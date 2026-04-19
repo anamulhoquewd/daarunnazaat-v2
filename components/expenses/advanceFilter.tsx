@@ -13,25 +13,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Branch, ExpenseCategory } from "@/validations";
 import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useState } from "react";
-import { StaffFilterCombobox } from "../staffs/staffFilterCombobox";
-import { SttudentFilterCombobox } from "../students/studentFilterCombobox";
-import { Branch, FeeType, PaymentMethod } from "@/validations";
 
-interface FeesFiltersProps {
+interface AdvanceFilterForExpenseProps {
   filters: Record<string, string | boolean | undefined>;
   onChange: (key: string, value: string) => void;
   isExpanded?: boolean;
   activeFilterCount: number;
 }
 
-export default function FeesFilters({
+export default function AdvanceFilterForExpense({
   filters,
   onChange,
   isExpanded: initialExpanded = false,
   activeFilterCount,
-}: FeesFiltersProps) {
+}: AdvanceFilterForExpenseProps) {
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
 
   return (
@@ -61,40 +59,18 @@ export default function FeesFilters({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">
-                Payment Method
+                Expense type
               </label>
               <Select
-                value={(filters.paymentMethod as string) || "all"}
-                onValueChange={(v) => onChange("paymentMethod", v)}
+                value={(filters.category as string) || "all"}
+                onValueChange={(v) => onChange("category", v)}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Payment method" />
+                  <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Methods</SelectItem>
-                  {Object.entries(PaymentMethod).map(([key, value]) => (
-                    <SelectItem key={key} value={value}>
-                      {value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Fees type
-              </label>
-              <Select
-                value={(filters.feeType as string) || "all"}
-                onValueChange={(v) => onChange("feeType", v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select feeType" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Type of fees</SelectItem>
-                  {Object.entries(FeeType).map(([key, value]) => (
+                  <SelectItem value="all">All Type of category</SelectItem>
+                  {Object.entries(ExpenseCategory).map(([key, value]) => (
                     <SelectItem key={key} value={value}>
                       {value}
                     </SelectItem>
@@ -122,17 +98,6 @@ export default function FeesFilters({
                 </SelectContent>
               </Select>
             </div>
-
-            <StaffFilterCombobox
-              value={filters.collectedBy as string}
-              onChange={onChange}
-              fieldName="collectedBy"
-            />
-
-            <SttudentFilterCombobox
-              value={filters.studentId as string}
-              onChange={onChange}
-            />
           </div>
         </CardContent>
       )}

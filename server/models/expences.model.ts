@@ -15,16 +15,13 @@ const paidToSchema = new Schema(
   { _id: false }, // extra _id avoid করতে
 );
 
-const itemSchema = new Schema(
-  {
-    name: { type: String, required: true },
-    quantity: { type: Number, required: true, min: 1 },
-    unit: { type: String, required: true },
-    unitPrice: { type: Number, required: true, min: 0 },
-    total: { type: Number, required: true, min: 0 },
-  },
-  { _id: false },
-);
+const itemSchema = new Schema({
+  name: { type: String, required: true },
+  quantity: { type: Number, required: true, min: 1 },
+  unit: { type: String, required: true },
+  unitPrice: { type: Number, required: true, min: 0 },
+  total: { type: Number, required: true, min: 0 },
+});
 
 // Expense Model
 const ExpenseSchema = new Schema<IExpense & Document>(

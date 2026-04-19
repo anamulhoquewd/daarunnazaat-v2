@@ -69,11 +69,15 @@ function FeesPage() {
     setSelectedId,
     handleDelete,
     isLoading,
+    restoreFee,
+    deleteFlagOn,
   } = useFeesQuery();
 
   const columns = FeesColumns({
     setIsDelOpen,
     setSelectedId,
+    deleteFlag: deleteFlagOn,
+    restoreFee,
   });
 
   const table = useReactTable({

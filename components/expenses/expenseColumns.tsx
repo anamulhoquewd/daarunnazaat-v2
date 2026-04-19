@@ -10,44 +10,48 @@ import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "../ui/separator";
+import PaymentReceiver from "./paymentReceiver";
+import ShowItems from "./showItems";
 
 // Define Props Interface
 interface ColumnsProps {
   setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   deleteFlag: (feeId: string) => Promise<void>;
-  restoreFee: (feeId: string) => Promise<void>;
+  restoreExpense: (feeId: string) => Promise<void>;
 }
-export const FeesColumns = ({
+export const ExpensesColumns = ({
   setIsDelOpen,
   setSelectedId,
 
   deleteFlag,
-  restoreFee,
+  restoreExpense,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
-    header: "Receipt number",
+    header: "voucher number",
     cell: ({ row }) => {
-      const { _id, receiptNumber } = row.original;
+      const { _id, voucherNumber } = row.original;
 
       return (
         <Link
-          href={`/dashboard/fees/${_id}`}
+          href={`/dashboard/expenses/${_id}`}
           className="text-blue-600 hover:underline font-medium"
           target="_blank"
         >
-          {receiptNumber ?? "-"}
+          {voucherNumber ?? "-"}
         </Link>
       );
     },
   },
   {
-    header: "Student Id",
-    cell: ({ row }) => row.original?.studentId?.studentId || "-",
+    header: "Category",
+    cell: ({ row }) => row.original?.category || "-",
   },
   {
-    header: "Student name",
-    cell: ({ row }) => row.original?.studentId?.fullName || "-",
+    header: "items",
+    cell: ({ row }) => {
+      return row.original?.items ? <ShowItems expense={row.original} />: "_";
+    },
   },
   {
     accessorKey: "branch",
@@ -55,41 +59,28 @@ export const FeesColumns = ({
     cell: ({ row }) => row.original?.branch || "-",
   },
   {
-    accessorKey: "session",
-    header: "Session",
-    cell: ({ row }) => row.original?.sessionId?.sessionName || "-",
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => row.original?.description || "-",
   },
   {
-    accessorKey: "feeType",
-    header: "Fee type",
-    cell: ({ row }) => row.original?.feeType || "-",
+    accessorKey: "amount",
+    header: "Amount",
+    cell: ({ row }) => row.original?.amount || "-",
   },
   {
-    accessorKey: "baseAmount",
-    header: "Base",
-    cell: ({ row }) => row.original?.baseAmount || "-",
-  },
-  {
-    accessorKey: "payableAmount",
-    header: "Payable",
-    cell: ({ row }) => row.original?.payableAmount || "-",
-  },
-  {
-    accessorKey: "received",
-    header: "Received",
-    cell: ({ row }) => row.original?.receivedAmount || "-",
-  },
-  {
-    accessorKey: "dueAmount",
-    header: "Due",
-    cell: ({ row }) => row.original?.dueAmount || "-",
-  },
-  {
-    accessorKey: "paymentDate",
-    header: "Payment Date",
+    accessorKey: "expenseDate",
+    header: "Expense Date",
     cell: ({ getValue }) => {
       const value = getValue<string>();
       return value ? format(new Date(value), "dd LLL yyyy") : "-";
+    },
+  },
+  {
+    accessorKey: "paidTo",
+    header: "Paid To",
+    cell: ({ row }) => {
+      return <PaymentReceiver expense={row.original} />;
     },
   },
   {
@@ -97,31 +88,15 @@ export const FeesColumns = ({
     header: "Payment Method",
     cell: ({ row }) => row.original?.paymentMethod,
   },
-
   {
-    accessorKey: "period",
-    header: "Period",
-    cell: ({ row }) => row.original?.period || "-",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => row.original?.paymentStatus,
+    accessorKey: "createdBy",
+    header: "Created by phone",
+    cell: ({ row }) => row.original?.createdBy?.phone,
   },
   {
     accessorKey: "isDeleted",
     header: "Deleted",
     cell: ({ row }) => (row.original?.isDeleted ? "Yes" : "No"),
-  },
-  {
-    accessorKey: "source",
-    header: "Source",
-    cell: ({ row }) => row.original?.paymentSource,
-  },
-  {
-    accessorKey: "collectedByPhone",
-    header: "collected by phone",
-    cell: ({ row }) => row.original?.collectedBy?.phone,
   },
   {
     id: "actions",
@@ -135,7 +110,7 @@ export const FeesColumns = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          <Link href={`/dashboard/fees/edit/${row.original._id}`}>
+          <Link href={`/dashboard/expenses/edit/${row.original._id}`}>
             <DropdownMenuItem>
               <Pencil className="mr-2 h-4 w-4" />
               Edit
@@ -145,7 +120,7 @@ export const FeesColumns = ({
           <DropdownMenuItem
             onClick={() => {
               if (row.original.isDeleted) {
-                restoreFee!(row.original._id);
+                restoreExpense!(row.original._id);
               } else {
                 deleteFlag!(row.original._id);
               }

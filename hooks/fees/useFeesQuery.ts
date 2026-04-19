@@ -179,18 +179,106 @@ function useFeesQuery() {
     }));
   };
 
-  const handleDelete = async (feeId: string) => {
-    setIsLoading(true);
+  
+    const deleteFlagOn = async (expenseId: string) => {
+      setIsLoading(true);
+      try {
+        const response = await api.patch(`/fees/${expenseId}/delete`);
+        if (!response.data.success) {
+          toast.error(response.data.error.message || "Failed to delete user");
+          throw new Error(
+            response.data.error.message || "Failed to delete user",
+          );
+        }
+        toast.success(
+          response.data.success.message || "User deleted successfully",
+        );
 
-    try {
-      const response = await api.delete(`/fees/${feeId}/permanently`);
-      if (!response.data.success) {
-        toast.error("Delete failed");
-        throw new Error(response.data.error.message || "Failed to delete fee");
+        getFees({
+          search: {
+            global: debouncedGlobalSearch,
+            collectedBy: debouncedCollectedBySearch,
+            studentId: debouncedStudentIdSearch,
+            sessionId: debouncedSessionIdSearch,
+          },
+          filters: filterBy,
+          currentPage: pagination.page,
+        });
+      } catch (error: any) {
+        toast.error("An error occurred while deleting the user.");
+        handleAxiosError(error);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      toast.success("Fee deleted successfully");
+    const restoreFee = async (feeId: string) => {
+      setIsLoading(true);
+      try {
+        const response = await api.patch(`/auth/${feeId}/restore`);
+        if (!response.data.success) {
+          toast.error(response.data.error.message || "Failed to restore user");
+          throw new Error(
+            response.data.error.message || "Failed to restore user",
+          );
+        }
+        toast.success(
+          response.data.success.message || "User restored successfully",
+        );
 
+        getFees({
+          search: {
+            global: debouncedGlobalSearch,
+            collectedBy: debouncedCollectedBySearch,
+            studentId: debouncedStudentIdSearch,
+            sessionId: debouncedSessionIdSearch,
+          },
+          filters: filterBy,
+          currentPage: pagination.page,
+        });
+      } catch (error: any) {
+        toast.error("An error occurred while restoring the user.");
+        handleAxiosError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const handleDelete = async (feeId: string) => {
+      setIsLoading(true);
+
+      try {
+        const response = await api.delete(`/fees/${feeId}/permanently`);
+        if (!response.data.success) {
+          toast.error("Delete failed");
+          throw new Error(
+            response.data.error.message || "Failed to delete fee",
+          );
+        }
+
+        toast.success("Fee deleted successfully");
+
+        getFees({
+          search: {
+            global: debouncedGlobalSearch,
+            collectedBy: debouncedCollectedBySearch,
+            studentId: debouncedStudentIdSearch,
+            sessionId: debouncedSessionIdSearch,
+          },
+          filters: filterBy,
+          currentPage: pagination.page,
+        });
+
+        setIsDelOpen(false);
+      } catch (error: any) {
+        handleAxiosError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // 🔥 API call only when debounced search OR page/limit changes
+    useEffect(() => {
       getFees({
         search: {
           global: debouncedGlobalSearch,
@@ -201,67 +289,48 @@ function useFeesQuery() {
         filters: filterBy,
         currentPage: pagination.page,
       });
+    }, [
+      debouncedGlobalSearch,
+      debouncedStudentIdSearch,
+      debouncedCollectedBySearch,
+      debouncedSessionIdSearch,
+      filterBy,
+      pagination.page,
+    ]);
 
-      setIsDelOpen(false);
-    } catch (error: any) {
-      handleAxiosError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // Combined filters for component usage (excluding dateRange as it's handled separately)
+    const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
+      const { dateRange, feeRange, ...restFilters } = filterBy;
+      return {
+        ...restFilters,
+        studentId: search.studentId,
+        collectedBy: search.collectedBy,
+        sessionId: search.sessionId,
+      };
+    }, [filterBy, search.collectedBy, search.studentId, search.sessionId]);
 
-  // 🔥 API call only when debounced search OR page/limit changes
-  useEffect(() => {
-    getFees({
-      search: {
-        global: debouncedGlobalSearch,
-        collectedBy: debouncedCollectedBySearch,
-        studentId: debouncedStudentIdSearch,
-        sessionId: debouncedSessionIdSearch,
-      },
-      filters: filterBy,
-      currentPage: pagination.page,
-    });
-  }, [
-    debouncedGlobalSearch,
-    debouncedStudentIdSearch,
-    debouncedCollectedBySearch,
-    debouncedSessionIdSearch,
-    filterBy,
-    pagination.page,
-  ]);
-
-  // Combined filters for component usage (excluding dateRange as it's handled separately)
-  const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
-    const { dateRange, feeRange, ...restFilters } = filterBy;
     return {
-      ...restFilters,
-      studentId: search.studentId,
-      collectedBy: search.collectedBy,
-      sessionId: search.sessionId,
+      fees,
+      isLoading,
+      pagination,
+      setPagination,
+      refetch: getFees,
+      setSearch,
+      search,
+      filterBy,
+      setFilterBy,
+      activeFilterCount,
+      handleClearFilters,
+      updateFilter,
+      combinedFilters,
+      isDelOpen,
+      setIsDelOpen,
+      selectedId,
+      setSelectedId,
+      handleDelete,
+      deleteFlagOn,
+      restoreFee,
     };
-  }, [filterBy, search.collectedBy, search.studentId, search.sessionId]);
-
-  return {
-    fees,
-    isLoading,
-    pagination,
-    setPagination,
-    refetch: getFees,
-    setSearch,
-    search,
-    filterBy,
-    setFilterBy,
-    activeFilterCount,
-    handleClearFilters,
-    updateFilter,
-    combinedFilters,
-    isDelOpen,
-    setIsDelOpen,
-    selectedId,
-    setSelectedId,
-    handleDelete,
-  };
 }
 
 export default useFeesQuery;

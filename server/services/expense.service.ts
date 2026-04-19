@@ -224,14 +224,14 @@ export const gets = async (queryParams: {
       queryParams.expenseDateRange?.from ||
       queryParams.expenseDateRange?.to
     ) {
-      query.paymentDate = {};
+      query.expenseDate = {};
 
       if (queryParams.expenseDateRange.from) {
-        query.paymentDate.$gte = new Date(queryParams.expenseDateRange.from);
+        query.expenseDate.$gte = new Date(queryParams.expenseDateRange.from);
       }
 
       if (queryParams.expenseDateRange.to) {
-        query.paymentDate.$lte = new Date(queryParams.expenseDateRange.to);
+        query.expenseDate.$lte = new Date(queryParams.expenseDateRange.to);
       }
     }
 

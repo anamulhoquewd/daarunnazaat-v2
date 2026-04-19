@@ -640,6 +640,7 @@ export const expenseZ = z.object({
   items: z
     .array(
       z.object({
+        _id: z.string().optional(),
         name: z.string().trim().min(2),
         quantity: z.number().min(1),
         unit: z.string().optional(),
