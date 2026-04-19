@@ -385,7 +385,10 @@ export const studentZ = personBaseZ
 
     paymentMethod: z.enum(PaymentMethod).default(PaymentMethod.CASH),
     paymentSource: z.enum(PaymentSource).default(PaymentSource.OFFICE),
-    remarks: z.string().optional(),
+    remarks: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().optional(),
+    ),
 
     isActive: z.boolean().optional(),
 
@@ -547,7 +550,10 @@ export const feeCollectionZ = z
     createdAt: z.coerce.date().optional(),
     updatedAt: z.coerce.date().optional(),
 
-    remarks: z.string().optional(),
+    remarks: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().optional(),
+    ),
   })
   .superRefine((data, ctx) => {
     const monthlyFees = [
@@ -606,7 +612,10 @@ export const salaryPaymentZ = z.object({
   paymentMethod: z.enum(PaymentMethod),
   branch: z.enum(Branch),
   paidBy: mongoZ.optional(),
-  remarks: z.string().optional(),
+  remarks: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().optional(),
+  ),
   status: z.enum(["paid", "partial", "pending"]).optional(),
   isDeleted: z.boolean().optional(),
   deletedAt: z.coerce.date().nullable().optional(),
@@ -630,7 +639,8 @@ export const expenseZ = z.object({
   branch: z.array(z.enum(Branch)),
   createdBy: mongoZ.optional(),
   paidTo: z.object({
-    name: z.string(),
+    name: z.string().min(2),
+    // if undefined or empty string, it will be transformed to undefined
     phone: z
       .string()
       .regex(BDPhoneRegex, "Invalid BD phone number (e.g. 019XXXXXXXX)")
@@ -644,12 +654,15 @@ export const expenseZ = z.object({
         name: z.string().trim().min(2),
         quantity: z.number().min(1),
         unit: z.string().optional(),
-        unitPrice: moneyZ.min(0),
-        total: moneyZ.min(0),
+        unitPrice: moneyZ.min(1),
+        total: moneyZ.optional(),
       }),
     )
     .min(1),
-  remarks: z.string().optional(),
+  remarks: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().optional(),
+  ),
   attachments: z.array(imageZ).optional(),
   isDeleted: z.boolean().optional(),
   deletedAt: z.coerce.date().nullable().optional(),
@@ -684,7 +697,10 @@ export const attendanceZ = z.object({
   classId: mongoZ,
   date: z.coerce.date(),
   status: z.enum(AttendanceStatus),
-  remarks: z.string().optional(),
+  remarks: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().optional(),
+  ),
   sessionId: mongoZ,
   markedBy: mongoZ,
 });
@@ -697,7 +713,10 @@ export const staffAttendanceZ = z.object({
   status: z.enum(AttendanceStatus),
   checkInTime: z.coerce.date().optional(),
   checkOutTime: z.coerce.date().optional(),
-  remarks: z.string().optional(),
+  remarks: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().optional(),
+  ),
   markedBy: mongoZ,
 });
 
@@ -737,7 +756,10 @@ export const resultZ = z.object({
   percentage: moneyZ.min(0).max(100),
   grade: z.string().optional(),
   position: moneyZ.optional(),
-  remarks: z.string().optional(),
+  remarks: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().optional(),
+  ),
 });
 
 // Notice Schema

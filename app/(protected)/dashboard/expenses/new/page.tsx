@@ -1,10 +1,7 @@
+import ExpenseCenter from "@/components/expenses/expenseCenter";
 
-function CreateExpense( ) {
-  return (
-    <div>
-      Create expense
-    </div>
-  )
+function CreateExpense() {
+  return <ExpenseCenter />;
 }
 
-export default CreateExpense
+export default CreateExpense;

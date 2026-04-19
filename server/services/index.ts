@@ -12,6 +12,7 @@ import * as payAdmissionDueService from "./payAdmissionDue.service";
 import * as expenseService from "./expense.service";
 import * as exportService from "./export.service";
 import * as generatePDFService from "./generatePDF.service";
+import * as dashboardService from "./dashboard.service";
 
 export {
   blogService,
@@ -28,4 +29,5 @@ export {
   expenseService,
   exportService,
   generatePDFService,
+  dashboardService,
 };

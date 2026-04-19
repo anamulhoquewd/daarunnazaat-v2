@@ -28,20 +28,26 @@ export const register = async (body: IExpense) => {
   try {
     const voucherNumber = await generateVoucherNumber();
 
-    // calculate total amount from items if items are provided, otherwise use the amount field
-    const amount = validData.data.items && validData.data.items.length > 0
-      ? validData.data.items.reduce((sum, item) => sum + item.total, 0)
-      : validData.data.amount;
+    // Recalculate each item's total server-side — never trust frontend values.
+    const sanitizedItems = (validData.data.items ?? []).map((item) => ({
+      ...item,
+      total: item.quantity * item.unitPrice,
+    }));
 
-    // Create salry
+    // Derive overall amount from the server-recalculated item totals.
+    const amount =
+      sanitizedItems.length > 0
+        ? sanitizedItems.reduce((sum, item) => sum + item.total, 0)
+        : validData.data.amount;
+
     const expensePayment = new Expense({
       ...validData.data,
+      items: sanitizedItems,
       createdBy: body.createdBy,
-      voucherNumber: voucherNumber,
-      amount
+      voucherNumber,
+      amount,
     });
 
-    // Save salry
     const docs = await expensePayment.save();
 
     // Create Transaction Log

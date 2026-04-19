@@ -1,55 +1,46 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { LucideIcon, TrendingDown, TrendingUp } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
-interface StatsCardProps {
-  title: string;
+interface StatCardProps {
+  label: string;
   value: string;
-  description: string;
-  icon: LucideIcon;
-  plaintext?: boolean;
-  className?: string;
+  sub?: string;
+  icon: React.ReactNode;
+  variant?: "default" | "success" | "warning" | "danger" | "info";
 }
 
-export function StatsCard({
-  title,
-  value,
-  description,
-  icon: Icon,
-  plaintext = false,
-  className,
-}: StatsCardProps) {
-  const isNegative = description.includes("-");
+const variantStyles: Record<string, string> = {
+  default: "border-l-slate-400",
+  success: "border-l-emerald-500",
+  warning: "border-l-amber-500",
+  danger: "border-l-red-500",
+  info: "border-l-blue-500",
+};
 
+function StatCard({
+  label,
+  value,
+  sub,
+  icon,
+  variant = "default",
+}: StatCardProps) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs flex items-center gap-1 mt-1">
-          {plaintext ? (
-            ""
-          ) : !isNegative ? (
-            <TrendingUp className="h-3 w-3 text-green-500" />
-          ) : (
-            <TrendingDown className="h-3 w-3 text-red-500" />
-          )}
-          <span
-            className={
-              plaintext
-                ? cn("text-gray-500", className)
-                : !isNegative
-                ? "text-green-500"
-                : "text-red-500"
-            }
-          >
-            {description}
-          </span>
-        </p>
+    <Card className={`border-l-4 ${variantStyles[variant]} shadow-sm`}>
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {label}
+            </p>
+            <p className="text-2xl font-bold tracking-tight">{value}</p>
+            {sub ? (
+              <p className="text-xs text-muted-foreground">{sub}</p>
+            ) : null}
+          </div>
+          <div className="rounded-xl bg-muted/60 p-2.5">{icon}</div>
+        </div>
       </CardContent>
     </Card>
   );
 }
+
+export default StatCard;

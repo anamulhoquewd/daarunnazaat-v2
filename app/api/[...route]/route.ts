@@ -4,6 +4,7 @@ import authRoutes from "@/server/routes/auth.route";
 import blogRoutes from "@/server/routes/blog.route";
 import classRoutes from "@/server/routes/classes.route";
 import expenseRoutes from "@/server/routes/expense.route";
+import dashboardRoutes from "@/server/routes/dashboard.route";
 import exportRoutes from "@/server/routes/export.route";
 import feeCollectionRoutes from "@/server/routes/feeCollection.route";
 import guardianRoutes from "@/server/routes/guardian.route";
@@ -70,6 +71,9 @@ app.route("/salaries", salaryPaymentRoutes);
 
 // Expenses routes
 app.route("/expenses", expenseRoutes);
+
+// Dashboard routes
+app.route("/dashboard", dashboardRoutes);
 
 // Staff routes
 app.route("/staffs", staffRoutes);

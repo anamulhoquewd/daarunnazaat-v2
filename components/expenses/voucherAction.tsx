@@ -37,7 +37,7 @@ export function VoucherActions({ voucherNumber }: {voucherNumber: string}) {
   return (
     <div className="flex gap-3 flex-wrap justify-center">
       <Button
-        onClick={() => router.push('/expenses')}
+        onClick={() => router.push('/dashboard/expenses/new')}
         variant="outline"
         size="lg"
         className="gap-2"

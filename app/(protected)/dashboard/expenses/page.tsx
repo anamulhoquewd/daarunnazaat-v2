@@ -130,7 +130,7 @@ function ExpensePage() {
                 {activeFilterCount() !== 1 ? "s" : ""} active
               </span>
             )}
-            <Link href={"#"}>
+            <Link href={"/dashboard/expenses/new"}>
               <Button className="cursor-pointer">Expenses Center</Button>
             </Link>
           </div>

@@ -1,12 +1,6 @@
 import api from "@/axios/intercepter";
 import { buildQuery, defaultPagination, handleAxiosError } from "@/lib/utils";
-import {
-  Branch,
-  ExpenseCategory,
-  IExpense,
-  IPagination,
-  PaymentMethod,
-} from "@/validations";
+import { Branch, ExpenseCategory, IExpense, IPagination } from "@/validations";
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
@@ -48,7 +42,7 @@ function useExpensesQuery() {
     branch: "all" as Branch,
   });
 
-  console.log("Filters: ", filterBy)
+  console.log("Filters: ", filterBy);
 
   // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
@@ -139,7 +133,7 @@ function useExpensesQuery() {
   };
 
   const updateFilter = (key: string, value: string) => {
-      setFilterBy((prev) => ({ ...prev, [key]: value }));
+    setFilterBy((prev) => ({ ...prev, [key]: value }));
 
     setPagination((prev) => ({
       ...prev,
@@ -242,11 +236,7 @@ function useExpensesQuery() {
       filters: filterBy,
       currentPage: pagination.page,
     });
-  }, [
-    debouncedGlobalSearch,
-    filterBy,
-    pagination.page,
-  ]);
+  }, [debouncedGlobalSearch, filterBy, pagination.page]);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
   const combinedFilters = useMemo<Record<string, string | undefined>>(() => {

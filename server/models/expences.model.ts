@@ -18,9 +18,9 @@ const paidToSchema = new Schema(
 const itemSchema = new Schema({
   name: { type: String, required: true },
   quantity: { type: Number, required: true, min: 1 },
-  unit: { type: String, required: true },
-  unitPrice: { type: Number, required: true, min: 0 },
-  total: { type: Number, required: true, min: 0 },
+  unit: { type: String },
+  unitPrice: { type: Number, required: true, min: 1 },
+  total: { type: Number, required: true, min: 1 },
 });
 
 // Expense Model
@@ -33,7 +33,7 @@ const ExpenseSchema = new Schema<IExpense & Document>(
       required: true,
     },
     items: { type: [itemSchema], default: undefined },
-    description: { type: String, required: true },
+    description: { type: String },
     amount: { type: Number, required: true, min: 0 },
     expenseDate: { type: Date, default: Date.now },
     paymentMethod: {
@@ -57,7 +57,6 @@ const ExpenseSchema = new Schema<IExpense & Document>(
 );
 
 ExpenseSchema.index({ category: 1, expenseDate: -1 });
-
 
 export const Expense: Model<IExpense & Document> =
   models.Expense || model<IExpense & Document>("Expense", ExpenseSchema);
