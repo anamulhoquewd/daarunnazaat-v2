@@ -32,7 +32,7 @@ export default function FeeUpdatePage() {
     useFeeFieldHandlers(fee, form, setChanges, setRemarksError);
 
   const hasChanges = Object.keys(changes).length > 0;
-  const remarksRequired = hasChanges && !form.watch("remarks")?.trim();
+  const remarksRequired = hasChanges && !form.watch("remarks");
 
   // Loading State
   if (isLoading) {

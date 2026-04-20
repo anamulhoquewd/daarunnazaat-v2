@@ -163,7 +163,7 @@ export const addressZ = z.object({
   division: z.string().trim().optional(),
 });
 
-const moneyZ = z.coerce.number().min(0);
+const moneyZ = z.coerce.number().min(0, "Amount cannot be negative");
 
 // Image validation
 export const imageZ = z.object({
@@ -342,40 +342,40 @@ export const studentZ = personBaseZ
 
     admissionDate: z.coerce.date(),
 
-    admissionFee: moneyZ.min(0),
-    receivedAmount: moneyZ.min(0),
+    admissionFee: moneyZ.min(0).min(0),
+    receivedAmount: moneyZ.min(0).min(0),
 
-    monthlyFee: moneyZ.min(0),
-    residentialFee: moneyZ.min(0).optional(),
-    mealFee: moneyZ.min(0).optional(),
-    daycareFee: moneyZ.min(0).optional(),
-    coachingFee: moneyZ.min(0).optional(),
+    monthlyFee: moneyZ.min(0).min(0),
+    residentialFee: moneyZ.min(0).min(0).optional(),
+    mealFee: moneyZ.min(0).min(0).optional(),
+    daycareFee: moneyZ.min(0).min(0).optional(),
+    coachingFee: moneyZ.min(0).min(0).optional(),
 
     feeBalance: z
       .object({
         monthlyFee: z.object({
-          due: moneyZ.min(0).default(0),
-          advance: moneyZ.min(0).default(0),
+          due: moneyZ.min(0).min(0).default(0),
+          advance: moneyZ.min(0).min(0).default(0),
         }),
         residentialFee: z.object({
-          due: moneyZ.min(0).default(0),
-          advance: moneyZ.min(0).default(0),
+          due: moneyZ.min(0).min(0).default(0),
+          advance: moneyZ.min(0).min(0).default(0),
         }),
         mealFee: z.object({
-          due: moneyZ.min(0).default(0),
-          advance: moneyZ.min(0).default(0),
+          due: moneyZ.min(0).min(0).default(0),
+          advance: moneyZ.min(0).min(0).default(0),
         }),
         coachingFee: z.object({
-          due: moneyZ.min(0).default(0),
-          advance: moneyZ.min(0).default(0),
+          due: moneyZ.min(0).min(0).default(0),
+          advance: moneyZ.min(0).min(0).default(0),
         }),
         daycareFee: z.object({
-          due: moneyZ.min(0).default(0),
-          advance: moneyZ.min(0).default(0),
+          due: moneyZ.min(0).min(0).default(0),
+          advance: moneyZ.min(0).min(0).default(0),
         }),
         admissionFee: z.object({
-          due: moneyZ.min(0).default(0),
-          advance: moneyZ.min(0).default(0),
+          due: moneyZ.min(0).min(0).default(0),
+          advance: moneyZ.min(0).min(0).default(0),
         }),
       })
       .optional(),
@@ -430,7 +430,7 @@ export const guardianZ = personBaseZ.omit({ dateOfBirth: true }).extend({
   userId: mongoZ,
   guardianId: z.string().optional(),
   occupation: z.string().optional(),
-  monthlyIncome: moneyZ.optional(),
+  monthlyIncome: moneyZ.min(0).optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -595,7 +595,7 @@ export const feeCollectionsUpdateZ = feeCollectionZ.partial().refine(
 
 export const payAdmissionDueZ = z.object({
   studentId: mongoZ,
-  receivedAmount: moneyZ,
+  receivedAmount: moneyZ.min(0),
   paymentDate: z.coerce.date().optional(),
 });
 
@@ -607,7 +607,7 @@ export const salaryPaymentZ = z.object({
   period: periodSchema,
   baseSalary: moneyZ.min(0),
   bonus: moneyZ.min(0).default(0),
-  netSalary: moneyZ.optional(),
+  netSalary: moneyZ.min(0).optional(),
   paymentDate: z.coerce.date().default(() => new Date()),
   paymentMethod: z.enum(PaymentMethod),
   branch: z.enum(Branch),
@@ -655,14 +655,15 @@ export const expenseZ = z.object({
         quantity: z.number().min(1),
         unit: z.string().optional(),
         unitPrice: moneyZ.min(1),
-        total: moneyZ.optional(),
+        total: moneyZ.min(0).optional(),
       }),
     )
     .min(1),
-  remarks: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.string().optional(),
-  ),
+  remarks: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((value) => (value === "" || value === null ? undefined : value)),
   attachments: z.array(imageZ).optional(),
   isDeleted: z.boolean().optional(),
   deletedAt: z.coerce.date().nullable().optional(),
@@ -682,7 +683,7 @@ export const transactionLogZ = z.object({
   transactionType: z.enum(TransactionType),
   referenceId: mongoZ,
   referenceModel: z.enum(["FeeCollection", "SalaryPayment", "Expense"]),
-  amount: moneyZ,
+  amount: moneyZ.min(0),
   description: z.string(),
   performedBy: mongoZ.optional(),
   branch: z.enum(Branch),
@@ -755,7 +756,7 @@ export const resultZ = z.object({
   obtainedMarks: moneyZ.min(0),
   percentage: moneyZ.min(0).max(100),
   grade: z.string().optional(),
-  position: moneyZ.optional(),
+  position: moneyZ.min(0).optional(),
   remarks: z.preprocess(
     (value) => (value === "" ? undefined : value),
     z.string().optional(),
@@ -806,7 +807,7 @@ export const blogZ = z.object({
   publishedBy: mongoZ.optional(),
   status: z.enum(BlogStatus).optional(),
   tags: z.array(z.string()).optional(),
-  views: moneyZ.default(0),
+  views: moneyZ.min(0).default(0),
   publishedAt: z.coerce.date().optional(),
   expiresAt: z.coerce.date().optional(),
 });

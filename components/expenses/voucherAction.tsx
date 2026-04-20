@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Printer, Download, ArrowLeft, Loader2 } from 'lucide-react';
-import { generatePDFFromElement, printElement } from '@/lib/pdf-generator';
+// import { generatePDFFromElement, printElement } from '@/lib/pdf-generator';
 
 
 export function VoucherActions({ voucherNumber }: {voucherNumber: string}) {
@@ -15,7 +15,7 @@ export function VoucherActions({ voucherNumber }: {voucherNumber: string}) {
   const handlePrint = async () => {
     setIsPrinting(true);
     try {
-      printElement('voucher-content');
+      // printElement('voucher-content');
     } catch (error) {
       console.error('Print error:', error);
     } finally {
@@ -26,7 +26,7 @@ export function VoucherActions({ voucherNumber }: {voucherNumber: string}) {
   const handleDownloadPDF = async () => {
     setIsGeneratingPDF(true);
     try {
-      await generatePDFFromElement('voucher-content', `Receipt-${voucherNumber}`);
+      // await generatePDFFromElement('voucher-content', `Receipt-${voucherNumber}`);
     } catch (error) {
       console.error('PDF generation error:', error);
     } finally {

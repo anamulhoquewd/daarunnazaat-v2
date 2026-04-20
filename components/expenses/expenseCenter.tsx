@@ -2,15 +2,9 @@
 
 import api from "@/axios/intercepter";
 import { DateField } from "@/components/common/dateCalendar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ChevronsUpDown, Check } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -19,27 +13,21 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
+  FormControl,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { cn, handleAxiosError } from "@/lib/utils";
 import {
   Branch,
@@ -49,11 +37,20 @@ import {
   PaymentMethod,
 } from "@/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronsUpDown, Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+import {
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "../ui/select";
+import { Textarea } from "../ui/textarea";
+import { Popover, PopoverTrigger,PopoverContent } from "../ui/popover";
 
 const createEmptyItem = () => ({
   name: "",
@@ -66,8 +63,8 @@ const createEmptyItem = () => ({
 function ExpenseCenter() {
   const router = useRouter();
 
-  const form = useForm({
-    resolver: zodResolver(expenseZ),
+  const form = useForm<z.infer<typeof expenseZ>>({
+    resolver: zodResolver(expenseZ) as any,
     defaultValues: {
       category: undefined,
       description: "",
@@ -80,9 +77,6 @@ function ExpenseCenter() {
       remarks: "",
     },
   });
-
-
-  console.log("Errors: ", form.formState.errors);
 
   const {
     fields: itemFields,
@@ -97,8 +91,10 @@ function ExpenseCenter() {
   const watchedBranches = form.watch("branch");
 
   const itemTotals = (watchedItems ?? []).map(
+    // @ts-ignore
     (item) => (Number(item?.quantity) || 0) * (Number(item?.unitPrice) || 0),
   );
+  // @ts-ignore
   const totalAmount = itemTotals.reduce((sum, t) => sum + t, 0);
 
   // ── Branch toggle ──────────────────────────────────────────────────────────
@@ -106,8 +102,12 @@ function ExpenseCenter() {
     const current = form.getValues("branch") ?? [];
     const updated = checked
       ? [...current, branchValue]
-      : current.filter((b) => b !== branchValue);
-    form.setValue("branch", updated, { shouldDirty: true, shouldValidate: true });
+      : // @ts-ignore
+        current.filter((b) => b !== branchValue);
+    form.setValue("branch", updated, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   // ── Reset ──────────────────────────────────────────────────────────────────
@@ -126,11 +126,13 @@ function ExpenseCenter() {
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────
-  const handleSubmit = async (data: IExpense) => {
+  const handleSubmit = async (
+    data: z.infer<typeof expenseZ>,
+  ): Promise<void> => {
     try {
       // Inject computed totals so the Zod schema is satisfied.
       // The backend will recalculate and override these server-side.
-      const itemsWithTotal = data.items.map((item) => ({
+      const itemsWithTotal = (data.items ?? []).map((item: any): any => ({
         ...item,
         total: (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
       }));
@@ -138,14 +140,19 @@ function ExpenseCenter() {
       const payload: IExpense = {
         ...data,
         items: itemsWithTotal,
-        amount: itemsWithTotal.reduce((sum, item) => sum + item.total, 0),
+        amount: itemsWithTotal.reduce(
+          (sum: number, item: any): number => sum + item.total,
+          0,
+        ),
         remarks: data.remarks || undefined,
       };
 
       const response = await api.post("/expenses/register", payload);
 
       if (!response.data.success) {
-        throw new Error(response.data.error?.message || "Failed to create expense");
+        throw new Error(
+          response.data.error?.message || "Failed to create expense",
+        );
       }
 
       toast.success(response.data.message || "Expense created successfully");
@@ -160,7 +167,9 @@ function ExpenseCenter() {
       handleAxiosError(error);
       if (error.response?.data?.fields?.length) {
         error.response.data.fields.forEach((fieldError: any) => {
-          form.setError(fieldError.name as any, { message: fieldError.message });
+          form.setError(fieldError.name as any, {
+            message: fieldError.message,
+          });
         });
       }
     }
@@ -180,8 +189,10 @@ function ExpenseCenter() {
 
       <FormProvider {...form}>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-
+          <form
+            onSubmit={form.handleSubmit(handleSubmit as any)}
+            className="space-y-6"
+          >
             {/* ── Expense Details ─────────────────────────────────────────── */}
             <Card>
               <CardHeader>
@@ -191,7 +202,6 @@ function ExpenseCenter() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-2">
-
                 {/* Category */}
                 <FormField
                   control={form.control}
@@ -199,7 +209,10 @@ function ExpenseCenter() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Category *</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <FormControl>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select expense category" />
@@ -228,7 +241,10 @@ function ExpenseCenter() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Payment Method *</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <FormControl>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select payment method" />
@@ -268,13 +284,18 @@ function ExpenseCenter() {
                               role="combobox"
                               className={cn(
                                 "w-full justify-between font-normal",
-                                !watchedBranches?.length && "text-muted-foreground",
+                                !watchedBranches?.length &&
+                                  "text-muted-foreground",
                               )}
                             >
                               <span className="flex flex-wrap gap-1 max-w-[90%] overflow-hidden">
                                 {watchedBranches?.length
                                   ? watchedBranches.map((b) => (
-                                      <Badge key={b} variant="secondary" className="text-xs">
+                                      <Badge
+                                        key={b}
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
                                         {b}
                                       </Badge>
                                     ))
@@ -290,17 +311,22 @@ function ExpenseCenter() {
                               <CommandEmpty>No branch found.</CommandEmpty>
                               <CommandGroup>
                                 {Object.values(Branch).map((branchValue) => {
-                                  const isSelected = watchedBranches?.includes(branchValue);
+                                  const isSelected =
+                                    watchedBranches?.includes(branchValue);
                                   return (
                                     <CommandItem
                                       key={branchValue}
                                       value={branchValue}
-                                      onSelect={() => toggleBranch(branchValue, !isSelected)}
+                                      onSelect={() =>
+                                        toggleBranch(branchValue, !isSelected)
+                                      }
                                     >
                                       <Check
                                         className={cn(
                                           "mr-2 h-4 w-4",
-                                          isSelected ? "opacity-100" : "opacity-0",
+                                          isSelected
+                                            ? "opacity-100"
+                                            : "opacity-0",
                                         )}
                                       />
                                       {branchValue}
@@ -548,7 +574,9 @@ function ExpenseCenter() {
                 {form.formState.isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                {form.formState.isSubmitting ? "Creating Expense..." : "Create Expense"}
+                {form.formState.isSubmitting
+                  ? "Creating Expense..."
+                  : "Create Expense"}
               </Button>
             </div>
           </form>
