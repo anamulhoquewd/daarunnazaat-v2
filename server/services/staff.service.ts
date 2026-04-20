@@ -1,3 +1,8 @@
+import { schemaValidationError } from "@/server/error";
+import { Staff } from "@/server/models/staffs.model";
+import { User } from "@/server/models/users.model";
+import pagination from "@/server/utils/pagination";
+import { generateStaffId } from "@/server/utils/string-generator";
 import {
   Branch,
   Gender,
@@ -9,11 +14,6 @@ import {
   UserRole,
 } from "@/validations";
 import mongoose, { PipelineStage } from "mongoose";
-import { schemaValidationError } from "@/server/error";
-import { Staff } from "@/server/models/staffs.model";
-import { User } from "@/server/models/users.model";
-import pagination from "@/server/utils/pagination";
-import { generateStaffId } from "@/server/utils/string-generator";
 
 export const createStaff = async (body: IStaff) => {
   const validData = staffZ.safeParse(body);
@@ -188,8 +188,6 @@ export const gets = async (queryParams: {
 
     const skip = (queryParams.page - 1) * queryParams.limit;
     const limit = queryParams.limit;
-
-    console.log("Match Stage:", JSON.stringify(matchStage, null, 2));
 
     /* ------------------ AGGREGATION PIPELINE ------------------ */
     const pipeline: PipelineStage[] = [

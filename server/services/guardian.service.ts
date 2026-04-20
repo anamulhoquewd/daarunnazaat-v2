@@ -391,7 +391,6 @@ export const deletes = async (_id: string) => {
   }
 };
 
-
 export const deactivateGuardian = async (_id: string) => {
   const idValidation = mongoIdZ.safeParse({ _id });
   if (!idValidation.success) {
@@ -449,8 +448,6 @@ export const activateGuardian = async (_id: string) => {
         },
       };
     }
-
-    console.log(guardian);
 
     if (guardian.isActive) {
       return { error: { message: "guardian is already active." } };

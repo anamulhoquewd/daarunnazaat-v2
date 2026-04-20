@@ -68,8 +68,6 @@ export const exportCollection = async <T>(
         ? await Model.aggregate(pipeline).project(projection)
         : await Model.aggregate(pipeline);
 
-        console.log("Aggregated data for export:", data);
-
     if (!data.length) {
       return {
         error: {
@@ -82,7 +80,6 @@ export const exportCollection = async <T>(
       (key) => key !== "__v",
     );
 
-
     const rows = data.map((doc) =>
       headers.map((key) => {
         const val = (doc as Record<string, unknown>)[key];
@@ -92,7 +89,6 @@ export const exportCollection = async <T>(
         return String(val);
       }),
     );
-
 
     const sheets = await getSheetClient();
     const range = `${sheetName}!A1`;

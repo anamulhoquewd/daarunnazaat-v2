@@ -49,11 +49,6 @@ function useSalariesQuery() {
     branch: "all",
   });
 
-  console.log(
-    "🚀 ~ file: useSalariesQuery.ts:94 ~ useSalariesQuery ~ filterBy:",
-    filterBy,
-  );
-
   // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
   const debouncedStaffSearch = useDebounce(search.staffId, 700);

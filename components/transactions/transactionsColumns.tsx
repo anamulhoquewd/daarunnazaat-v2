@@ -24,7 +24,10 @@ export const TransactionsColumns = ({
   },
   {
     header: "Reff Receipt",
-    cell: ({ row }) => row.original?.referenceId?.receiptNumber || "-",
+    cell: ({ row }) =>
+      row.original?.referenceId?.receiptNumber ||
+      row.original?.referenceId?.voucherNumber ||
+      "-",
   },
   {
     accessorKey: "description",

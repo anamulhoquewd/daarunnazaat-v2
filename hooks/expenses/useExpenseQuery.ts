@@ -42,8 +42,6 @@ function useExpensesQuery() {
     branch: "all" as Branch,
   });
 
-  console.log("Filters: ", filterBy);
-
   // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
 

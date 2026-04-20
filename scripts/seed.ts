@@ -1,6 +1,6 @@
 import { User } from "@/server/models/users.model";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 import { toast } from "sonner";
 dotenv.config();
 

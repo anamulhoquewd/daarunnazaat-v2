@@ -22,7 +22,6 @@ export default function StudentProfilePage() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
   const { student, loading, handleUpdate } = useStudentActions();
-  console.log("Student data:", student);
 
   const handleSave = async (data: IUpdateStudent | IUpdateStaff) => {
     const transformedData = {

@@ -4,8 +4,8 @@ import { Branch, Gender, IPagination, IStaff } from "@/validations";
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
-import { useDebounce } from "../common/useDebounce";
 import { toast } from "sonner";
+import { useDebounce } from "../common/useDebounce";
 
 interface IFilter {
   dateRange: DateRange | undefined;
@@ -220,8 +220,6 @@ function useStaffQuery() {
     filterBy.sortBy,
     filterBy.sortType,
   ]);
-
-  console.log("Staffs:", staffs);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
   const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
