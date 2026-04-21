@@ -30,9 +30,11 @@ import { AlertTriangle } from "lucide-react";
 import { DateField } from "@/components/common/dateCalendar";
 import { PaymentMethod } from "@/validations";
 import { PeriodPicker } from "@/components/common/datePeriod";
+import { useState } from "react";
 
 interface Changes {
   receivedAmount?: { old: number; new: number };
+  payableAmount?: { old: number; new: number };
   period?: { old: string; new: string };
 }
 
@@ -40,7 +42,8 @@ interface FeeFormFieldsProps {
   form: UseFormReturn<any>;
   changes: Changes;
   remarksError: string | null;
-  onReceivedAmountChange: (value: string) => void;
+  onPayableAmountChange: (payableAmount: string) => void;
+  onReceiveAmountChange: (receivedAmount: string) => void;
   onPeriodChange: (value: string) => void;
 }
 
@@ -48,10 +51,15 @@ export function FeeFormFields({
   form,
   changes,
   remarksError,
-  onReceivedAmountChange,
+  onPayableAmountChange,
+  onReceiveAmountChange,
   onPeriodChange,
 }: FeeFormFieldsProps) {
   const hasChanges = Object.keys(changes).length > 0;
+  console.log("Rendering FeeFormFields with changes:", changes);
+
+  const [isPayableEnabled, setIsPayableEnabled] = useState(false);
+  const [isBaseEnabled, setIsBaseEnabled] = useState(false);
 
   return (
     <Card>
@@ -63,31 +71,70 @@ export function FeeFormFields({
       </CardHeader>
       <CardContent className="pt-6 space-y-6">
         {/* Received Amount */}
-        <FormField
-          control={form.control}
-          name="receivedAmount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Received Amount</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={field.value != null ? String(field.value) : ""}
-                  onChange={(e) => onReceivedAmountChange(e.target.value)}
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                />
-              </FormControl>
-              {changes.receivedAmount && (
-                <FormDescription className="text-xs text-blue-600">
-                  Changed from BDT {changes.receivedAmount.old.toLocaleString()}
-                </FormDescription>
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="payableAmount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Payable Amount</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    readOnly={!isPayableEnabled}
+                    value={field.value != null ? String(field.value) : ""}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      onPayableAmountChange(e.target.value);
+                    }}
+                    onDoubleClick={() => setIsPayableEnabled(!isPayableEnabled)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                </FormControl>
+                {changes.payableAmount && (
+                  <FormDescription className="text-xs text-blue-600">
+                    Changed from BDT{" "}
+                    {changes.payableAmount.old.toLocaleString()}
+                  </FormDescription>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="receivedAmount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Received Amount</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={field.value != null ? String(field.value) : ""}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      onReceiveAmountChange(e.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                </FormControl>
+                {changes.receivedAmount && (
+                  <FormDescription className="text-xs text-blue-600">
+                    Changed from BDT{" "}
+                    {changes.receivedAmount.old.toLocaleString()}
+                  </FormDescription>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Payment Date */}
         <DateField name="paymentDate" label="Date of Payment" />

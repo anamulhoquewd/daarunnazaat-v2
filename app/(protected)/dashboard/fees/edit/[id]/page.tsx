@@ -28,7 +28,7 @@ export default function FeeUpdatePage() {
     handleSubmit,
   } = useFeeUpdate();
 
-  const { handleReceivedAmountChange, handlePeriodChange } =
+  const { onPayableAmountChange, onReceiveAmountChange, handlePeriodChange } =
     useFeeFieldHandlers(fee, form, setChanges, setRemarksError);
 
   const hasChanges = Object.keys(changes).length > 0;
@@ -86,7 +86,8 @@ export default function FeeUpdatePage() {
                 form={form}
                 changes={changes}
                 remarksError={remarksError}
-                onReceivedAmountChange={handleReceivedAmountChange}
+                onPayableAmountChange={onPayableAmountChange}
+                onReceiveAmountChange={onReceiveAmountChange}
                 onPeriodChange={handlePeriodChange}
               />
             </form>

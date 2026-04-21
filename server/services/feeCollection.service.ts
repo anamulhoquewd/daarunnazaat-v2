@@ -340,18 +340,23 @@ export const updates = async ({
     let dueAmount = 0;
     let advanceAmount = 0;
     let paymentStatus = PaymentStatus.PARTIAL;
+    let payableAmount = fee.payableAmount ?? 0;
 
-    if (validData.data.receivedAmount >= fee.payableAmount!) {
+    if (validData.data.payableAmount != null) {
+      payableAmount = validData.data.payableAmount;
+    }
+
+    if (validData.data.receivedAmount >= payableAmount) {
       paymentStatus = PaymentStatus.PAID;
-      advanceAmount = validData.data.receivedAmount - fee.payableAmount!;
+      advanceAmount = validData.data.receivedAmount - payableAmount;
       dueAmount = 0;
     } else if (validData.data.receivedAmount === 0) {
       paymentStatus = PaymentStatus.DUE;
-      dueAmount = fee.payableAmount! - validData.data.receivedAmount;
+      dueAmount = payableAmount - validData.data.receivedAmount;
       advanceAmount = 0;
     } else {
       paymentStatus = PaymentStatus.PARTIAL;
-      dueAmount = fee.payableAmount! - validData.data.receivedAmount;
+      dueAmount = payableAmount - validData.data.receivedAmount;
       advanceAmount = 0;
     }
 

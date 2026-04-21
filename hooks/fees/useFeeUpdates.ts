@@ -11,6 +11,8 @@ import api from "@/axios/intercepter";
 
 interface Changes {
   receivedAmount?: { old: number; new: number };
+  payableAmount?: { old: number; new: number };
+
   period?: { old: string; new: string };
 }
 
@@ -30,6 +32,7 @@ export function useFeeUpdate() {
     resolver: zodResolver(feeUpdateSchema),
     defaultValues: {
       receivedAmount: 0,
+      payableAmount: fee?.payableAmount || 0,
       paymentDate: new Date(),
       paymentMethod: "cash" as PaymentMethod,
       remarks: "",
@@ -60,6 +63,7 @@ export function useFeeUpdate() {
 
         form.reset({
           receivedAmount: feeData.receivedAmount || 0,
+          payableAmount: feeData.payableAmount || 0,
           paymentDate: feeData.paymentDate || new Date(),
           paymentMethod: feeData.paymentMethod || "",
           remarks: feeData.remarks || "",
@@ -97,6 +101,7 @@ export function useFeeUpdate() {
 
       const payload = {
         receivedAmount: data.receivedAmount,
+        payableAmount: data.payableAmount,
         paymentDate: data.paymentDate,
         paymentMethod: data.paymentMethod,
         period: data.period,
@@ -115,6 +120,7 @@ export function useFeeUpdate() {
 
       form.reset({
         receivedAmount: 0,
+        payableAmount: fee?.payableAmount || 0,
         paymentDate: new Date(),
         paymentMethod: "cash" as PaymentMethod,
         remarks: "",

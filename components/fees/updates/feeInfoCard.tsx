@@ -6,9 +6,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Lock } from "lucide-react";
-import { formatMony } from "@/lib/utils";
 import { IFeeCollection } from "@/validations";
+import { Lock } from "lucide-react";
 
 interface FeeInfoCardProps {
   fee: IFeeCollection;
@@ -32,10 +31,6 @@ export function FeeInfoCard({ fee }: FeeInfoCardProps) {
           />
           <ReadOnlyField label="Student ID" value={fee.studentId?._id} />
           <ReadOnlyField label="Fee Type" value={fee.feeType} />
-          <ReadOnlyField
-            label="Payable Amount"
-            value={`BDT ${formatMony(fee?.payableAmount)}`}
-          />
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label className="text-sm font-semibold">Payment Status</Label>

@@ -1,12 +1,11 @@
-import { z } from "zod";
 import {
   feeCollectionZ,
   IClass,
   IGuardian,
   IStudent,
-  IUser,
   studentZ,
 } from "@/validations";
+import { z } from "zod";
 
 export const personalInfoSchema = studentZ.pick({
   fullName: true,
@@ -64,6 +63,7 @@ export const feeUpdateSchema = feeCollectionZ.pick({
   period: true,
   remarks: true,
   paymentMethod: true,
+  payableAmount: true,
 });
 
 export type PersonalInfo = z.infer<typeof personalInfoSchema>;
