@@ -8,14 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { IStudent } from "@/validations";
 
 interface GuardianDetailsProps {
-  data?: IStudent;
+  data?: any;
 }
 
 export function GuardianDetails({ data }: GuardianDetailsProps) {
-
   return (
     <Card className="p-6 border border-border">
       <CardHeader>
@@ -27,19 +25,17 @@ export function GuardianDetails({ data }: GuardianDetailsProps) {
           <div>
             <p className="text-sm text-muted-foreground">Guardian ref</p>
             <code className="bg-muted rounded text-xs font-mono truncate">
-              {data?.guardianId?._id?.substring(0, 10)}...
+              {data?.guardianId?.substring(0, 10)}...
             </code>
             <CopyToClipboard
               title={"Copy Guardian ID"}
-              text={data?._id || "N/N"}
+              text={data?.guardianId || "N/N"}
             />
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Guardian ID</p>
             <p className="font-medium">
-              {data?.guardianId?.guardianId
-                ? data?.guardianId?.guardianId
-                : "N/A"}
+              {data?.guardian?.guardianId ? data?.guardian?.guardianId : "N/A"}
             </p>
           </div>
         </div>
@@ -47,13 +43,13 @@ export function GuardianDetails({ data }: GuardianDetailsProps) {
           <div>
             <p className="text-sm text-muted-foreground">Name</p>
             <p className="font-medium">
-              {data?.guardianId?.fullName ? data?.guardianId?.fullName : "N/A"}
+              {data?.guardian?.fullName ? data?.guardian?.fullName : "N/A"}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Gender</p>
             <p className="font-medium">
-              {data?.guardianId?.gender ? data?.guardianId?.gender : "N/A"}
+              {data?.guardian?.gender ? data?.guardian?.gender : "N/A"}
             </p>
           </div>
         </div>

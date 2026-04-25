@@ -9,7 +9,7 @@ exportRoutes.post(
   "/students/sheet",
   authenticate,
   authorize(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  (c) => exportController.exportStudents(c)
+  (c) => exportController.exportStudentsSheet(c)
 );
 
 exportRoutes.post(

@@ -1,5 +1,7 @@
 import PDFDocument from "pdfkit";
 import { Model, FilterQuery } from "mongoose";
+import { format } from "date-fns";
+
 
 import path from "path";
 
@@ -41,7 +43,7 @@ export const generateTablePDF = async <T>(
       };
     }
 
-    const pdf = await buildPDF(data, options);
+        const pdf = await buildPDF(data, options);
 
     return {
       success: {
@@ -139,7 +141,7 @@ function buildPDF(data: any[], options: PDFOptions): Promise<Buffer> {
           continued: true,
           width: pageWidth,
         })
-        .text(`Date: ${new Date().toLocaleDateString("en-BD")}`, {
+        .text(`Date: ${format(new Date(),"dd MMM yyyy")}`, {
           align: "right",
         });
 
@@ -189,7 +191,7 @@ function buildPDF(data: any[], options: PDFOptions): Promise<Buffer> {
           continued: true,
           width: pageWidth,
         })
-        .text(`Printed: ${new Date().toLocaleString("en-BD")}`, {
+        .text(`Printed: ${format(new Date(), "dd MMM yyyy")}`, {
           align: "right",
         });
     };
@@ -245,7 +247,7 @@ function buildPDF(data: any[], options: PDFOptions): Promise<Buffer> {
         if (val !== null && val !== undefined) {
           displayVal =
             val instanceof Date
-              ? new Date(val).toLocaleDateString("en-BD")
+              ? format(new Date(val), "dd MMM yyyy")
               : String(val);
         }
 

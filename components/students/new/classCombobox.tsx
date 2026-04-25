@@ -27,9 +27,10 @@ type UserItem = {
 type Props = {
   value?: string;
   onChange: (value: string) => void;
+  defaultValue?: string;
 };
 
-export function ClassCombobox({ value, onChange }: Props) {
+export function ClassCombobox({ value, onChange, defaultValue }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [classes, setClasses] = useState<UserItem[]>([]);
@@ -52,6 +53,12 @@ export function ClassCombobox({ value, onChange }: Props) {
   }, [search]);
 
   const selectedUser = classes.find((u) => u._id === value);
+
+  useEffect(() => {
+    if (defaultValue && !value) {
+      onChange(defaultValue);
+    }
+  }, [defaultValue, value, onChange]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

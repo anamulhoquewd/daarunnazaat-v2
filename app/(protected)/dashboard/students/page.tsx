@@ -51,10 +51,14 @@ function StudentPage() {
     branch: false,
     batch: false,
     email: false,
-    guardian_Email: false,
+    guardian_email: false,
     status: false,
     residential: false,
     gender: false,
+    blood_group: false,
+    dob: true,
+    isBlocked: false,
+    isDeleted: false,
   });
 
   const {
@@ -72,6 +76,13 @@ function StudentPage() {
     handleExportAsPDF,
     handleExportAsSheet,
     isLoading,
+
+    activeUser,
+    deactiveUser,
+    blockUser,
+    unblockUser,
+    deleteUser,
+    restoreUser,
   } = useStudentQuery();
 
   const {
@@ -82,6 +93,13 @@ function StudentPage() {
   const columns = StudentColumns({
     setIsDelOpen,
     setSelectedId,
+
+    activeUser,
+    deactiveUser,
+    blockUser,
+    unblockUser,
+    deleteUser,
+    restoreUser,
   });
 
   const table = useReactTable({

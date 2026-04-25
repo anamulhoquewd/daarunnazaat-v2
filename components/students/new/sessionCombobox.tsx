@@ -27,9 +27,10 @@ type UserItem = {
 type Props = {
   value?: string;
   onChange: (value: string) => void;
+  defaultValue?: string;
 };
 
-export function SessionCombobox({ value, onChange }: Props) {
+export function SessionCombobox({ value, onChange, defaultValue }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [sessions, setSession] = useState<UserItem[]>([]);
@@ -52,6 +53,12 @@ export function SessionCombobox({ value, onChange }: Props) {
   }, [search]);
 
   const selectedUser = sessions.find((u) => u._id === value);
+
+  useEffect(() => {
+    if (defaultValue && !value) {
+      onChange(defaultValue);
+    }
+  }, [defaultValue, value, onChange]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -132,10 +132,10 @@ function useStudentQuery() {
         sessionId: search.sessionId,
         guardianId: search.guardianId,
         fromDate: filters?.dateRange?.from
-          ? format(filters.dateRange.from, "yyyy-MM-dd")
+          ? filters.dateRange.from
           : undefined,
         toDate: filters?.dateRange?.to
-          ? format(filters.dateRange.to, "yyyy-MM-dd")
+          ? filters.dateRange.to
           : undefined,
         isResidential:
           filters?.residential === "all" ? undefined : filters?.residential,
@@ -156,7 +156,7 @@ function useStudentQuery() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `students_${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      a.download = `students_${format(new Date(), "dd_MMM_yyyy_hh:mm_a")}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -178,7 +178,43 @@ function useStudentQuery() {
     search: ISearch;
     filters: IFilter;
     currentPage: number;
-  }) => {};
+  }) => {
+     setIsLoading(true);
+
+    try {
+      const query = buildQuery({
+        search: search.global,
+        classId: search.classId,
+        sessionId: search.sessionId,
+        guardianId: search.guardianId,
+        fromDate: filters?.dateRange?.from
+          ? filters.dateRange.from
+          : undefined,
+        toDate: filters?.dateRange?.to
+          ? filters.dateRange.to
+          : undefined,
+        isResidential:
+          filters?.residential === "all" ? undefined : filters?.residential,
+        batchType:
+          filters?.batchType === "all" ? undefined : filters?.batchType,
+        branch: filters?.branch === "all" ? undefined : filters?.branch,
+        gender: filters?.gender === "all" ? undefined : filters?.gender,
+        sortBy: filters?.sortBy,
+        sortType: filters?.sortType,
+      });
+
+      const res = await api.post(`/exports/students/sheet?${query}`, null, );
+
+   
+      
+
+      toast.success("Sheet exported successfully!");
+    } catch (err) {
+      handleAxiosError(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const activeFilterCount = () => {
     let count = 0;
@@ -239,6 +275,196 @@ function useStudentQuery() {
     }));
   };
 
+  const activeUser = async (studentId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/students/${studentId}/activate`);
+
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to activate user");
+        throw new Error(
+          response.data.error.message || "Failed to activate user",
+        );
+      }
+
+      toast.success(
+        response.data.success.message || "User activated successfully",
+      );
+
+      getStudents({
+        search: {
+          global: debouncedGlobalSearch,
+          guardianId: debouncedGuardianSearch,
+          sessionId: debouncedSessionSearch,
+          classId: debouncedClassSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("Failed to update user status");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deactiveUser = async (studentId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/students/${studentId}/deactivate`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to deactivate user");
+        throw new Error(
+          response.data.error.message || "Failed to deactivate user",
+        );
+      }
+      toast.success(
+        response.data.success.message || "User deactivated successfully",
+      );
+
+      getStudents({
+        search: {
+          global: debouncedGlobalSearch,
+          guardianId: debouncedGuardianSearch,
+          sessionId: debouncedSessionSearch,
+          classId: debouncedClassSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("Failed to update user status");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const blockUser = async (studentId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/students/${studentId}/block`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to block user");
+        throw new Error(response.data.error.message || "Failed to block user");
+      }
+      toast.success(
+        response.data.success.message || "User blocked successfully",
+      );
+
+      getStudents({
+        search: {
+          global: debouncedGlobalSearch,
+          guardianId: debouncedGuardianSearch,
+          sessionId: debouncedSessionSearch,
+          classId: debouncedClassSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("Failed to update user status");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const unblockUser = async (studentId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/students/${studentId}/unblock`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to unblock user");
+        throw new Error(
+          response.data.error.message || "Failed to unblock user",
+        );
+      }
+      toast.success(
+        response.data.success.message || "User not blocked successfully",
+      );
+
+      getStudents({
+        search: {
+          global: debouncedGlobalSearch,
+          guardianId: debouncedGuardianSearch,
+          sessionId: debouncedSessionSearch,
+          classId: debouncedClassSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("Failed to update user status");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteUser = async (studentId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/students/${studentId}/delete`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to delete user");
+        throw new Error(response.data.error.message || "Failed to delete user");
+      }
+      toast.success(
+        response.data.success.message || "User deleted successfully",
+      );
+
+      getStudents({
+        search: {
+          global: debouncedGlobalSearch,
+          guardianId: debouncedGuardianSearch,
+          sessionId: debouncedSessionSearch,
+          classId: debouncedClassSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("An error occurred while deleting the user.");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const restoreUser = async (studentId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/students/${studentId}/restore`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to restore user");
+        throw new Error(
+          response.data.error.message || "Failed to restore user",
+        );
+      }
+      toast.success(
+        response.data.success.message || "User restored successfully",
+      );
+
+      getStudents({
+        search: {
+          global: debouncedGlobalSearch,
+          guardianId: debouncedGuardianSearch,
+          sessionId: debouncedSessionSearch,
+          classId: debouncedClassSearch,
+        },
+        filters: filterBy,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("An error occurred while restoring the user.");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 🔥 API call only when debounced search OR page/limit changes
   useEffect(() => {
     getStudents({
@@ -288,6 +514,13 @@ function useStudentQuery() {
     combinedFilters,
     handleExportAsPDF,
     handleExportAsSheet,
+
+    activeUser,
+    deactiveUser,
+    blockUser,
+    unblockUser,
+    deleteUser,
+    restoreUser,
   };
 }
 

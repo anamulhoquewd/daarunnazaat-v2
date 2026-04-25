@@ -2,6 +2,7 @@ import { google } from "googleapis";
 import { Model, FilterQuery } from "mongoose";
 import { fileURLToPath } from "url";
 import path from "path";
+import {format} from "date-fns"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,8 +84,8 @@ export const exportCollection = async <T>(
     const rows = data.map((doc) =>
       headers.map((key) => {
         const val = (doc as Record<string, unknown>)[key];
-        if (val === null || val === undefined) return "";
-        if (val instanceof Date) return val.toISOString();
+        if (val === null || val === undefined) return "_";
+        if (val instanceof Date) return format(val, 'dd MMM yyyy');
         if (typeof val === "object") return JSON.stringify(val);
         return String(val);
       }),

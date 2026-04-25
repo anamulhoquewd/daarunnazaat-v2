@@ -22,16 +22,16 @@ import {
 import { BatchType, Branch, IStudent, IUpdateStudent } from "@/validations";
 import { AcademicInfo, academicInfoSchema } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
 import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { SessionCombobox } from "../new/sessionCombobox";
 import { EditableSection } from "./editableSection";
-import { format } from "date-fns";
 
 interface AcademicInfoSectionProps {
   isEditing: boolean;
   onEditChange: (value: boolean) => void;
-  data?: IStudent;
+  data?: any;
   onSave?: (data: IUpdateStudent) => Promise<void>;
 }
 
@@ -111,6 +111,7 @@ export function AcademicInfoSection({
                           <ClassCombobox
                             value={field.value}
                             onChange={field.onChange}
+                            defaultValue={data?.classId}
                           />
                         </FormControl>
                         <FormMessage />
@@ -187,6 +188,7 @@ export function AcademicInfoSection({
                           <SessionCombobox
                             value={field.value}
                             onChange={field.onChange}
+                            defaultValue={data?.currentSessionId}
                           />
                         </FormControl>
                         <FormMessage />
@@ -208,7 +210,7 @@ export function AcademicInfoSection({
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Class Name</p>
-              <p className="font-medium">{data?.classId?.className || "N/A"}</p>
+              <p className="font-medium">{data?.class?.className || "N/A"}</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -225,7 +227,7 @@ export function AcademicInfoSection({
             <div>
               <p className="text-sm text-muted-foreground">Current Session</p>
               <p className="font-medium">
-                {data?.currentSessionId?.sessionName || "N/A"}
+                {data?.currentSession?.sessionName || "N/A"}
               </p>
             </div>
             <div>

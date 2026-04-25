@@ -7,17 +7,32 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { MoreHorizontal, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { Separator } from "../ui/separator";
 
 // Define Props Interface
 interface ColumnsProps {
   setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
+
+  activeUser: (userId: string) => Promise<void>;
+  deactiveUser: (userId: string) => Promise<void>;
+  blockUser: (userId: string) => Promise<void>;
+  unblockUser: (userId: string) => Promise<void>;
+  deleteUser: (userId: string) => Promise<void>;
+  restoreUser: (userId: string) => Promise<void>;
 }
 export const StudentColumns = ({
   setIsDelOpen,
   setSelectedId,
+
+  activeUser,
+  deactiveUser,
+  blockUser,
+  unblockUser,
+  deleteUser,
+  restoreUser,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
     header: "Student ID",
@@ -73,18 +88,26 @@ export const StudentColumns = ({
     cell: ({ row }) => row.original?.phone || "-",
   },
   {
-    accessorKey: "email",
+    accessorKey: "guardian_email",
     header: "Email",
-    cell: ({ row }) => row.original?.email || "-",
+    cell: ({ row }) => row.original?.guardian?.user?.email || "-",
   },
   {
     header: "G. Phone",
     cell: ({ row }) => row.original.guardian?.user?.phone || "-",
   },
   {
-    accessorKey: "residential",
-    header: "Residential",
-    cell: ({ row }) => (row.original.isResidential ? "Yes" : "No"),
+    accessorKey: "dob",
+    header: "Date of Birth",
+    cell: ({ row }) => {
+      const { dateOfBirth } = row.original;
+      return dateOfBirth ? format(new Date(dateOfBirth), "dd LLL yyyy") : "-";
+    },
+  },
+  {
+    accessorKey: "blood_group",
+    header: "Blood Group",
+    cell: ({ row }) => row.original.bloodGroup || "-",
   },
   {
     accessorKey: "admissionDate",
@@ -100,6 +123,16 @@ export const StudentColumns = ({
     cell: ({ row }) => (row.original?.isActive ? "Active" : "Deactive"),
   },
   {
+    accessorKey: "isBlocked",
+    header: "Blocked",
+    cell: ({ row }) => (row.original?.isBlocked ? "Yes" : "No"),
+  },
+  {
+    accessorKey: "isDeleted",
+    header: "Deleted",
+    cell: ({ row }) => (row.original?.isDeleted ? "Yes" : "No"),
+  },
+  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
@@ -111,6 +144,45 @@ export const StudentColumns = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            onClick={() => {
+              if (row.original.isActive) {
+                deactiveUser!(row.original._id);
+              } else {
+                activeUser!(row.original._id);
+              }
+            }}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            {row.original.isActive ? "Deactivate" : "Activate"}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              if (row.original.isBlocked) {
+                unblockUser!(row.original._id);
+              } else {
+                blockUser!(row.original._id);
+              }
+            }}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            {row.original.isBlocked ? "Unblock" : "Block"}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              if (row.original.isDeleted) {
+                restoreUser!(row.original._id);
+              } else {
+                deleteUser!(row.original._id);
+              }
+            }}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            {row.original.isDeleted ? "Restore" : "Delete"}
+          </DropdownMenuItem>
+
+          <Separator className="my-1" />
+
           <DropdownMenuItem
             className="text-destructive"
             onClick={() => {

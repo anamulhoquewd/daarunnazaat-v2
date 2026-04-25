@@ -56,8 +56,6 @@ export function FeeFormFields({
   onPeriodChange,
 }: FeeFormFieldsProps) {
   const hasChanges = Object.keys(changes).length > 0;
-  console.log("Rendering FeeFormFields with changes:", changes);
-
   const [isPayableEnabled, setIsPayableEnabled] = useState(false);
   const [isBaseEnabled, setIsBaseEnabled] = useState(false);
 
