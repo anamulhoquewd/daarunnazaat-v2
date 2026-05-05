@@ -27,7 +27,7 @@ export const useStudentForm = (onSuccess?: () => void) => {
     resolver: zodResolver(studentZ),
     shouldUnregister: false,
     defaultValues: savedData ?? {
-      presentAddress: {
+      address: {
         village: "",
         postOffice: "",
         upazila: "",
@@ -115,7 +115,7 @@ export const useStudentForm = (onSuccess?: () => void) => {
     isResettingRef.current = true;
 
     form.reset({
-      presentAddress: {
+      address: {
         village: "",
         postOffice: "",
         upazila: "",

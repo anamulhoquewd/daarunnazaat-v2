@@ -16,9 +16,9 @@ import { toast } from "sonner";
 interface IFilter {
   dateRange: DateRange | undefined;
   feeRange: { min: number | undefined; max: number | undefined };
-  sortType?: SortType;
+  sortOrder?: sortOrder;
   feeType?: "all" | FeeType;
-  sortBy?:
+  sortWith?:
     | "createdAt"
     | "updatedAt"
     | "fullName"
@@ -36,7 +36,7 @@ interface ISearch {
   sessionId: string;
 }
 
-type SortType = "asc" | "desc";
+type sortOrder = "asc" | "desc";
 
 function useFeesQuery() {
   const [isLoading, setIsLoading] = useState(false);
@@ -50,13 +50,13 @@ function useFeesQuery() {
     global: "",
     sessionId: "",
   });
-  const [filterBy, setFilterBy] = useState<IFilter>({
+  const [filterWith, setfilterWith] = useState<IFilter>({
     dateRange: { from: undefined, to: undefined },
     feeRange: { min: undefined, max: undefined },
     paymentMethod: "all",
     feeType: "all",
-    sortBy: "createdAt",
-    sortType: "desc" as SortType,
+    sortWith: "createdAt",
+    sortOrder: "desc" as sortOrder,
     limit: "10",
     branch: "all" as Branch,
   });
@@ -104,8 +104,8 @@ function useFeesQuery() {
           filters.feeRange.max !== undefined
             ? filters.feeRange.max
             : undefined,
-        sortBy: filters?.sortBy,
-        sortType: filters?.sortType,
+        sortWith: filters?.sortWith,
+        sortOrder: filters?.sortOrder,
         limit: filters?.limit,
       });
 
@@ -127,17 +127,17 @@ function useFeesQuery() {
   const activeFilterCount = () => {
     let count = 0;
     // Range filter
-    if (filterBy.dateRange?.from && filterBy.dateRange?.to) count++;
+    if (filterWith.dateRange?.from && filterWith.dateRange?.to) count++;
     if (
-      filterBy.feeRange.min !== undefined &&
-      filterBy.feeRange.max !== undefined
+      filterWith.feeRange.min !== undefined &&
+      filterWith.feeRange.max !== undefined
     )
       count++;
 
     // Select filters (only count if not "all")
-    if (filterBy.paymentMethod && filterBy.paymentMethod !== "all") count++;
-    if (filterBy.feeType && filterBy.feeType !== "all") count++;
-    if (filterBy.branch && filterBy.branch !== "all") count++;
+    if (filterWith.paymentMethod && filterWith.paymentMethod !== "all") count++;
+    if (filterWith.feeType && filterWith.feeType !== "all") count++;
+    if (filterWith.branch && filterWith.branch !== "all") count++;
 
     // Search filters (only count if not empty)
     if (debouncedStudentIdSearch && debouncedStudentIdSearch.trim()) count++;
@@ -149,7 +149,7 @@ function useFeesQuery() {
   };
 
   const handleClearFilters = () => {
-    setFilterBy({
+    setfilterWith({
       dateRange: { from: undefined, to: undefined },
       feeRange: { min: undefined, max: undefined },
       paymentMethod: "all",
@@ -171,7 +171,7 @@ function useFeesQuery() {
       return;
     }
 
-    setFilterBy((prev) => ({ ...prev, [key]: value }));
+    setfilterWith((prev) => ({ ...prev, [key]: value }));
 
     setPagination((prev) => ({
       ...prev,
@@ -179,106 +179,18 @@ function useFeesQuery() {
     }));
   };
 
-  
-    const deleteFlagOn = async (expenseId: string) => {
-      setIsLoading(true);
-      try {
-        const response = await api.patch(`/fees/${expenseId}/delete`);
-        if (!response.data.success) {
-          toast.error(response.data.error.message || "Failed to delete user");
-          throw new Error(
-            response.data.error.message || "Failed to delete user",
-          );
-        }
-        toast.success(
-          response.data.success.message || "User deleted successfully",
-        );
-
-        getFees({
-          search: {
-            global: debouncedGlobalSearch,
-            collectedBy: debouncedCollectedBySearch,
-            studentId: debouncedStudentIdSearch,
-            sessionId: debouncedSessionIdSearch,
-          },
-          filters: filterBy,
-          currentPage: pagination.page,
-        });
-      } catch (error: any) {
-        toast.error("An error occurred while deleting the user.");
-        handleAxiosError(error);
-      } finally {
-        setIsLoading(false);
+  const deleteFlagOn = async (expenseId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/fees/${expenseId}/delete`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to delete user");
+        throw new Error(response.data.error.message || "Failed to delete user");
       }
-    };
+      toast.success(
+        response.data.success.message || "User deleted successfully",
+      );
 
-    const restoreFee = async (feeId: string) => {
-      setIsLoading(true);
-      try {
-        const response = await api.patch(`/auth/${feeId}/restore`);
-        if (!response.data.success) {
-          toast.error(response.data.error.message || "Failed to restore user");
-          throw new Error(
-            response.data.error.message || "Failed to restore user",
-          );
-        }
-        toast.success(
-          response.data.success.message || "User restored successfully",
-        );
-
-        getFees({
-          search: {
-            global: debouncedGlobalSearch,
-            collectedBy: debouncedCollectedBySearch,
-            studentId: debouncedStudentIdSearch,
-            sessionId: debouncedSessionIdSearch,
-          },
-          filters: filterBy,
-          currentPage: pagination.page,
-        });
-      } catch (error: any) {
-        toast.error("An error occurred while restoring the user.");
-        handleAxiosError(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const handleDelete = async (feeId: string) => {
-      setIsLoading(true);
-
-      try {
-        const response = await api.delete(`/fees/${feeId}/permanently`);
-        if (!response.data.success) {
-          toast.error("Delete failed");
-          throw new Error(
-            response.data.error.message || "Failed to delete fee",
-          );
-        }
-
-        toast.success("Fee deleted successfully");
-
-        getFees({
-          search: {
-            global: debouncedGlobalSearch,
-            collectedBy: debouncedCollectedBySearch,
-            studentId: debouncedStudentIdSearch,
-            sessionId: debouncedSessionIdSearch,
-          },
-          filters: filterBy,
-          currentPage: pagination.page,
-        });
-
-        setIsDelOpen(false);
-      } catch (error: any) {
-        handleAxiosError(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // 🔥 API call only when debounced search OR page/limit changes
-    useEffect(() => {
       getFees({
         search: {
           global: debouncedGlobalSearch,
@@ -286,51 +198,134 @@ function useFeesQuery() {
           studentId: debouncedStudentIdSearch,
           sessionId: debouncedSessionIdSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
-    }, [
-      debouncedGlobalSearch,
-      debouncedStudentIdSearch,
-      debouncedCollectedBySearch,
-      debouncedSessionIdSearch,
-      filterBy,
-      pagination.page,
-    ]);
+    } catch (error: any) {
+      toast.error("An error occurred while deleting the user.");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    // Combined filters for component usage (excluding dateRange as it's handled separately)
-    const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
-      const { dateRange, feeRange, ...restFilters } = filterBy;
-      return {
-        ...restFilters,
-        studentId: search.studentId,
-        collectedBy: search.collectedBy,
-        sessionId: search.sessionId,
-      };
-    }, [filterBy, search.collectedBy, search.studentId, search.sessionId]);
+  const restoreFee = async (feeId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.patch(`/auth/${feeId}/restore`);
+      if (!response.data.success) {
+        toast.error(response.data.error.message || "Failed to restore user");
+        throw new Error(
+          response.data.error.message || "Failed to restore user",
+        );
+      }
+      toast.success(
+        response.data.success.message || "User restored successfully",
+      );
 
+      getFees({
+        search: {
+          global: debouncedGlobalSearch,
+          collectedBy: debouncedCollectedBySearch,
+          studentId: debouncedStudentIdSearch,
+          sessionId: debouncedSessionIdSearch,
+        },
+        filters: filterWith,
+        currentPage: pagination.page,
+      });
+    } catch (error: any) {
+      toast.error("An error occurred while restoring the user.");
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (feeId: string) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.delete(`/fees/${feeId}/permanently`);
+      if (!response.data.success) {
+        toast.error("Delete failed");
+        throw new Error(response.data.error.message || "Failed to delete fee");
+      }
+
+      toast.success("Fee deleted successfully");
+
+      getFees({
+        search: {
+          global: debouncedGlobalSearch,
+          collectedBy: debouncedCollectedBySearch,
+          studentId: debouncedStudentIdSearch,
+          sessionId: debouncedSessionIdSearch,
+        },
+        filters: filterWith,
+        currentPage: pagination.page,
+      });
+
+      setIsDelOpen(false);
+    } catch (error: any) {
+      handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 🔥 API call only when debounced search OR page/limit changes
+  useEffect(() => {
+    getFees({
+      search: {
+        global: debouncedGlobalSearch,
+        collectedBy: debouncedCollectedBySearch,
+        studentId: debouncedStudentIdSearch,
+        sessionId: debouncedSessionIdSearch,
+      },
+      filters: filterWith,
+      currentPage: pagination.page,
+    });
+  }, [
+    debouncedGlobalSearch,
+    debouncedStudentIdSearch,
+    debouncedCollectedBySearch,
+    debouncedSessionIdSearch,
+    filterWith,
+    pagination.page,
+  ]);
+
+  // Combined filters for component usage (excluding dateRange as it's handled separately)
+  const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
+    const { dateRange, feeRange, ...restFilters } = filterWith;
     return {
-      fees,
-      isLoading,
-      pagination,
-      setPagination,
-      refetch: getFees,
-      setSearch,
-      search,
-      filterBy,
-      setFilterBy,
-      activeFilterCount,
-      handleClearFilters,
-      updateFilter,
-      combinedFilters,
-      isDelOpen,
-      setIsDelOpen,
-      selectedId,
-      setSelectedId,
-      handleDelete,
-      deleteFlagOn,
-      restoreFee,
+      ...restFilters,
+      studentId: search.studentId,
+      collectedBy: search.collectedBy,
+      sessionId: search.sessionId,
     };
+  }, [filterWith, search.collectedBy, search.studentId, search.sessionId]);
+
+  return {
+    fees,
+    isLoading,
+    pagination,
+    setPagination,
+    refetch: getFees,
+    setSearch,
+    search,
+    filterWith,
+    setfilterWith,
+    activeFilterCount,
+    handleClearFilters,
+    updateFilter,
+    combinedFilters,
+    isDelOpen,
+    setIsDelOpen,
+    selectedId,
+    setSelectedId,
+    handleDelete,
+    deleteFlagOn,
+    restoreFee,
+  };
 }
 
 export default useFeesQuery;

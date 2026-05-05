@@ -24,7 +24,7 @@ const useChangePassword = (onClose: () => void) => {
     setIsLoading(true);
 
     try {
-      const response = await api.patch("/admins/auth/change-password", data);
+      const response = await api.patch("/auth/change-password", data);
 
       if (response.data.success) {
         form.reset({
@@ -36,14 +36,13 @@ const useChangePassword = (onClose: () => void) => {
         onClose();
       }
     } catch (error: any) {
-      console.error(error);
-
-      if (error.response.data.success === false) {
-        error.response.data.fields.forEach((field: any) => {
-          form.setError(field.name, {
-            message: field.message,
-          });
+      const fields = error?.response?.data?.error?.fields;
+      if (fields?.length) {
+        fields.forEach((field: any) => {
+          form.setError(field.name, { message: field.message });
         });
+      } else {
+        toast.error(error?.response?.data?.error?.message ?? "Failed to change password");
       }
     } finally {
       setIsLoading(false);

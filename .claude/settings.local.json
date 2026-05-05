@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\({deps: Object.keys\\(p.dependencies||{}\\), devDeps: Object.keys\\(p.devDependencies||{}\\)}, null, 2\\)\\)\")",
+      "Bash(mkdir -p \"f:/SOFTWARES/daarunnazaat/modules/shared/audit-log\")",
+      "Bash(mkdir -p \"f:/SOFTWARES/daarunnazaat/modules/shared/numbering\")",
+      "Bash(npx tsc *)",
+      "Bash(pnpm add *)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npx tsc --noEmit)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); const deps = {...p.dependencies, ...p.devDependencies}; ['recharts', 'puppeteer', '@sparticuz/chromium', '@react-pdf/renderer', 'pdfkit'].forEach\\(d => console.log\\(d + ':', deps[d] || 'NOT INSTALLED'\\)\\)\")",
+      "Bash(node -e \"const pdfkit = require\\('pdfkit'\\); console.log\\('pdfkit version:', require\\('./node_modules/pdfkit/package.json'\\).version\\)\")"
+    ]
+  }
+}

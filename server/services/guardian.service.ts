@@ -100,8 +100,8 @@ export const createGuardian = async (body: IGuardian) => {
 export const gets = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
   gender?: string;
   search?: string;
 }) => {
@@ -137,12 +137,12 @@ export const gets = async (queryParams: {
       "fullName",
       "guardianId",
     ];
-    const sortField = allowedSortFields.includes(queryParams.sortBy)
-      ? queryParams.sortBy
+    const sortField = allowedSortFields.includes(queryParams.sortWith)
+      ? queryParams.sortWith
       : "fullName";
 
     const sortDirection =
-      queryParams.sortType?.toLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortOrder?.toLowerCase() === "asc" ? 1 : -1;
 
     const skip = (queryParams.page - 1) * queryParams.limit;
     const limit = queryParams.limit;

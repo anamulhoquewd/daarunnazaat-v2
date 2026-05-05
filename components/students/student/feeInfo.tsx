@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -19,15 +11,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { IStudent, IUpdateStudent } from "@/validations";
 import { Fees, feesSchema } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { formatMony } from "@/lib/utils";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { EditableSection } from "./editableSection";
-import { formatMony } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface FeesSectionProps {
   isEditing: boolean;
@@ -36,15 +28,97 @@ interface FeesSectionProps {
   onSave?: (data: IUpdateStudent) => Promise<void>;
 }
 
+interface BalancePair {
+  label: string;
+  advance: number;
+  due: number;
+}
+
+function BalanceCard({ label, advance, due }: BalancePair) {
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-semibold text-foreground">{label}</p>
+      <div className="space-y-1.5">
+        <div
+          className={cn(
+            "flex items-center justify-between px-3 py-2 rounded-md border text-sm font-medium",
+            advance > 0
+              ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-400"
+              : "bg-muted/50 border-border text-muted-foreground",
+          )}
+        >
+          <span>Advance</span>
+          <span className="tabular-nums">{formatMony(advance)}</span>
+        </div>
+        <div
+          className={cn(
+            "flex items-center justify-between px-3 py-2 rounded-md border text-sm font-medium",
+            due > 0
+              ? "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/30 dark:border-red-800 dark:text-red-400"
+              : "bg-muted/50 border-border text-muted-foreground",
+          )}
+        >
+          <span>Due</span>
+          <span className="tabular-nums">{formatMony(due)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FeeItem({ label, value }: { label: string; value?: number }) {
+  if (!value && value !== 0) return null;
+  return (
+    <div className="space-y-1">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm font-semibold tabular-nums">{formatMony(value)}</p>
+    </div>
+  );
+}
+
+function FeeInputField({
+  control,
+  name,
+  label,
+}: {
+  control: any;
+  name: string;
+  label: string;
+}) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{label}</FormLabel>
+          <FormControl>
+            <Input
+              type="number"
+              placeholder="0"
+              name={field.name}
+              value={field.value != null ? String(field.value) : ""}
+              onChange={(e) =>
+                field.onChange(e.target.value ? Number(e.target.value) : "")
+              }
+              onBlur={field.onBlur}
+              ref={field.ref}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
 export function FeesSection({
   isEditing,
   onEditChange,
   data,
   onSave,
 }: FeesSectionProps) {
-  const form = useForm({
-    resolver: zodResolver(feesSchema),
-  });
+  const form = useForm({ resolver: zodResolver(feesSchema) });
 
   useEffect(() => {
     if (data) {
@@ -63,18 +137,51 @@ export function FeesSection({
 
   const handleSave = async (formData: Fees) => {
     try {
-      if (onSave) {
-        await onSave(formData);
-      }
+      await onSave?.(formData);
       onEditChange(false);
     } catch (error) {
       console.error("Error saving fees:", error);
     }
   };
 
+  const fb = (data as any)?.feeBalance;
+
+  const balances: BalancePair[] = [
+    {
+      label: "Admission",
+      advance: fb?.admissionFee?.advance ?? 0,
+      due: fb?.admissionFee?.due ?? 0,
+    },
+    {
+      label: "Monthly",
+      advance: fb?.monthlyFee?.advance ?? 0,
+      due: fb?.monthlyFee?.due ?? 0,
+    },
+    {
+      label: "Coaching",
+      advance: fb?.coachingFee?.advance ?? 0,
+      due: fb?.coachingFee?.due ?? 0,
+    },
+    {
+      label: "Daycare",
+      advance: fb?.daycareFee?.advance ?? 0,
+      due: fb?.daycareFee?.due ?? 0,
+    },
+    {
+      label: "Residential",
+      advance: fb?.residentialFee?.advance ?? 0,
+      due: fb?.residentialFee?.due ?? 0,
+    },
+    {
+      label: "Meal",
+      advance: fb?.mealFee?.advance ?? 0,
+      due: fb?.mealFee?.due ?? 0,
+    },
+  ].filter((b) => b.advance > 0 || b.due > 0);
+
   return (
     <EditableSection
-      title="Fees Information"
+      title="Fees & Balances"
       isEditing={isEditing}
       onEdit={() => onEditChange(true)}
       onCancel={() => {
@@ -85,168 +192,47 @@ export function FeesSection({
       isSaving={form.formState.isSubmitting}
     >
       {isEditing ? (
-        <CardContent>
+        <CardContent className="pt-2">
           <Form {...form}>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
+            <form className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FeeInputField
                   control={form.control}
                   name="admissionFee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Admission Fee</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          name={field.name}
-                          value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ?? Number(e.target.value),
-                            )
-                          }
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Admission Fee"
                 />
-                <FormField
+                <FeeInputField
                   control={form.control}
                   name="monthlyFee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Monthly Fee</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          name={field.name}
-                          value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ?? Number(e.target.value),
-                            )
-                          }
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Monthly Fee"
                 />
-                <FormField
+                <FeeInputField
                   control={form.control}
                   name="coachingFee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Coaching Fee</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          name={field.name}
-                          value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ?? Number(e.target.value),
-                            )
-                          }
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Coaching Fee"
                 />
-                <FormField
+                <FeeInputField
                   control={form.control}
                   name="daycareFee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Daycare Fee</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          name={field.name}
-                          value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ?? Number(e.target.value),
-                            )
-                          }
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Daycare Fee"
                 />
-                <FormField
+                <FeeInputField
                   control={form.control}
                   name="residentialFee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Residential Fee</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          name={field.name}
-                          value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ?? Number(e.target.value),
-                            )
-                          }
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Residential Fee"
                 />
-                <FormField
+                <FeeInputField
                   control={form.control}
                   name="mealFee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Meal Fee</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          name={field.name}
-                          value={field.value != null ? String(field.value) : ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ?? Number(e.target.value),
-                            )
-                          }
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Meal Fee"
                 />
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="flex gap-6 pt-1">
                 <FormField
                   control={form.control}
                   name="isResidential"
                   render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2">
+                    <FormItem className="flex items-center gap-2 space-y-0">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
@@ -254,7 +240,7 @@ export function FeesSection({
                         />
                       </FormControl>
                       <FormLabel className="font-normal cursor-pointer">
-                        Is Residential Student
+                        Residential student
                       </FormLabel>
                     </FormItem>
                   )}
@@ -263,7 +249,7 @@ export function FeesSection({
                   control={form.control}
                   name="isMealIncluded"
                   render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2">
+                    <FormItem className="flex items-center gap-2 space-y-0">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
@@ -271,7 +257,7 @@ export function FeesSection({
                         />
                       </FormControl>
                       <FormLabel className="font-normal cursor-pointer">
-                        Meal Included
+                        Meal included
                       </FormLabel>
                     </FormItem>
                   )}
@@ -281,282 +267,67 @@ export function FeesSection({
           </Form>
         </CardContent>
       ) : (
-        <CardContent className="max-w-7xl mx-auto space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="space-y-2">
-              <p className="text-sm text-gray-500">Admission Fee</p>
-              <p className="font-medium">{formatMony(data?.admissionFee)}</p>
-            </div>
-            {data && data.monthlyFee && (
-              <div className="space-y-2">
-                <p className="text-sm text-gray-500">Monthly Fee</p>
-                <p className="font-medium">{formatMony(data.monthlyFee)}</p>
-              </div>
+        <CardContent className="space-y-6 pt-2">
+          {/* Fee rates */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 p-4 bg-muted/40 rounded-lg">
+            <FeeItem label="Admission" value={data?.admissionFee} />
+            <FeeItem label="Monthly" value={data?.monthlyFee} />
+            {(data?.coachingFee ?? 0) > 0 && (
+              <FeeItem label="Coaching" value={data?.coachingFee} />
             )}
-            {data && data.daycareFee && data.daycareFee > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm text-gray-500">Daycare Fee</p>
-                <p className="font-medium">{formatMony(data.daycareFee)}</p>
-              </div>
+            {(data?.daycareFee ?? 0) > 0 && (
+              <FeeItem label="Daycare" value={data?.daycareFee} />
             )}
-            {data && data.coachingFee && data.coachingFee > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm text-gray-500">Coaching Fee</p>
-                <p className="font-medium">{formatMony(data.coachingFee)}</p>
-              </div>
+            {(data?.residentialFee ?? 0) > 0 && (
+              <FeeItem label="Residential" value={data?.residentialFee} />
             )}
-            {data && data.mealFee && data.mealFee > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm text-gray-500">Meal Fee</p>
-                <p className="font-medium">{formatMony(data.mealFee)}</p>
-              </div>
-            )}
-            {data && data.residentialFee && data.residentialFee > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm text-gray-500">Residential Fee</p>
-                <p className="font-medium">{formatMony(data.residentialFee)}</p>
-              </div>
+            {(data?.mealFee ?? 0) > 0 && (
+              <FeeItem label="Meal" value={data?.mealFee} />
             )}
           </div>
 
-          <Separator />
-
-          {/* Additional Info Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-1">
-              <p className="text-sm text-gray-500">Residential</p>
-              <p className="text-lg font-semibold text-black">
+          {/* Flags */}
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span>
+              Residential:{" "}
+              <span
+                className={cn(
+                  "font-medium",
+                  data?.isResidential ? "text-emerald-600" : "text-foreground",
+                )}
+              >
                 {data?.isResidential ? "Yes" : "No"}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-gray-500">Meal Included</p>
-              <p className="text-lg font-semibold text-black">
-                {data?.isMealIncluded ? "Yes" : "No"}
-              </p>
-            </div>
+              </span>
+            </span>
+            <span>
+              Meal:{" "}
+              <span
+                className={cn(
+                  "font-medium",
+                  data?.isMealIncluded ? "text-emerald-600" : "text-foreground",
+                )}
+              >
+                {data?.isMealIncluded ? "Included" : "Not included"}
+              </span>
+            </span>
           </div>
 
-          <Separator />
-
-          {/* Main Balances Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {(data?.feeBalance?.admissionFee?.advance! > 0 ||
-              data?.feeBalance?.admissionFee?.due! > 0) && (
-              <div className="space-y-4">
-                <h4 className="font-semibold text-black">Admission balance</h4>
-
-                <div className="space-y-2">
-                  {/* Advance */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.admissionFee.advance! > 0
-                        ? "bg-green-50 border-green-300 text-green-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Advance</span>
-                    <span>
-                      {formatMony(data?.feeBalance?.admissionFee.advance)}
-                    </span>
-                  </div>
-
-                  {/* Due */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.admissionFee.due! > 0
-                        ? "bg-red-50 border-red-300 text-red-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Due</span>
-                    <span>
-                      {formatMony(data?.feeBalance?.admissionFee.due)}
-                    </span>
-                  </div>
+          {/* Balances */}
+          {balances.length > 0 && (
+            <>
+              <Separator />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-3">
+                  Outstanding Balances
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {balances.map((b) => (
+                    <BalanceCard key={b.label} {...b} />
+                  ))}
                 </div>
               </div>
-            )}
-
-            {(data?.feeBalance?.monthlyFee.advance! > 0 ||
-              data?.feeBalance?.monthlyFee.due! > 0) && (
-              <div className="space-y-4">
-                <h4 className="font-semibold text-black">Monthly balance</h4>
-
-                <div className="space-y-2">
-                  {/* Advance */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.monthlyFee.advance! > 0
-                        ? "bg-green-50 border-green-300 text-green-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Advance</span>
-                    <span>
-                      {formatMony(data?.feeBalance?.monthlyFee.advance)}
-                    </span>
-                  </div>
-
-                  {/* Due */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.monthlyFee.due! > 0
-                        ? "bg-red-50 border-red-300 text-red-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Due</span>
-                    <span>{formatMony(data?.feeBalance?.monthlyFee.due)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {(data?.feeBalance?.coachingFee.advance! > 0 ||
-              data?.feeBalance?.coachingFee.due! > 0) && (
-              <div className="space-y-4">
-                <h4 className="font-semibold text-black">Coaching balance</h4>
-
-                <div className="space-y-2">
-                  {/* Advance */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.coachingFee.advance! > 0
-                        ? "bg-green-50 border-green-300 text-green-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Advance</span>
-                    <span>
-                      {formatMony(data?.feeBalance?.coachingFee.advance)}
-                    </span>
-                  </div>
-
-                  {/* Due */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.coachingFee.due! > 0
-                        ? "bg-red-50 border-red-300 text-red-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Due</span>
-                    <span>
-                      {formatMony(data?.feeBalance?.coachingFee.advance)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {(data?.feeBalance?.daycareFee.advance! > 0 ||
-              data?.feeBalance?.daycareFee.due! > 0) && (
-              <div className="space-y-4">
-                <h4 className="font-semibold text-black">Daycare balance</h4>
-
-                <div className="space-y-2">
-                  {/* Advance */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.daycareFee.advance! > 0
-                        ? "bg-green-50 border-green-300 text-green-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Advance</span>
-                    <span>
-                      {formatMony(data?.feeBalance?.daycareFee.advance)}
-                    </span>
-                  </div>
-
-                  {/* Due */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.daycareFee.due! > 0
-                        ? "bg-red-50 border-red-300 text-red-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Due</span>
-                    <span>{formatMony(data?.feeBalance?.daycareFee.due)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {(data?.feeBalance?.residentialFee.advance! > 0 ||
-              data?.feeBalance?.residentialFee.due! > 0) && (
-              <div className="space-y-4">
-                <h4 className="font-semibold text-black">
-                  Residential balance
-                </h4>
-
-                <div className="space-y-2">
-                  {/* Advance */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.residentialFee.advance! > 0
-                        ? "bg-green-50 border-green-300 text-green-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Advance</span>
-                    <span>
-                      {formatMony(data?.feeBalance?.residentialFee.advance)}
-                    </span>
-                  </div>
-
-                  {/* Due */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.residentialFee.due! > 0
-                        ? "bg-red-50 border-red-300 text-red-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Due</span>
-                    <span>
-                      {formatMony(data?.feeBalance?.residentialFee.due)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {(data?.feeBalance?.mealFee.advance! > 0 ||
-              data?.feeBalance?.mealFee.due! > 0) && (
-              <div className="space-y-4">
-                <h4 className="font-semibold text-black">Meal balance</h4>
-
-                <div className="space-y-2">
-                  {/* Advance */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.mealFee.advance! > 0
-                        ? "bg-green-50 border-green-300 text-green-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Advance</span>
-                    <span>{formatMony(data?.feeBalance?.mealFee.advance)}</span>
-                  </div>
-
-                  {/* Due */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg border font-semibold ${
-                      data?.feeBalance?.mealFee.due! > 0
-                        ? "bg-red-50 border-red-300 text-red-700"
-                        : "bg-gray-50 border-gray-200 text-black"
-                    }`}
-                  >
-                    <span className="text-sm">Due</span>
-                    <span>{formatMony(data?.feeBalance?.mealFee.due)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+            </>
+          )}
         </CardContent>
       )}
     </EditableSection>

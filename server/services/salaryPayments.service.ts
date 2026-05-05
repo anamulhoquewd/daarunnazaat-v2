@@ -31,7 +31,7 @@ export const register = async (body: ISalaryPayment) => {
 
     const staff = await Staff.findById(validData.data.staffId);
 
-    if (!staff || staff.branch !== validData.data.branch) {
+    if (!staff || !staff.branch.includes(validData.data.branch)) {
       return { error: { message: "Invalid staff on this branch or ID" } };
     }
 
@@ -46,6 +46,7 @@ export const register = async (body: ISalaryPayment) => {
     const isExistSalary = await Salary.findOne({
       staffId: validData.data.staffId,
       period: validData.data.period,
+      branch: validData.data.branch,
     });
 
     if (staff.baseSalary === 0 && validData.data.bonus === 0) {
@@ -286,8 +287,8 @@ export const updates = async ({
 export const gets = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
 
   search?: string;
   period?: string;
@@ -378,11 +379,11 @@ export const gets = async (queryParams: {
       "updatedAt",
       "netSalary",
       "paymentDate",
-    ].includes(queryParams.sortBy)
-      ? queryParams.sortBy
+    ].includes(queryParams.sortWith)
+      ? queryParams.sortWith
       : "createdAt";
     const sortDirection =
-      queryParams.sortType?.toLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortOrder?.toLowerCase() === "asc" ? 1 : -1;
 
     // Fetch salary payments with pagination
     const [salaryPayments, total, docsCount] = await Promise.all([

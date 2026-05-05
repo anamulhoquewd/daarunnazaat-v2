@@ -18,7 +18,7 @@ const GuardianSchema = new Schema<IGuardian & Document>(
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },
     nid: { type: String, unique: true, required: false, sparse: true },
     birthCertificateNumber: { type: String },
-    presentAddress: {
+    address: {
       village: { type: String, required: true },
       postOffice: { type: String, required: true },
       upazila: { type: String, required: true },

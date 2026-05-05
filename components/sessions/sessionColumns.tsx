@@ -30,12 +30,17 @@ export const SessionColumns = ({
   },
   {
     header: "Session Name",
-    cell: ({ row }) => row.original.sessionName || "-",
+    cell: ({ row }) => row.original.name || "-",
   },
   {
-    accessorKey: "batchType",
-    header: "Batch Type",
-    cell: ({ row }) => row.original.batchType || "-",
+    accessorKey: "cycleType",
+    header: "Cycle Type",
+    cell: ({ row }) => row.original.cycleType || "-",
+  },
+  {
+    accessorKey: "monthCount",
+    header: "Months",
+    cell: ({ row }) => row.original.monthCount ?? "-",
   },
   {
     accessorKey: "startDate",

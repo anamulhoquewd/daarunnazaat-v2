@@ -14,8 +14,8 @@ import { useDebounce } from "../common/useDebounce";
 interface IFilter {
   dateRange: DateRange | undefined;
   amountRange: { min: number | undefined; max: number | undefined };
-  sortType?: SortType;
-  sortBy?: "createdAt" | "updatedAt";
+  sortOrder?: sortOrder;
+  sortWith?: "createdAt" | "updatedAt";
   limit?: string;
   transactionType: "all" | TransactionType;
   branch: "all" | Branch;
@@ -25,7 +25,7 @@ interface ISearch {
   global: string;
   referenceId: string;
 }
-type SortType = "asc" | "desc";
+type sortOrder = "asc" | "desc";
 
 function useTransactionsQuery() {
   const [isLoading, setIsLoading] = useState(false);
@@ -35,12 +35,12 @@ function useTransactionsQuery() {
     referenceId: "",
     global: "",
   });
-  const [filterBy, setFilterBy] = useState<IFilter>({
+  const [filterWith, setfilterWith] = useState<IFilter>({
     dateRange: { from: undefined, to: undefined },
     amountRange: { min: undefined, max: undefined },
     transactionType: "all",
-    sortBy: "createdAt",
-    sortType: "desc" as SortType,
+    sortWith: "createdAt",
+    sortOrder: "desc" as sortOrder,
     limit: "10",
     branch: "all" as Branch,
   });
@@ -86,8 +86,8 @@ function useTransactionsQuery() {
           filters.amountRange.max !== undefined
             ? filters.amountRange.max
             : undefined,
-        sortBy: filters?.sortBy,
-        sortType: filters?.sortType,
+        sortWith: filters?.sortWith,
+        sortOrder: filters?.sortOrder,
         limit: filters?.limit,
       });
 
@@ -109,16 +109,17 @@ function useTransactionsQuery() {
   const activeFilterCount = () => {
     let count = 0;
     // Range filter
-    if (filterBy.dateRange?.from && filterBy.dateRange?.to) count++;
+    if (filterWith.dateRange?.from && filterWith.dateRange?.to) count++;
     if (
-      filterBy.amountRange.min !== undefined &&
-      filterBy.amountRange.max !== undefined
+      filterWith.amountRange.min !== undefined &&
+      filterWith.amountRange.max !== undefined
     )
       count++;
 
     // Select filters (only count if not "all")
-    if (filterBy.transactionType && filterBy.transactionType !== "all") count++;
-    if (filterBy.branch && filterBy.branch !== "all") count++;
+    if (filterWith.transactionType && filterWith.transactionType !== "all")
+      count++;
+    if (filterWith.branch && filterWith.branch !== "all") count++;
 
     // Search filters (only count if not empty)
     if (debouncedGlobalSearch && debouncedGlobalSearch.trim()) count++;
@@ -129,7 +130,7 @@ function useTransactionsQuery() {
   };
 
   const handleClearFilters = () => {
-    setFilterBy({
+    setfilterWith({
       dateRange: { from: undefined, to: undefined },
       amountRange: { min: undefined, max: undefined },
       transactionType: "all",
@@ -148,7 +149,7 @@ function useTransactionsQuery() {
       return;
     }
 
-    setFilterBy((prev) => ({ ...prev, [key]: value }));
+    setfilterWith((prev) => ({ ...prev, [key]: value }));
 
     setPagination((prev) => ({
       ...prev,
@@ -163,24 +164,24 @@ function useTransactionsQuery() {
         global: debouncedGlobalSearch,
         referenceId: debouncedreferenceIdSearch,
       },
-      filters: filterBy,
+      filters: filterWith,
       currentPage: pagination.page,
     });
   }, [
     debouncedGlobalSearch,
     debouncedreferenceIdSearch,
-    filterBy,
+    filterWith,
     pagination.page,
   ]);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
   const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
-    const { dateRange, amountRange, ...restFilters } = filterBy;
+    const { dateRange, amountRange, ...restFilters } = filterWith;
     return {
       ...restFilters,
       referenceId: search.referenceId,
     };
-  }, [filterBy, search.referenceId]);
+  }, [filterWith, search.referenceId]);
 
   return {
     transactions,
@@ -190,8 +191,8 @@ function useTransactionsQuery() {
     refetch: getTransactions,
     setSearch,
     search,
-    filterBy,
-    setFilterBy,
+    filterWith,
+    setfilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,

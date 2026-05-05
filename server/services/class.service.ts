@@ -66,8 +66,8 @@ export const register = async (body: IClass) => {
 export const gets = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
 
   isActive?: boolean;
   search: string;
@@ -87,12 +87,12 @@ export const gets = async (queryParams: {
     }
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "className"].includes(
-      queryParams.sortBy,
+      queryParams.sortWith,
     )
-      ? queryParams.sortBy
+      ? queryParams.sortWith
       : "createdAt";
     const sortDirection =
-      queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortOrder.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch classes
     const [classes, total, docsCount] = await Promise.all([

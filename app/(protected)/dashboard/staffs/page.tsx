@@ -4,17 +4,12 @@ import { DateRangePicker } from "@/components/common/dateRange";
 import DeleteAlert from "@/components/common/deleteAlert";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
+import { StaffBottomFilter } from "@/components/staffs/staffBottomFilter";
 import { StaffColumns } from "@/components/staffs/staffColumns";
 import StaffFilters from "@/components/staffs/staffFilter";
-import { StudentBottomFilter } from "@/components/students/studentBottomFilter";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -32,20 +27,19 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Filter, X } from "lucide-react";
+import { ChevronDown, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-function StaffsPage() {
+export default function StaffsPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     nid: false,
-    branch: false,
-    email: false,
-    status: false,
+    branch: true,
     gender: false,
     joinDate: false,
+    status: false,
   });
 
   const {
@@ -55,8 +49,8 @@ function StaffsPage() {
     setPagination,
     search,
     setSearch,
-    filterBy,
-    setFilterBy,
+    filterWith,
+    setfilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,
@@ -69,11 +63,7 @@ function StaffsPage() {
     setIsDelOpen,
   } = useStaffQuery();
 
-  const columns = StaffColumns({
-    setIsDelOpen,
-    setValues,
-    setSelectedId,
-  });
+  const columns = StaffColumns({ setIsDelOpen, setValues, setSelectedId });
 
   const table = useReactTable({
     columns,
@@ -84,217 +74,189 @@ function StaffsPage() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-    },
-
+    state: { sorting, columnFilters, columnVisibility },
     manualPagination: true,
-
-    initialState: {
-      pagination: {
-        pageSize: pagination.page,
-      },
-    },
+    initialState: { pagination: { pageSize: pagination.page } },
   });
 
+  const filterCount = activeFilterCount();
+
   return (
-    // Full-height card so header stays fixed and table area scrolls
-    <Card className="w-full  flex flex-col overflow-hidden">
-      <CardHeader className="border-b">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <CardTitle className="text-2xl">Staffs Management</CardTitle>
-            <CardDescription className="mt-1">
-              Manage and view all staffs
-            </CardDescription>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {activeFilterCount() > 0 && (
-              <Button
-                variant="ghost"
-                onClick={handleClearFilters}
-                className="cursor-pointer"
-              >
-                <X className="mr-2" />
-                Clear Filters
-              </Button>
+    <div className="flex flex-col gap-4 h-full">
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Staff</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {pagination.total > 0 ? (
+              <>
+                Showing {staffs.length} of{" "}
+                <span className="font-medium text-foreground">
+                  {pagination.total}
+                </span>{" "}
+                staff members
+              </>
+            ) : (
+              "Manage and view all staff members"
             )}
-            {activeFilterCount() > 0 && (
-              <span className="inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full">
-                <Filter size={14} />
-                {activeFilterCount()} filter
-                {activeFilterCount() !== 1 ? "s" : ""} active
-              </span>
-            )}
-            <Link href={"/dashboard/staffs/new"}>
-              <Button className="cursor-pointer">Add One</Button>
-            </Link>
-          </div>
+          </p>
         </div>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        {/* Filter Controls Row */}
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <StaffFilters
-            filters={combinedFilters}
-            onChange={updateFilter}
-            isExpanded={false}
-            activeFilterCount={activeFilterCount()}
-          />
-        </div>
+        <Link href="/dashboard/staffs/new">
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-1.5" />
+            Register Staff
+          </Button>
+        </Link>
+      </div>
 
-        <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
-          <div className="flex-1">
-            <label className="text-sm font-medium mb-2 block">
-              Search by name, ID, nid, designation, phone or email
-            </label>
-            <Input
-              placeholder="Search staffs..."
-              value={search.global}
-              onChange={(e) =>
-                setSearch((prev) => ({
-                  ...prev,
-                  global: e.target.value,
-                }))
-              }
-            />
-          </div>
-
-          {/* Joining Date Range */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Joining Date Range
-            </label>
-
-            <DateRangePicker
-              initialDateFrom={filterBy.dateRange?.from}
-              initialDateTo={filterBy.dateRange?.to}
-              onUpdate={(values) =>
-                setFilterBy((prev) => ({
-                  ...prev,
-                  dateRange: values.range,
-                }))
-              }
-            />
-          </div>
-
-          {/* Salary Range */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Salary Range
-            </label>
-            <div className="flex gap-2">
+      <Card className="flex-1 flex flex-col overflow-hidden">
+        <CardHeader className="pb-3 border-b">
+          {/* Search + Date + Salary + Columns */}
+          <div className="flex flex-col md:flex-row gap-2 items-start md:items-end">
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
-                type="number"
-                placeholder="Min"
-                value={filterBy.salaryRange?.min}
-                min={0}
+                placeholder="Search by name, ID, NID, designation or phone…"
+                value={search.global}
                 onChange={(e) =>
-                  setFilterBy((values) => ({
-                    ...values,
-                    salaryRange: {
-                      ...values.salaryRange,
-                      min: e.target.value ? Number(e.target.value) : undefined,
-                    },
+                  setSearch((prev) => ({ ...prev, global: e.target.value }))
+                }
+                className="pl-9"
+              />
+            </div>
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+              <DateRangePicker
+                initialDateFrom={filterWith.dateRange?.from}
+                initialDateTo={filterWith.dateRange?.to}
+                onUpdate={(values) =>
+                  setfilterWith((prev) => ({
+                    ...prev,
+                    dateRange: values.range,
                   }))
                 }
-                className="w-full"
               />
-
-              <Input
-                min={0}
-                type="number"
-                placeholder="Max"
-                value={filterBy.salaryRange.max}
-                onChange={(e) =>
-                  setFilterBy((values) => ({
-                    ...values,
-                    salaryRange: {
-                      ...values.salaryRange,
-                      max: e.target.value ? Number(e.target.value) : undefined,
-                    },
-                  }))
-                }
-                className="w-full"
-              />
+              {/* Salary range */}
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  placeholder="Min "
+                  value={filterWith.salaryRange?.min ?? ""}
+                  min={0}
+                  onChange={(e) =>
+                    setfilterWith((prev) => ({
+                      ...prev,
+                      salaryRange: {
+                        ...prev.salaryRange,
+                        min: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
+                      },
+                    }))
+                  }
+                  className="w-24 h-9 text-sm"
+                />
+                <span className="text-muted-foreground text-sm">–</span>
+                <Input
+                  type="number"
+                  placeholder="Max "
+                  value={filterWith.salaryRange?.max ?? ""}
+                  min={0}
+                  onChange={(e) =>
+                    setfilterWith((prev) => ({
+                      ...prev,
+                      salaryRange: {
+                        ...prev.salaryRange,
+                        max: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
+                      },
+                    }))
+                  }
+                  className="w-24 h-9 text-sm"
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <ChevronDown className="h-4 w-4" />
+                    Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((col) => col.getCanHide())
+                    .map((col) => (
+                      <DropdownMenuCheckboxItem
+                        key={col.id}
+                        className="capitalize"
+                        checked={col.getIsVisible()}
+                        onCheckedChange={(v) => col.toggleVisibility(!!v)}
+                      >
+                        {col.id.replace(/_/g, " ")}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger className="w-fit ml-auto">
-              <Button
-                variant="outline"
-                className="cursor-pointer bg-transparent"
-              >
-                Columns <ChevronDown className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter(
-                  (column: {
-                    id: string;
-                    getCanHide: () => boolean;
-                    getIsVisible: () => boolean;
-                    toggleVisibility: (value: boolean) => void;
-                  }) => column.getCanHide(),
-                )
-                .map(
-                  (column: {
-                    id: string;
-                    getCanHide: () => boolean;
-                    getIsVisible: () => boolean;
-                    toggleVisibility: (value: boolean) => void;
-                  }) => {
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="cursor-pointer capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
-                      >
-                        {column.id}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  },
-                )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <TableComponent table={table} columns={columns} />
-
-        {pagination.total > 0 && (
-          <div className="pt-4 flex items-center justify-between">
-            <StudentBottomFilter
+          {/* Filter bar */}
+          <div className="flex items-center gap-2 pt-2">
+            <StaffFilters
               filters={combinedFilters}
               onChange={updateFilter}
+              activeFilterCount={filterCount}
             />
-            <Paginations
-              pagination={pagination}
-              setPagination={setPagination}
-            />
+            {filterCount > 0 && (
+              <div className="flex items-center gap-2 ml-auto shrink-0">
+                <Badge variant="secondary" className="gap-1">
+                  <SlidersHorizontal className="h-3 w-3" />
+                  {filterCount} filter{filterCount !== 1 ? "s" : ""}
+                </Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-7 px-2 text-xs"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear
+                </Button>
+              </div>
+            )}
           </div>
-        )}
+        </CardHeader>
 
-        {selectedId && (
-          <DeleteAlert
-            isOpen={isDelOpen}
-            setIsOpen={setIsDelOpen}
-            cb={deleteStaff.bind(null, selectedId)}
-            setSelectedId={setSelectedId}
-            isLoading={isLoading}
-          />
-        )}
-      </CardContent>
-    </Card>
+        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+          <div className="flex-1 overflow-auto">
+            <TableComponent table={table} columns={columns} />
+          </div>
+
+          {pagination.total > 0 && (
+            <div className="border-t px-4 py-3 flex items-center justify-between bg-muted/30">
+              <StaffBottomFilter
+                filters={combinedFilters}
+                onChange={updateFilter}
+              />
+              <Paginations
+                pagination={pagination}
+                setPagination={setPagination}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {selectedId && (
+        <DeleteAlert
+          isOpen={isDelOpen}
+          setIsOpen={setIsDelOpen}
+          cb={deleteStaff.bind(null, selectedId)}
+          setSelectedId={setSelectedId}
+          isLoading={isLoading}
+        />
+      )}
+    </div>
   );
 }
-
-export default StaffsPage;

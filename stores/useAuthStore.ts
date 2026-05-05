@@ -1,5 +1,5 @@
 import api from "@/axios/intercepter";
-import { IGuardian, IStaff, UserRole } from "@/validations";
+import { UserRole } from "@/validations";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -11,8 +11,6 @@ interface Me {
     phone: string;
     roles: UserRole[];
   };
-  staff?: IStaff | null;
-  guardian?: IGuardian | null;
 }
 
 interface AuthState {
@@ -51,25 +49,10 @@ export const useAuthStore = create<AuthState>()(
       try {
         const response = await api.get("/users/me");
 
-        let staff = null;
-        let guardian = null;
-
-        if (response.data.data.roles.includes("staff")) {
-          staff = await api.get(`/staffs/by?userId=${response.data.data._id}`);
-        }
-
-        if (response.data.data.roles.includes("guardian")) {
-          guardian = await api.get(
-            `/guardians/by?userId=${response.data.data._id}`,
-          );
-        }
-
         if (response.data?.success) {
           set({
             me: {
               user: response.data.data,
-              staff: staff?.data.data || null,
-              guardian: guardian?.data.data || null,
             },
             isAuthenticated: true,
             loading: false,

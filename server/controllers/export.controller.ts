@@ -7,9 +7,9 @@ import { generatePDFService } from "../services";
 import { exportCollection } from "../services/export.service";
 
 export const exportStudentsSheet = async (c: Context) => {
-   // queries
-  const sortBy = c.req.query("sortBy") || "createdAt";
-  const sortType = c.req.query("sortType") || "desc";
+  // queries
+  const sortWith = c.req.query("sortWith") || "createdAt";
+  const sortOrder = c.req.query("sortOrder") || "desc";
   const search = c.req.query("search") as string;
   const classId = c.req.query("classId") as string;
   const branch = c.req.query("branch") as Branch;
@@ -27,7 +27,6 @@ export const exportStudentsSheet = async (c: Context) => {
 
   const pipeline: PipelineStage[] = [];
 
-  
   /* =========================
      MATCH (FILTERS)
   ========================= */
@@ -78,10 +77,10 @@ export const exportStudentsSheet = async (c: Context) => {
     "studentId",
     "admissionDate",
   ];
-  const finalSortField = allowedSortFields.includes(sortBy)
-    ? sortBy
+  const finalSortField = allowedSortFields.includes(sortWith)
+    ? sortWith
     : "createdAt";
-  const sortDirection = sortType?.toLowerCase() === "asc" ? 1 : -1;
+  const sortDirection = sortOrder?.toLowerCase() === "asc" ? 1 : -1;
 
   pipeline.push({ $sort: { [finalSortField]: sortDirection } });
 
@@ -137,17 +136,17 @@ export const exportStudentsSheet = async (c: Context) => {
   });
 
   pipeline.push({
-  $project: {
-    _id: 0,
-    studentId: 1,
-    fullName: 1,
-    fatherName: 1,
-    dateOfBirth: 1,
-    bloodGroup: { $ifNull: ["$bloodGroup", "_"] }, // ← if null "_"
-    className: "$class.className",
-    guardianPhone: "$guardian.user.phone",
-  },
-});
+    $project: {
+      _id: 0,
+      studentId: 1,
+      fullName: 1,
+      fatherName: 1,
+      dateOfBirth: 1,
+      bloodGroup: { $ifNull: ["$bloodGroup", "_"] }, // ← if null "_"
+      className: "$class.className",
+      guardianPhone: "$guardian.user.phone",
+    },
+  });
 
   const response = await exportCollection(
     Student,
@@ -170,8 +169,8 @@ export const exportStudentsSheet = async (c: Context) => {
 
 export const exportStudentsPDF = async (c: Context) => {
   // queries
-  const sortBy = c.req.query("sortBy") || "createdAt";
-  const sortType = c.req.query("sortType") || "desc";
+  const sortWith = c.req.query("sortWith") || "createdAt";
+  const sortOrder = c.req.query("sortOrder") || "desc";
   const search = c.req.query("search") as string;
   const classId = c.req.query("classId") as string;
   const branch = c.req.query("branch") as Branch;
@@ -239,10 +238,10 @@ export const exportStudentsPDF = async (c: Context) => {
     "studentId",
     "admissionDate",
   ];
-  const finalSortField = allowedSortFields.includes(sortBy)
-    ? sortBy
+  const finalSortField = allowedSortFields.includes(sortWith)
+    ? sortWith
     : "createdAt";
-  const sortDirection = sortType?.toLowerCase() === "asc" ? 1 : -1;
+  const sortDirection = sortOrder?.toLowerCase() === "asc" ? 1 : -1;
 
   pipeline.push({ $sort: { [finalSortField]: sortDirection } });
 

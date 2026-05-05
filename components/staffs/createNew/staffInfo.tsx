@@ -1,4 +1,5 @@
 import { DateField } from "@/components/common/dateCalendar";
+import BranchMultiSelect from "@/components/staffs/createNew/branchMultiSelect";
 import {
   Card,
   CardContent,
@@ -14,14 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Branch } from "@/validations";
 import { useFormContext } from "react-hook-form";
 
 function StaffInformation() {
@@ -30,40 +23,13 @@ function StaffInformation() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl sm:text-2xl">Academic Details</CardTitle>
-        <CardDescription>Program and session information</CardDescription>
+        <CardTitle className="text-xl">Staff Details</CardTitle>
+        <CardDescription>
+          Role, department, salary and branch information
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          <FormField
-            control={control}
-            name="branch"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Branch *</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select branch" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {Object.entries(Branch).map(([key, value]) => (
-                      <SelectItem key={value} value={value}>
-                        {key}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={control}
             name="designation"
@@ -71,7 +37,10 @@ function StaffInformation() {
               <FormItem>
                 <FormLabel>Designation *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Shaikhul hadees" {...field} />
+                  <Input
+                    placeholder="e.g. Shaikhul Hadees, Teacher"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -84,28 +53,30 @@ function StaffInformation() {
               <FormItem>
                 <FormLabel>Department</FormLabel>
                 <FormControl>
-                  <Input placeholder="Department" {...field} />
+                  <Input placeholder="e.g. Hadees, Fiqh" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          <DateField name="joinDate" label="Join Date" />
-
+          <DateField name="joinDate" label="Join Date *" />
           <FormField
             control={control}
             name="baseSalary"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Salary *</FormLabel>
+                <FormLabel>Base Salary *</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     min={0}
-                    placeholder="Base Salary"
+                    placeholder="Monthly salary in "
                     {...field}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value !== "" ? Number(e.target.value) : "",
+                      )
+                    }
                   />
                 </FormControl>
                 <FormMessage />
@@ -113,6 +84,21 @@ function StaffInformation() {
             )}
           />
         </div>
+
+        <FormField
+          control={control}
+          name="branch"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Branch *</FormLabel>
+              <BranchMultiSelect
+                value={field.value ?? []}
+                onChange={field.onChange}
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </CardContent>
     </Card>
   );

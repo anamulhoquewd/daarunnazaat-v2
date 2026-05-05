@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Hind_Siliguri } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Suspense } from "react";
 import LoadingPage from "@/components/common/loading";
+import { ReactQueryProvider } from "@/components/providers/ReactQueryProvider";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -37,15 +38,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${hindSiliguri.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Suspense fallback={<LoadingPage />}>{children}</Suspense>
-          <Toaster />
-        </ThemeProvider>
+        <ReactQueryProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Suspense fallback={<LoadingPage />}>{children}</Suspense>
+            <Toaster />
+          </ThemeProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

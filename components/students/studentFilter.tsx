@@ -1,12 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -14,11 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronDown, ChevronUp, Filter } from "lucide-react";
+import { Branch, Gender } from "@/validations";
+import { SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { ClassFilterCombobox } from "../clasess/classFilterCombobox";
 import { GuardianFilterCombobox } from "../guardians/guardianFilterCombobox";
-import { BatchType, Branch, Gender } from "@/validations";
 
 interface StudentFiltersProps {
   filters: Record<string, string | boolean | undefined>;
@@ -30,136 +29,117 @@ interface StudentFiltersProps {
 export default function StudentFilters({
   filters,
   onChange,
-  isExpanded: initialExpanded = false,
   activeFilterCount,
 }: StudentFiltersProps) {
-  const [isExpanded, setIsExpanded] = useState(initialExpanded);
+  const [open, setOpen] = useState(false);
 
   return (
-    <Card className="w-full">
-      <div
-        className="flex items-center justify-between cursor-pointer px-4"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <div className="flex items-center gap-4">
-          <Filter size={18} />
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant={activeFilterCount > 0 ? "default" : "outline"}
+          size="sm"
+          className="gap-2 shrink-0"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          Filters
+          {activeFilterCount > 0 && (
+            <span className="ml-0.5 rounded-full bg-primary-foreground/20 px-1.5 py-0.5 text-xs font-semibold leading-none">
+              {activeFilterCount}
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-4" align="start">
+        <p className="text-sm font-semibold mb-4">Filter Students</p>
+        <div className="space-y-4">
           <div>
-            <CardTitle className="text-base">Advanced Filters</CardTitle>
-            <CardDescription className="text-xs">
-              {activeFilterCount > 0
-                ? `${activeFilterCount} filter${
-                    activeFilterCount !== 1 ? "s" : ""
-                  } applied`
-                : "Refine your search"}
-            </CardDescription>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block uppercase tracking-wide">
+              Branch
+            </label>
+            <Select
+              value={(filters.branch as string) || "all"}
+              onValueChange={(v) => onChange("branch", v)}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="All branches" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Branches</SelectItem>
+                {Object.entries(Branch)
+                  .filter(([, v]) => !v.includes("Branch") || v === "Balika Branch" || v === "Balok Branch")
+                  .filter(([k]) => !k.includes("_BRANCH"))
+                  .map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block uppercase tracking-wide">
+              Gender
+            </label>
+            <Select
+              value={(filters.gender as string) || "all"}
+              onValueChange={(v) => onChange("gender", v)}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="All genders" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Genders</SelectItem>
+                {Object.entries(Gender).map(([key, value]) => (
+                  <SelectItem key={key} value={value} className="capitalize">
+                    {value.charAt(0).toUpperCase() + value.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block uppercase tracking-wide">
+              Residential
+            </label>
+            <Select
+              value={
+                filters.residential === true
+                  ? "true"
+                  : filters.residential === false
+                    ? "false"
+                    : "all"
+              }
+              onValueChange={(v) => onChange("residential", v)}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="true">Residential only</SelectItem>
+                <SelectItem value="false">Non-residential only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block uppercase tracking-wide">
+              Class
+            </label>
+            <ClassFilterCombobox value={filters.classId as string} onChange={onChange} />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block uppercase tracking-wide">
+              Guardian
+            </label>
+            <GuardianFilterCombobox value={filters.guardianId as string} onChange={onChange} />
           </div>
         </div>
-        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-      </div>
-
-      {isExpanded && (
-        <CardContent className="space-y-6 border-t pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Branch</label>
-              <Select
-                value={(filters.branch as string) || "all"}
-                onValueChange={(v) => onChange("branch", v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select branch" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Branches</SelectItem>
-                  {Object.entries(Branch).map(([key, value]) => (
-                    <SelectItem key={key} value={value}>
-                      {value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Gender</label>
-              <Select
-                value={(filters.gender as string) || "all"}
-                onValueChange={(v) => onChange("gender", v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Genders</SelectItem>
-                  {Object.entries(Gender).map(([key, value]) => (
-                    <SelectItem key={key} value={value}>
-                      {value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Batch Type
-              </label>
-              <Select
-                value={(filters.batchType as string) || "all"}
-                onValueChange={(v) => onChange("batchType", v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select batch type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Batches</SelectItem>
-                  {Object.entries(BatchType).map(([key, value]) => (
-                    <SelectItem key={key} value={value}>
-                      {value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Residential
-              </label>
-              <Select
-                value={
-                  filters.residential === "all"
-                    ? "all"
-                    : filters.residential === true
-                      ? "true"
-                      : filters.residential === false
-                        ? "false"
-                        : "all"
-                }
-                onValueChange={(v) => onChange("residential", v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="true">Yes</SelectItem>
-                  <SelectItem value="false">No</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <ClassFilterCombobox
-              value={filters.classId as string}
-              onChange={onChange}
-            />
-            <GuardianFilterCombobox
-              value={filters.guardianId as string}
-              onChange={onChange}
-            />
-          </div>
-        </CardContent>
-      )}
-    </Card>
+      </PopoverContent>
+    </Popover>
   );
 }

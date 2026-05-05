@@ -201,7 +201,7 @@ function OverviewTab({
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                 <YAxis
                   tick={{ fontSize: 10 }}
-                  tickFormatter={(value) => `৳${Math.round(value / 1000)}k`}
+                  tickFormatter={(value) => `${Math.round(value / 1000)}k`}
                 />
                 <Tooltip formatter={chartTooltipFormatter} />
                 <Legend />
@@ -294,7 +294,7 @@ function OverviewTab({
                 <XAxis
                   type="number"
                   tick={{ fontSize: 10 }}
-                  tickFormatter={(value) => `৳${Math.round(value / 1000)}k`}
+                  tickFormatter={(value) => `${Math.round(value / 1000)}k`}
                 />
                 <YAxis
                   type="category"

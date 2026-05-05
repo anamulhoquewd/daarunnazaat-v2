@@ -35,7 +35,7 @@ export interface Student {
   classId: ClassInfo;
   guardianId: Guardian;
   userId: UserInfo;
-  presentAddress: string;
+  address: string;
   permanentAddress: string;
   currentSessionId: string;
   sessionHistory: Array<{
@@ -60,8 +60,8 @@ export interface StudentFilters {
   search?: string;
   page?: number;
   limit?: number;
-  sortBy?: string;
-  sortType?: "asc" | "desc";
+  sortWith?: string;
+  sortOrder?: "asc" | "desc";
   classId?: string;
   branch?: string;
   gender?: string;

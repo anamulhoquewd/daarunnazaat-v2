@@ -10,9 +10,9 @@ import { useDebounce } from "../common/useDebounce";
 interface IFilter {
   dateRange: DateRange | undefined;
   amountRange: { min: number | undefined; max: number | undefined };
-  sortType?: SortType;
+  sortOrder?: sortOrder;
   category?: "all" | ExpenseCategory;
-  sortBy?: "createdAt" | "updatedAt" | "expenseDate";
+  sortWith?: "createdAt" | "updatedAt" | "expenseDate";
   limit?: string;
   branch: "all" | Branch;
 }
@@ -21,7 +21,7 @@ interface ISearch {
   global: string;
 }
 
-type SortType = "asc" | "desc";
+type sortOrder = "asc" | "desc";
 
 function useExpensesQuery() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,12 +32,12 @@ function useExpensesQuery() {
   const [search, setSearch] = useState<ISearch>({
     global: "",
   });
-  const [filterBy, setFilterBy] = useState<IFilter>({
+  const [filterWith, setfilterWith] = useState<IFilter>({
     dateRange: { from: undefined, to: undefined },
     amountRange: { min: undefined, max: undefined },
     category: "all" as ExpenseCategory,
-    sortBy: "createdAt",
-    sortType: "desc" as SortType,
+    sortWith: "createdAt",
+    sortOrder: "desc" as sortOrder,
     limit: "10",
     branch: "all" as Branch,
   });
@@ -78,8 +78,8 @@ function useExpensesQuery() {
           filters.amountRange.max !== undefined
             ? filters.amountRange.max
             : undefined,
-        sortBy: filters?.sortBy,
-        sortType: filters?.sortType,
+        sortWith: filters?.sortWith,
+        sortOrder: filters?.sortOrder,
         limit: filters?.limit,
       });
 
@@ -101,16 +101,16 @@ function useExpensesQuery() {
   const activeFilterCount = () => {
     let count = 0;
     // Range filter
-    if (filterBy.dateRange?.from && filterBy.dateRange?.to) count++;
+    if (filterWith.dateRange?.from && filterWith.dateRange?.to) count++;
     if (
-      filterBy.amountRange.min !== undefined &&
-      filterBy.amountRange.max !== undefined
+      filterWith.amountRange.min !== undefined &&
+      filterWith.amountRange.max !== undefined
     )
       count++;
 
     // Select filters (only count if not "all")
-    if (filterBy.category && filterBy.category !== "all") count++;
-    if (filterBy.branch && filterBy.branch !== "all") count++;
+    if (filterWith.category && filterWith.category !== "all") count++;
+    if (filterWith.branch && filterWith.branch !== "all") count++;
 
     // Search filters (only count if not empty)
     if (debouncedGlobalSearch && debouncedGlobalSearch.trim()) count++;
@@ -119,7 +119,7 @@ function useExpensesQuery() {
   };
 
   const handleClearFilters = () => {
-    setFilterBy({
+    setfilterWith({
       dateRange: { from: undefined, to: undefined },
       amountRange: { min: undefined, max: undefined },
       category: "all",
@@ -131,7 +131,7 @@ function useExpensesQuery() {
   };
 
   const updateFilter = (key: string, value: string) => {
-    setFilterBy((prev) => ({ ...prev, [key]: value }));
+    setfilterWith((prev) => ({ ...prev, [key]: value }));
 
     setPagination((prev) => ({
       ...prev,
@@ -155,7 +155,7 @@ function useExpensesQuery() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
     } catch (error: any) {
@@ -184,7 +184,7 @@ function useExpensesQuery() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
     } catch (error: any) {
@@ -213,7 +213,7 @@ function useExpensesQuery() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
 
@@ -231,17 +231,17 @@ function useExpensesQuery() {
       search: {
         global: debouncedGlobalSearch,
       },
-      filters: filterBy,
+      filters: filterWith,
       currentPage: pagination.page,
     });
-  }, [debouncedGlobalSearch, filterBy, pagination.page]);
+  }, [debouncedGlobalSearch, filterWith, pagination.page]);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
   const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
-    const { dateRange, amountRange, ...restFilters } = filterBy;
+    const { dateRange, amountRange, ...restFilters } = filterWith;
 
     return restFilters;
-  }, [filterBy]);
+  }, [filterWith]);
 
   return {
     expenses,
@@ -253,8 +253,8 @@ function useExpensesQuery() {
     refetch: getExpenses,
     setSearch,
     search,
-    filterBy,
-    setFilterBy,
+    filterWith,
+    setfilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,

@@ -42,8 +42,8 @@ export const createTransactionLog = async (body: ITransactionLog) => {
 export const gets = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
   search: string;
   transactionType: TransactionType;
   referenceModel: string;
@@ -115,11 +115,11 @@ export const gets = async (queryParams: {
     }
 
     // Allowable sort fields
-    const sortField = ["createdAt", "updatedAt"].includes(queryParams.sortBy)
-      ? queryParams.sortBy
+    const sortField = ["createdAt", "updatedAt"].includes(queryParams.sortWith)
+      ? queryParams.sortWith
       : "createdAt";
     const sortDirection =
-      queryParams.sortType?.toLocaleLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortOrder?.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch fees with pagination
     const [fees, total, docsCount] = await Promise.all([

@@ -32,8 +32,8 @@ export const register = async (c: Context) => {
 export const getUsers = async (c: Context) => {
   const page = parseInt(c.req.query("page") as string, 10) || 1;
   const limit = parseInt(c.req.query("limit") as string, 10) || 10;
-  const sortBy = c.req.query("sortBy") as string;
-  const sortType = c.req.query("sortType") as string;
+  const sortWith = c.req.query("sortWith") as string;
+  const sortOrder = c.req.query("sortOrder") as string;
   const search = c.req.query("search") as string;
   const fromDate = c.req.query("fromDate") as string;
   const toDate = c.req.query("toDate") as string;
@@ -55,8 +55,8 @@ export const getUsers = async (c: Context) => {
   const response = await userServices.gets({
     page,
     limit,
-    sortBy,
-    sortType,
+    sortWith,
+    sortOrder,
     roles,
     search,
     createdDateRange,

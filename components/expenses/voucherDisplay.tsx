@@ -147,7 +147,7 @@ export function VoucherDisplay({ data }: {data: IExpense}) {
         <div className="mb-8 text-sm">
           <p className="font-semibold text-foreground mb-2">Attachments:</p>
           <ul className="list-disc pl-5 space-y-1">
-            {data.attachments.map((att, idx) => (
+            {data.attachments.map((att: any, idx: any) => (
               <li key={att.url || idx} className="break-all">
                 {att.url}
               </li>

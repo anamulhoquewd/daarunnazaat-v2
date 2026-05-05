@@ -19,7 +19,7 @@ const StaffSchema = new Schema<IStaff & Document>(
     bloodGroup: { type: String, enum: Object.values(BloodGroup) },
     nid: { type: String, unique: true, required: false, sparse: true },
     birthCertificateNumber: { type: String },
-    presentAddress: {
+    address: {
       village: { type: String, required: true },
       postOffice: { type: String, required: true },
       upazila: { type: String, required: true },
@@ -38,7 +38,7 @@ const StaffSchema = new Schema<IStaff & Document>(
     department: { type: String },
     joinDate: { type: Date, required: true },
     baseSalary: { type: Number, required: true, min: 0 },
-    branch: { type: String, enum: Object.values(Branch), required: true },
+    branch: { type: [String], enum: Object.values(Branch), required: true },
     resignationDate: { type: Date },
     qualifications: [
       {
@@ -49,6 +49,12 @@ const StaffSchema = new Schema<IStaff & Document>(
         grade: { type: String },
       },
     ],
+    emergencyContact: {
+      name: { type: String, required: true },
+      phone: { type: String, required: true },
+      relationship: { type: String, required: true },
+      address: { type: String, required: true },
+    },
     isActive: { type: Boolean, default: true },
   },
 

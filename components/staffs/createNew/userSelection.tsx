@@ -20,9 +20,9 @@ function StaffUserSelection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl sm:text-2xl">User Selection</CardTitle>
+        <CardTitle className="text-xl">User Account</CardTitle>
         <CardDescription>
-          Select the user associated with this staff
+          Link this staff member to an existing user account
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

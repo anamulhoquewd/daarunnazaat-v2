@@ -290,7 +290,7 @@ function ExpenseCenter() {
                             >
                               <span className="flex flex-wrap gap-1 max-w-[90%] overflow-hidden">
                                 {watchedBranches?.length
-                                  ? watchedBranches.map((b) => (
+                                  ? watchedBranches.map((b: any) => (
                                       <Badge
                                         key={b}
                                         variant="secondary"

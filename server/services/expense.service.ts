@@ -29,7 +29,7 @@ export const register = async (body: IExpense) => {
     const voucherNumber = await generateVoucherNumber();
 
     // Recalculate each item's total server-side — never trust frontend values.
-    const sanitizedItems = (validData.data.items ?? []).map((item) => ({
+    const sanitizedItems = (validData.data.items ?? []).map((item: any) => ({
       ...item,
       total: item.quantity * item.unitPrice,
     }));
@@ -37,7 +37,7 @@ export const register = async (body: IExpense) => {
     // Derive overall amount from the server-recalculated item totals.
     const amount =
       sanitizedItems.length > 0
-        ? sanitizedItems.reduce((sum, item) => sum + item.total, 0)
+        ? sanitizedItems.reduce((sum: any, item: any) => sum + item.total, 0)
         : validData.data.amount;
 
     const expensePayment = new Expense({
@@ -130,7 +130,10 @@ export const updates = async ({
     const oldAmount = expense.amount || 0;
 
     // Update only provided fields
-    Object.assign(expense, { ...bodyValidation.data, createdBy: updatedByUserId });
+    Object.assign(expense, {
+      ...bodyValidation.data,
+      createdBy: updatedByUserId,
+    });
 
     // Save expense
     const docs = await expense.save();
@@ -168,8 +171,8 @@ export const updates = async ({
 export const gets = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
 
   search?: string;
 
@@ -247,11 +250,11 @@ export const gets = async (queryParams: {
       "updatedAt",
       "amount",
       "paymentDate",
-    ].includes(queryParams.sortBy)
-      ? queryParams.sortBy
+    ].includes(queryParams.sortWith)
+      ? queryParams.sortWith
       : "createdAt";
     const sortDirection =
-      queryParams.sortType?.toLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortOrder?.toLowerCase() === "asc" ? 1 : -1;
 
     // Fetch expense payments with pagination
     const [expensePayments, total, docsCount] = await Promise.all([

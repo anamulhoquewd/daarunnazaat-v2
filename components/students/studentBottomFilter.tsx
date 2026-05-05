@@ -17,8 +17,8 @@ export function StudentBottomFilter({ filters, onChange }: Props) {
       {/* SORT BY */}
       <div>
         <Select
-          value={filters.sortBy as string}
-          onValueChange={(v) => onChange("sortBy", v)}
+          value={filters.sortWith as string}
+          onValueChange={(v) => onChange("sortWith", v)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select sort by" />
@@ -36,8 +36,8 @@ export function StudentBottomFilter({ filters, onChange }: Props) {
       {/* SORT TYPE */}
       <div>
         <Select
-          value={filters.sortType as string}
-          onValueChange={(v) => onChange("sortType", v)}
+          value={filters.sortOrder as string}
+          onValueChange={(v) => onChange("sortOrder", v)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select sort type" />

@@ -19,20 +19,27 @@ export function GuardianProfileHeader({ data }: { data: IGuardian }) {
       <div className="container max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard/staffs" className="bg-accent p-2 rounded-md">
+            <Link
+              href="/dashboard/guardians"
+              className="bg-accent p-2 rounded-md"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Link>
 
             <Avatar className="h-20 w-20 border-2 border-primary">
               <AvatarFallback className="text-lg font-semibold">
-                NA
+                {data?.fullName
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <h1 className="text-3xl font-bold">{data?.fullName}</h1>
-                {data?.userId?.isActive ? (
+                {data?.isActive ? (
                   <Badge variant="secondary" className="text-sm">
                     Active
                   </Badge>
@@ -43,7 +50,7 @@ export function GuardianProfileHeader({ data }: { data: IGuardian }) {
                 )}
               </div>
               <p className="text-muted-foreground">
-                {data?.guardianId} • {data?.occupation}
+                {data?.guardianId} • {data?.occupation || "Occupation not set"}
               </p>
             </div>
           </div>

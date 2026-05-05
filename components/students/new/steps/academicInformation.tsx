@@ -20,10 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BatchType, Branch } from "@/validations";
+import { Branch } from "@/validations";
 import { useFormContext } from "react-hook-form";
 import { ClassCombobox } from "../classCombobox";
 import { SessionCombobox } from "../sessionCombobox";
+
+const BRANCH_OPTIONS = Object.entries(Branch).filter(
+  ([key]) => !key.endsWith("_BRANCH")
+);
 
 function AcademicInformation() {
   const { control } = useFormContext();
@@ -31,30 +35,27 @@ function AcademicInformation() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl sm:text-2xl">Academic Details</CardTitle>
-        <CardDescription>Program and session information</CardDescription>
+        <CardTitle className="text-xl">Academic Details</CardTitle>
+        <CardDescription>Branch, class, and session information</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={control}
             name="branch"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Branch *</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select branch" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.entries(Branch).map(([key, value]) => (
+                    {BRANCH_OPTIONS.map(([, value]) => (
                       <SelectItem key={value} value={value}>
-                        {key}
+                        {value}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -63,38 +64,11 @@ function AcademicInformation() {
               </FormItem>
             )}
           />
-          <FormField
-            control={control}
-            name="batchType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Batch Type *</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select batch type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {Object.entries(BatchType).map(([key, value]) => (
-                      <SelectItem key={value} value={value}>
-                        {key}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
+          <DateField name="admissionDate" label="Admission Date" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          <DateField name="admissionDate" label="Admission Date" />
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={control}
             name="classId"
@@ -102,15 +76,13 @@ function AcademicInformation() {
               <FormItem>
                 <FormLabel>Class *</FormLabel>
                 <FormControl>
-                  <ClassCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
+                  <ClassCombobox value={field.value} onChange={field.onChange} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
           <FormField
             control={control}
             name="currentSessionId"
@@ -118,10 +90,7 @@ function AcademicInformation() {
               <FormItem>
                 <FormLabel>Session *</FormLabel>
                 <FormControl>
-                  <SessionCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
+                  <SessionCombobox value={field.value} onChange={field.onChange} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

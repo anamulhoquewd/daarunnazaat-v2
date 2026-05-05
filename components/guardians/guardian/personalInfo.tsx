@@ -19,12 +19,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createGuardianZ } from "@/modules/zod/guardian";
 import { BloodGroup, Gender, IGuardian, IUpdateGuardian } from "@/validations";
-import { guardianPpersonalInfoSchema } from "@/validations/guardian";
 import { PersonalInfo } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+
+export const guardianUpdateParsonalInfo = createGuardianZ.pick({
+  fullName: true,
+  gender: true,
+  bloodGroup: true,
+  avatar: true,
+  nid: true,
+  occupation: true,
+  monthlyIncome: true,
+});
 
 interface PersonalInfoSectionProps {
   isEditing: boolean;
@@ -40,7 +50,7 @@ export function PersonalInfoSection({
   onSave,
 }: PersonalInfoSectionProps) {
   const form = useForm({
-    resolver: zodResolver(guardianPpersonalInfoSchema),
+    resolver: zodResolver(guardianUpdateParsonalInfo),
   });
 
   useEffect(() => {
@@ -50,7 +60,6 @@ export function PersonalInfoSection({
         gender: data.gender ?? "",
         bloodGroup: data.bloodGroup ?? BloodGroup.NON,
         nid: data.nid ?? "",
-        birthCertificateNumber: data.birthCertificateNumber ?? "",
         occupation: data.occupation ?? "",
         monthlyIncome: data.monthlyIncome ?? undefined,
       });
@@ -100,7 +109,7 @@ export function PersonalInfoSection({
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <FormField
                   control={form.control}
                   name="nid"
@@ -112,22 +121,6 @@ export function PersonalInfoSection({
                       </FormControl>
                       <FormDescription className="text-xs">
                         Must be 10 or 17 digits
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="birthCertificateNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Birth Certificate (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="17 digits" {...field} />
-                      </FormControl>
-                      <FormDescription className="text-xs">
-                        Must be 17 digits
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -245,24 +238,15 @@ export function PersonalInfoSection({
               <p className="text-sm text-muted-foreground">First Name</p>
               <p className="font-medium">{data?.fullName || "N/A"}</p>
             </div>
-          </div>
 
-          {(data?.birthCertificateNumber || data?.nid) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {data?.nid && (
               <div>
                 <p className="text-sm text-muted-foreground">NID</p>
                 <p className="font-medium">{data?.nid || "N/A"}</p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Birth Certificate
-                </p>
-                <p className="font-medium">
-                  {data?.birthCertificateNumber || "N/A"}
-                </p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Blood Group</p>
@@ -281,7 +265,9 @@ export function PersonalInfoSection({
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">Monthly Income</p>
+              <p className="text-sm text-muted-foreground">
+                Monthly Income (Avarage)
+              </p>
               <p className="font-medium capitalize">
                 {data?.monthlyIncome || "N/A"}
               </p>

@@ -52,8 +52,8 @@ function ExpensePage() {
     setPagination,
     search,
     setSearch,
-    filterBy,
-    setFilterBy,
+    filterWith,
+    setfilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,
@@ -171,10 +171,10 @@ function ExpensePage() {
             </label>
 
             <DateRangePicker
-              initialDateFrom={filterBy.dateRange?.from}
-              initialDateTo={filterBy.dateRange?.to}
+              initialDateFrom={filterWith.dateRange?.from}
+              initialDateTo={filterWith.dateRange?.to}
               onUpdate={(values) =>
-                setFilterBy((prev) => ({
+                setfilterWith((prev) => ({
                   ...prev,
                   dateRange: values.range,
                 }))

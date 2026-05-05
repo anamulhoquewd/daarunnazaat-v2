@@ -11,7 +11,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { BatchType, ISession } from "@/validations";
+import { SessionCycleType } from "@/validations";
+import type { ICreateSession } from "@/modules/session/validation";
 import { useEffect } from "react";
 import { FormProvider } from "react-hook-form";
 import { DateField } from "../common/dateCalendar";
@@ -33,32 +34,29 @@ export default function SessionRegistrationForm({
   values,
 }: {
   isLoading: boolean;
-  handleSubmit: (data: ISession) => Promise<void>;
+  handleSubmit: (data: ICreateSession) => Promise<void>;
   form: any;
-  values: ISession | null;
+  values: any | null;
   setIsAddOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   useEffect(() => {
     if (values) {
-      form.reset(values, {
-        keepDirty: false,
-        keepTouched: false,
-      });
+      form.reset(values, { keepDirty: false, keepTouched: false });
     }
   }, [values]);
 
   return (
     <FormProvider {...form}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="sessionName"
+            name="name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Session Name *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Type session name..." {...field} />
+                  <Input placeholder="e.g. 2026 Ramadan Session" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -67,31 +65,52 @@ export default function SessionRegistrationForm({
 
           <FormField
             control={form.control}
-            name="batchType"
+            name="cycleType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Batch Type *</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <FormLabel>Cycle Type *</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select gender" />
+                      <SelectValue placeholder="Select cycle type" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.entries(BatchType).map(([_, value]) => (
-                      <SelectItem key={value} value={value}>
-                        {value}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value={SessionCycleType.JAN_DEC}>
+                      January – December
+                    </SelectItem>
+                    <SelectItem value={SessionCycleType.RAMADAN}>
+                      Ramadan – Ramadan
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="monthCount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Month Count *</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={24}
+                    placeholder="12"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                  />
+                </FormControl>
+                <FormDescription>Number of fee months (1–24)</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <DateField name="startDate" label="Start Date" />
             <DateField name="endDate" label="End Date" />
@@ -105,7 +124,7 @@ export default function SessionRegistrationForm({
                 <div className="space-y-0.5">
                   <FormLabel>Active Status</FormLabel>
                   <FormDescription>
-                    Enable or disable this class
+                    Enable or disable this session
                   </FormDescription>
                 </div>
                 <FormControl>
@@ -125,23 +144,12 @@ export default function SessionRegistrationForm({
               className="cursor-pointer"
               onClick={() => {
                 setIsAddOpen(false);
-                form.reset({
-                  className: "",
-                  description: "",
-                  monthlyFee: 0,
-                  capacity: 0,
-                  isActive: true,
-                });
+                form.reset();
               }}
             >
               <DialogClose>Cancel</DialogClose>
             </Button>
-
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="cursor-pointer"
-            >
+            <Button type="submit" disabled={isLoading} className="cursor-pointer">
               {isLoading ? "Submitting..." : "Confirm & Submit"}
             </Button>
           </div>

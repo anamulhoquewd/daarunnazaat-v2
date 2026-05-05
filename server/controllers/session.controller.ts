@@ -1,4 +1,3 @@
-import { BatchType } from "@/validations";
 import type { Context } from "hono";
 import { badRequestError, serverError } from "../error";
 import { sessionService } from "../services";
@@ -22,10 +21,9 @@ export const register = async (c: Context) => {
 export const gets = async (c: Context) => {
   const page = parseInt(c.req.query("page") as string, 10) || 1;
   const limit = parseInt(c.req.query("limit") as string, 10) || 10;
-  const sortBy = c.req.query("sortBy") || "name";
-  const sortType = c.req.query("sortType") || "desc";
+  const sortWith = c.req.query("sortWith") || "name";
+  const sortOrder = c.req.query("sortOrder") || "desc";
   const search = c.req.query("search") as string;
-  const batchType = c.req.query("batchType") as BatchType;
   const isActiveRaw = c.req.query("isActive");
 
   let isActive: boolean | undefined = undefined;
@@ -36,10 +34,9 @@ export const gets = async (c: Context) => {
   const response = await sessionService.gets({
     page,
     limit,
-    sortBy,
-    sortType,
+    sortWith,
+    sortOrder,
     isActive,
-    batchType,
     search,
   });
 

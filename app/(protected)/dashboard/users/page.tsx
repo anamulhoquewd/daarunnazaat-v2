@@ -4,21 +4,15 @@ import { DateRangePicker } from "@/components/common/dateRange";
 import DeleteAlert from "@/components/common/deleteAlert";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
-import { AlertDialogHeader } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -27,7 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { UserBottomFilter } from "@/components/users/userBottomFilter";
 import { UserColumns } from "@/components/users/userColumns";
 import UserFilters from "@/components/users/userFilter";
@@ -42,10 +35,11 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Filter, Plus, X } from "lucide-react";
+import { ChevronDown, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
-function UsersPage() {
+export default function UsersPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
@@ -62,8 +56,8 @@ function UsersPage() {
     setPagination,
     search,
     setSearch,
-    filterBy,
-    setFilterBy,
+    filterWith,
+    setfilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,
@@ -80,7 +74,6 @@ function UsersPage() {
     setIsEditing,
     setIsAddOpen,
     setIsDelOpen,
-
     activeUser,
     deactiveUser,
     blockUser,
@@ -95,7 +88,6 @@ function UsersPage() {
     setValues,
     setSelectedId,
     setIsAddOpen,
-
     activeUser,
     deactiveUser,
     blockUser,
@@ -113,214 +105,187 @@ function UsersPage() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-    },
-
+    state: { sorting, columnFilters, columnVisibility },
     manualPagination: true,
-
-    initialState: {
-      pagination: {
-        pageSize: pagination.page,
-      },
-    },
+    initialState: { pagination: { pageSize: pagination.page } },
   });
 
+  const filterCount = activeFilterCount();
+
+  const closeModal = () => {
+    form.reset({ email: "", phone: "", roles: [] });
+    setValues(null);
+    setSelectedId(null);
+    setIsEditing(false);
+    setIsAddOpen(false);
+  };
+
   return (
-    <Card className="w-full  flex flex-col overflow-hidden">
-      <CardHeader className="border-b">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <CardTitle className="text-2xl">Users Management</CardTitle>
-            <CardDescription className="mt-1">
-              Manage and view all users
-            </CardDescription>
-          </div>
+    <div className="flex flex-col gap-4 h-full">
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Users</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {pagination.total > 0 ? (
+              <>
+                Showing {users.length} of{" "}
+                <span className="font-medium text-foreground">
+                  {pagination.total}
+                </span>{" "}
+                users
+              </>
+            ) : (
+              "Manage and view all system users"
+            )}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button size="sm" onClick={() => setIsAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            Add User
+          </Button>
+          <Link href="/dashboard/users/new">
+            <Button size="sm" variant="outline">
+              <Plus className="h-4 w-4 mr-1.5" />
+              Full Form
+            </Button>
+          </Link>
+        </div>
+      </div>
 
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {activeFilterCount() > 0 && (
-              <Button
-                variant="ghost"
-                onClick={handleClearFilters}
-                className="cursor-pointer"
-              >
-                <X className="mr-2" />
-                Clear Filters
-              </Button>
-            )}
-            {activeFilterCount() > 0 && (
-              <span className="inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full">
-                <Filter size={14} />
-                {activeFilterCount()} filter
-                {activeFilterCount() !== 1 ? "s" : ""} active
-              </span>
-            )}
-            <Dialog
-              open={isAddOpen}
-              onOpenChange={(open) => {
-                if (!open) {
-                  form.reset({ email: "", phone: "" });
-                  setValues(null);
-                  setSelectedId("");
-                  setIsEditing(false);
+      <Card className="flex-1 flex flex-col overflow-hidden">
+        <CardHeader className="pb-3 border-b">
+          {/* Search + Date + Columns */}
+          <div className="flex flex-col md:flex-row gap-2 items-start md:items-end">
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search by phone or email…"
+                value={search.global}
+                onChange={(e) =>
+                  setSearch((prev) => ({ ...prev, global: e.target.value }))
                 }
-                setIsAddOpen(open);
-              }}
-            >
-              <DialogTrigger asChild>
-                <Button
-                  onChange={() => setIsAddOpen(true)}
-                  className="w-full sm:w-auto cursor-pointer"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add One
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <AlertDialogHeader>
-                  <DialogTitle>Customer Registration Form</DialogTitle>
-                  <DialogDescription>
-                    Fill out the form below to complete new customer
-                    registration.
-                  </DialogDescription>
-                </AlertDialogHeader>
-                <ScrollArea className="sm:max-w-[525px] h-[65dvh] overflow-hidden pr-2 md:px-4">
-                  <UserRegistrationForm
-                    values={values}
-                    setIsAddOpen={setIsAddOpen}
-                    handleSubmit={isEditing ? handleUpdate : handleSubmit}
-                    isLoading={isLoading}
-                    form={form}
-                  />
-                  <ScrollBar orientation="vertical" className="w-2.5" />
-                  <ScrollBar orientation="horizontal" className="w-2.5" />
-                </ScrollArea>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        {/* Filter Controls Row */}
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <UserFilters
-            filters={combinedFilters}
-            onChange={updateFilter}
-            isExpanded={false}
-            activeFilterCount={activeFilterCount()}
-          />
-        </div>
-
-        <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
-          <div className="flex-1">
-            <label className="text-sm font-medium mb-2 block">
-              Search by phone or email
-            </label>
-            <Input
-              placeholder="Search users..."
-              value={search.global}
-              onChange={(e) =>
-                setSearch((prev) => ({
-                  ...prev,
-                  global: e.target.value,
-                }))
-              }
-            />
-          </div>
-
-          {/* Joining Date Range */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Joining Date Range
-            </label>
-
-            <DateRangePicker
-              initialDateFrom={filterBy.dateRange?.from}
-              initialDateTo={filterBy.dateRange?.to}
-              onUpdate={(values) =>
-                setFilterBy((prev) => ({
-                  ...prev,
-                  dateRange: values.range,
-                }))
-              }
-            />
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger className="w-fit ml-auto">
-              <Button
-                variant="outline"
-                className="cursor-pointer bg-transparent"
-              >
-                Columns <ChevronDown className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter(
-                  (column: {
-                    id: string;
-                    getCanHide: () => boolean;
-                    getIsVisible: () => boolean;
-                    toggleVisibility: (value: boolean) => void;
-                  }) => column.getCanHide(),
-                )
-                .map(
-                  (column: {
-                    id: string;
-                    getCanHide: () => boolean;
-                    getIsVisible: () => boolean;
-                    toggleVisibility: (value: boolean) => void;
-                  }) => {
-                    return (
+                className="pl-9"
+              />
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <DateRangePicker
+                initialDateFrom={filterWith.dateRange?.from}
+                initialDateTo={filterWith.dateRange?.to}
+                onUpdate={(values) =>
+                  setfilterWith((prev) => ({
+                    ...prev,
+                    dateRange: values.range,
+                  }))
+                }
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <ChevronDown className="h-4 w-4" />
+                    Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((col) => col.getCanHide())
+                    .map((col) => (
                       <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="cursor-pointer capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
+                        key={col.id}
+                        className="capitalize"
+                        checked={col.getIsVisible()}
+                        onCheckedChange={(v) => col.toggleVisibility(!!v)}
                       >
-                        {column.id}
+                        {col.id.replace(/_/g, " ")}
                       </DropdownMenuCheckboxItem>
-                    );
-                  },
-                )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                    ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
 
-        <TableComponent table={table} columns={columns} />
-
-        {pagination.total > 0 && (
-          <div className="pt-4 flex items-center justify-between">
-            <UserBottomFilter
+          {/* Filter bar */}
+          <div className="flex items-center gap-2 pt-2">
+            <UserFilters
               filters={combinedFilters}
               onChange={updateFilter}
+              activeFilterCount={filterCount}
             />
-            <Paginations
-              pagination={pagination}
-              setPagination={setPagination}
-            />
+            {filterCount > 0 && (
+              <div className="flex items-center gap-2 ml-auto shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-7 px-2 text-xs"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear
+                </Button>
+              </div>
+            )}
           </div>
-        )}
+        </CardHeader>
 
-        {selectedId && (
-          <DeleteAlert
-            isOpen={isDelOpen}
-            setIsOpen={setIsDelOpen}
-            cb={handleDelete.bind(null, selectedId)}
-            setSelectedId={setSelectedId}
+        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+          <div className="flex-1 overflow-auto">
+            <TableComponent table={table} columns={columns} />
+          </div>
+
+          {pagination.total > 0 && (
+            <div className="border-t px-4 py-3 flex items-center justify-between bg-muted/30">
+              <UserBottomFilter
+                filters={combinedFilters}
+                onChange={updateFilter}
+              />
+              <Paginations
+                pagination={pagination}
+                setPagination={setPagination}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Add / Edit Modal */}
+      <Dialog
+        open={isAddOpen}
+        onOpenChange={(open) => {
+          if (!open) closeModal();
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{isEditing ? "Edit User" : "Add User"}</DialogTitle>
+            <DialogDescription>
+              {isEditing
+                ? "Update the user's information and roles."
+                : "Create a new system user account and assign roles."}
+            </DialogDescription>
+          </DialogHeader>
+          <UserRegistrationForm
+            values={values}
+            setIsAddOpen={setIsAddOpen}
+            handleSubmit={isEditing ? handleUpdate : handleSubmit}
             isLoading={isLoading}
+            form={form}
+            isEditing={isEditing}
           />
-        )}
-      </CardContent>
-    </Card>
+        </DialogContent>
+      </Dialog>
+
+      {/* Permanent Delete Alert */}
+      {selectedId && (
+        <DeleteAlert
+          isOpen={isDelOpen}
+          setIsOpen={setIsDelOpen}
+          cb={handleDelete.bind(null, selectedId)}
+          setSelectedId={setSelectedId}
+          isLoading={isLoading}
+        />
+      )}
+    </div>
   );
 }
-
-export default UsersPage;

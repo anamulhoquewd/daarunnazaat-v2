@@ -1,5 +1,4 @@
 import {
-  BatchType,
   ISession,
   IUpdateSession,
   mongoIdZ,
@@ -86,17 +85,15 @@ export const register = async (body: ISession) => {
 export const gets = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
 
   isActive?: boolean;
-  batchType: BatchType;
   search: string;
 }) => {
   try {
     // Build query
     const query: any = {};
-    if (queryParams.batchType) query.batchType = queryParams.batchType;
     if (typeof queryParams.isActive === "boolean") {
       query.isActive = queryParams.isActive;
     }
@@ -108,12 +105,12 @@ export const gets = async (queryParams: {
     }
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "sessionName"].includes(
-      queryParams.sortBy,
+      queryParams.sortWith,
     )
-      ? queryParams.sortBy
+      ? queryParams.sortWith
       : "sessionName";
     const sortDirection =
-      queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortOrder.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch sessions
     const [sessions, total, docsCount] = await Promise.all([

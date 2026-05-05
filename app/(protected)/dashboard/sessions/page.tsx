@@ -62,7 +62,7 @@ function SessionsPage() {
     setPagination,
     search,
     setSearch,
-    filterBy,
+    filterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,
@@ -154,11 +154,11 @@ function SessionsPage() {
                   setSelectedId("");
                   setIsEditing(false);
                   form.reset({
-                    sessionName: "",
-                    isActive: true,
+                    name: "",
+                    cycleType: undefined,
+                    monthCount: 12,
                     startDate: undefined,
                     endDate: undefined,
-                    batchType: undefined,
                   });
                 }
                 setIsAddOpen(open);
@@ -241,22 +241,18 @@ function SessionsPage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">Batch Type</label>
+            <label className="text-sm font-medium mb-2 block">Cycle Type</label>
             <Select
-              value={(filterBy.batchType as string) || "all"}
-              onValueChange={(v) => updateFilter("batchType", v)}
+              value={(filterWith.cycleType as string) || "all"}
+              onValueChange={(v) => updateFilter("cycleType", v)}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select batch type" />
+                <SelectValue placeholder="Select cycle type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Batches</SelectItem>
-                <SelectItem value="january_december">
-                  January - December
-                </SelectItem>
-                <SelectItem value="ramadan-ramadan">
-                  Ramadan - Ramadan
-                </SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="JAN_DEC">January – December</SelectItem>
+                <SelectItem value="RAMADAN">Ramadan – Ramadan</SelectItem>
               </SelectContent>
             </Select>
           </div>

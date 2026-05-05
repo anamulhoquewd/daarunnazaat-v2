@@ -53,8 +53,8 @@ export const register = async ({
 export const gets = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
 
   dateRange: { from: Date | string; to: Date | string };
   date: Date | string;
@@ -93,12 +93,12 @@ export const gets = async (queryParams: {
 
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "title"].includes(
-      queryParams.sortBy,
+      queryParams.sortWith,
     )
-      ? queryParams.sortBy
+      ? queryParams.sortWith
       : "createdAt";
     const sortDirection =
-      queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortOrder.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch blogs
     const [blogs, total, docsCount] = await Promise.all([
@@ -192,8 +192,8 @@ export const get = async (slug: string) => {
 export const getDrafts = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
 
   dateRange: { from: Date | string; to: Date | string };
   date: Date | string;
@@ -232,12 +232,12 @@ export const getDrafts = async (queryParams: {
 
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "title"].includes(
-      queryParams.sortBy,
+      queryParams.sortWith,
     )
-      ? queryParams.sortBy
+      ? queryParams.sortWith
       : "createdAt";
     const sortDirection =
-      queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortOrder.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch blogs
     const [blogs, total, docsCount] = await Promise.all([
@@ -566,8 +566,8 @@ export const getUserBlogs = async ({
   queryParams: {
     page: number;
     limit: number;
-    sortBy: string;
-    sortType: string;
+    sortWith: string;
+    sortOrder: string;
 
     dateRange: { from: Date | string; to: Date | string };
     date: Date | string;
@@ -607,12 +607,12 @@ export const getUserBlogs = async ({
 
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "title"].includes(
-      queryParams.sortBy,
+      queryParams.sortWith,
     )
-      ? queryParams.sortBy
+      ? queryParams.sortWith
       : "createdAt";
     const sortDirection =
-      queryParams.sortType.toLocaleLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortOrder.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch blogs
     const [blogs, total, docsCount] = await Promise.all([

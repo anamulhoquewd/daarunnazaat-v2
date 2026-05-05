@@ -22,7 +22,7 @@ import { ScrollArea } from "../ui/scroll-area";
 function ShowItems({ expense }: { expense: IExpense }) {
   const { items } = expense;
 
-  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalQuantity = items.reduce((sum: any, item: any) => sum + item.quantity, 0);
 
   return (
     <Dialog>
@@ -65,7 +65,7 @@ function ShowItems({ expense }: { expense: IExpense }) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  items.map((item) => (
+                  items.map((item: any) => (
                     <TableRow
                       key={item._id}
                       className="hover:bg-muted/50 transition"

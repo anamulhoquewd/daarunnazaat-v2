@@ -11,13 +11,13 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+  const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
   return (
     <AuthGate>
       <SidebarProvider defaultOpen={defaultOpen} className="flex">
         <AppSidebar />
 
-        <div className="flex-1 min-h-screen flex-col">
+        <div className="flex-1 min-h-screen flex flex-col">
           {/* Top Navigation */}
           <Header />
 

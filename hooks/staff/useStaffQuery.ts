@@ -12,8 +12,8 @@ interface IFilter {
   salaryRange: { min: number | undefined; max: number | undefined };
   gender: "all" | Gender;
   branch: "all" | Branch;
-  sortType?: SortType;
-  sortBy?: "createdAt" | "updatedAt" | "fullName" | "staffId" | "joinDate";
+  sortOrder?: sortOrder;
+  sortWith?: "createdAt" | "updatedAt" | "fullName" | "staffId" | "joinDate";
   limit?: string;
 }
 
@@ -21,7 +21,7 @@ interface ISearch {
   global: string;
 }
 
-type SortType = "asc" | "desc";
+type sortOrder = "asc" | "desc";
 
 function useStaffQuery() {
   const [isLoading, setIsLoading] = useState(false);
@@ -34,22 +34,22 @@ function useStaffQuery() {
     global: "",
   });
   const [values, setValues] = useState<IStaff | null>(null);
-  const [filterBy, setFilterBy] = useState<IFilter>({
+  const [filterWith, setfilterWith] = useState<IFilter>({
     dateRange: { from: undefined, to: undefined },
     salaryRange: { min: undefined, max: undefined },
     branch: "all",
     gender: "all",
 
-    sortBy: "createdAt",
-    sortType: "desc" as SortType,
+    sortWith: "createdAt",
+    sortOrder: "desc" as sortOrder,
     limit: "10",
   });
 
   // debounce only search
   const debouncedGlobalSearch = useDebounce(search.global, 700);
 
-  const debouncedSalaryMin = useDebounce(filterBy.salaryRange.min, 700);
-  const debouncedSalaryMax = useDebounce(filterBy.salaryRange.max, 700);
+  const debouncedSalaryMin = useDebounce(filterWith.salaryRange.min, 700);
+  const debouncedSalaryMax = useDebounce(filterWith.salaryRange.max, 700);
 
   const getStaffs = async ({
     search,
@@ -84,8 +84,8 @@ function useStaffQuery() {
             : undefined,
         branch: filters?.branch === "all" ? undefined : filters?.branch,
         gender: filters?.gender === "all" ? undefined : filters?.gender,
-        sortBy: filters?.sortBy,
-        sortType: filters?.sortType,
+        sortWith: filters?.sortWith,
+        sortOrder: filters?.sortOrder,
         limit: filters?.limit,
       });
 
@@ -107,15 +107,15 @@ function useStaffQuery() {
   const activeFilterCount = () => {
     let count = 0;
     // Range filter
-    if (filterBy.dateRange?.from && filterBy.dateRange?.to) count++;
+    if (filterWith.dateRange?.from && filterWith.dateRange?.to) count++;
     if (
-      filterBy.salaryRange.min !== undefined &&
-      filterBy.salaryRange.max !== undefined
+      filterWith.salaryRange.min !== undefined &&
+      filterWith.salaryRange.max !== undefined
     ) {
       count++;
     } // Select filters (only count if not "all")
-    if (filterBy.branch && filterBy.branch !== "all") count++;
-    if (filterBy.gender && filterBy.gender !== "all") count++;
+    if (filterWith.branch && filterWith.branch !== "all") count++;
+    if (filterWith.gender && filterWith.gender !== "all") count++;
     // Search filters (only count if not empty)
     if (debouncedGlobalSearch && debouncedGlobalSearch.trim()) count++;
 
@@ -123,7 +123,7 @@ function useStaffQuery() {
   };
 
   const handleClearFilters = () => {
-    setFilterBy({
+    setfilterWith({
       dateRange: { from: undefined, to: undefined },
       salaryRange: { max: undefined, min: undefined },
       gender: "all",
@@ -153,7 +153,7 @@ function useStaffQuery() {
           global: debouncedGlobalSearch,
         },
         filters: {
-          ...filterBy,
+          ...filterWith,
           salaryRange: {
             min: debouncedSalaryMin,
             max: debouncedSalaryMax,
@@ -180,12 +180,12 @@ function useStaffQuery() {
       // Convert string to boolean or "all"
       const boolValue =
         value === "all" ? "all" : value === "true" ? true : false;
-      setFilterBy((prev) => ({ ...prev, [key]: boolValue }));
+      setfilterWith((prev) => ({ ...prev, [key]: boolValue }));
       return;
     }
 
     // Handle other filter fields (branch, gender, batchType)
-    setFilterBy((prev) => ({ ...prev, [key]: value }));
+    setfilterWith((prev) => ({ ...prev, [key]: value }));
 
     setPagination((prev) => ({
       ...prev,
@@ -200,7 +200,7 @@ function useStaffQuery() {
         global: debouncedGlobalSearch,
       },
       filters: {
-        ...filterBy,
+        ...filterWith,
         salaryRange: {
           min: debouncedSalaryMin,
           max: debouncedSalaryMax,
@@ -213,21 +213,21 @@ function useStaffQuery() {
     debouncedGlobalSearch,
     debouncedSalaryMin,
     debouncedSalaryMax,
-    filterBy.branch,
-    filterBy.dateRange,
-    filterBy.gender,
-    filterBy.limit,
-    filterBy.sortBy,
-    filterBy.sortType,
+    filterWith.branch,
+    filterWith.dateRange,
+    filterWith.gender,
+    filterWith.limit,
+    filterWith.sortWith,
+    filterWith.sortOrder,
   ]);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
   const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
-    const { dateRange, salaryRange, ...restFilters } = filterBy;
+    const { dateRange, salaryRange, ...restFilters } = filterWith;
     return {
       ...restFilters,
     };
-  }, [filterBy]);
+  }, [filterWith]);
 
   return {
     staffs,
@@ -238,8 +238,8 @@ function useStaffQuery() {
     setValues,
     setSearch,
     search,
-    filterBy,
-    setFilterBy,
+    filterWith,
+    setfilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,

@@ -1,18 +1,15 @@
 "use client";
 
+import { DateRangePicker } from "@/components/common/dateRange";
 import DeleteAlert from "@/components/common/deleteAlert";
 import Paginations from "@/components/common/paginations";
 import TableComponent from "@/components/common/table";
 import { GuardianBottomFilter } from "@/components/guardians/guardianBottomFilter";
 import { GuardianColumns } from "@/components/guardians/guardianColumns";
+import GuardianFilters from "@/components/guardians/guardianFilter";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -20,15 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import useGuardianQuery from "@/hooks/guardians/guardianStudentQuery";
-import { useGuardianActions } from "@/hooks/guardians/useGuardianActions";
+import useGuardianQuery from "@/hooks/guardians/useGuardianQuery";
 import {
   ColumnFiltersState,
   SortingState,
@@ -38,24 +27,28 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Filter, X } from "lucide-react";
+import { ChevronDown, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-function GuardianPage() {
+export default function GuardianPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    email: false,
+    gender: false,
     status: false,
+    isDeleted: false,
   });
 
   const {
     pagination,
     guardians,
-    setValues,
     setPagination,
     search,
     setSearch,
+    filterWith,
+    setFilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,
@@ -64,6 +57,8 @@ function GuardianPage() {
     deactiveGuardian,
     isLoading,
     handleDelete,
+    handleSoftDelete,
+    handleRestore,
     setSelectedId,
     selectedId,
     setIsDelOpen,
@@ -75,6 +70,8 @@ function GuardianPage() {
     setSelectedId,
     activeGuardian,
     deactiveGuardian,
+    handleRestore,
+    handleSoftDelete,
   });
 
   const table = useReactTable({
@@ -86,164 +83,148 @@ function GuardianPage() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-    },
-
+    state: { sorting, columnFilters, columnVisibility },
     manualPagination: true,
-
-    initialState: {
-      pagination: {
-        pageSize: pagination.page,
-      },
-    },
+    initialState: { pagination: { pageSize: pagination.page } },
   });
 
+  const filterCount = activeFilterCount();
+
   return (
-    // Full-height card so header stays fixed and table area scrolls
-    <Card className="w-full  flex flex-col overflow-hidden">
-      <CardHeader className="border-b">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <CardTitle className="text-2xl">Guardian Management</CardTitle>
-            <CardDescription className="mt-1">
-              Manage and view all guardian
-            </CardDescription>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {activeFilterCount() > 0 && (
-              <Button
-                variant="ghost"
-                onClick={handleClearFilters}
-                className="cursor-pointer"
-              >
-                <X className="mr-2" />
-                Clear Filters
-              </Button>
+    <div className="flex flex-col gap-4 h-full">
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Guardians</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {pagination.total > 0 ? (
+              <>
+                Showing {guardians.length} of{" "}
+                <span className="font-medium text-foreground">
+                  {pagination.total}
+                </span>{" "}
+                guardians
+              </>
+            ) : (
+              "Manage and view all guardians"
             )}
-            {activeFilterCount() > 0 && (
-              <span className="inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full">
-                <Filter size={14} />
-                {activeFilterCount()} filter
-                {activeFilterCount() !== 1 ? "s" : ""} active
-              </span>
-            )}
-            <Link href={"/dashboard/guardians/new"}>
-              <Button className="cursor-pointer">Add One</Button>
-            </Link>
-          </div>
+          </p>
         </div>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
-          <div className="flex-1">
-            <label className="text-sm font-medium mb-2 block">
-              Search by name, ID, nid, phone or emai
-            </label>
-            <Input
-              placeholder="Search guardians..."
-              value={search.global}
-              onChange={(e) =>
-                setSearch((prev) => ({
-                  ...prev,
-                  global: e.target.value,
-                }))
-              }
-            />
-          </div>
+        <Link href="/dashboard/guardians/new">
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-1.5" />
+            Register Guardian
+          </Button>
+        </Link>
+      </div>
 
-          <div>
-            <label className="text-sm font-medium mb-2 block">Gender</label>
-            <Select
-              value={(combinedFilters.gender as string) || "all"}
-              onValueChange={(v) => updateFilter("gender", v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Genders</SelectItem>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger className="w-fit ml-auto">
-              <Button
-                variant="outline"
-                className="cursor-pointer bg-transparent"
-              >
-                Columns <ChevronDown className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter(
-                  (column: {
-                    id: string;
-                    getCanHide: () => boolean;
-                    getIsVisible: () => boolean;
-                    toggleVisibility: (value: boolean) => void;
-                  }) => column.getCanHide(),
-                )
-                .map(
-                  (column: {
-                    id: string;
-                    getCanHide: () => boolean;
-                    getIsVisible: () => boolean;
-                    toggleVisibility: (value: boolean) => void;
-                  }) => {
-                    return (
+      <Card className="flex-1 flex flex-col overflow-hidden">
+        <CardHeader className="pb-3 border-b">
+          {/* Search + Date + Columns */}
+          <div className="flex flex-col md:flex-row gap-2 items-start md:items-end">
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search by name, ID, NID, phone or email…"
+                value={search.global}
+                onChange={(e) =>
+                  setSearch((prev) => ({ ...prev, global: e.target.value }))
+                }
+                className="pl-9"
+              />
+            </div>
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+              <DateRangePicker
+                initialDateFrom={filterWith.dateRange?.from}
+                initialDateTo={filterWith.dateRange?.to}
+                onUpdate={(values) =>
+                  setFilterWith((prev) => ({
+                    ...prev,
+                    dateRange: values.range,
+                  }))
+                }
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <ChevronDown className="h-4 w-4" />
+                    Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((col) => col.getCanHide())
+                    .map((col) => (
                       <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="cursor-pointer capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
+                        key={col.id}
+                        className="capitalize"
+                        checked={col.getIsVisible()}
+                        onCheckedChange={(v) => col.toggleVisibility(!!v)}
                       >
-                        {column.id}
+                        {col.id.replace(/_/g, " ")}
                       </DropdownMenuCheckboxItem>
-                    );
-                  },
-                )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <TableComponent table={table} columns={columns} />
+                    ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
 
-        {pagination.total > 0 && (
-          <div className="pt-4 flex items-center justify-between">
-            <GuardianBottomFilter
+          {/* Filter bar */}
+          <div className="flex items-center gap-2 pt-2">
+            <GuardianFilters
               filters={combinedFilters}
               onChange={updateFilter}
             />
-            <Paginations
-              pagination={pagination}
-              setPagination={setPagination}
-            />
+            {filterCount > 0 && (
+              <div className="flex items-center gap-2 ml-auto shrink-0">
+                <Badge variant="secondary" className="gap-1">
+                  <SlidersHorizontal className="h-3 w-3" />
+                  {filterCount} filter{filterCount !== 1 ? "s" : ""}
+                </Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-7 px-2 text-xs"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear
+                </Button>
+              </div>
+            )}
           </div>
-        )}
+        </CardHeader>
 
-        {selectedId && (
-          <DeleteAlert
-            isOpen={isDelOpen}
-            setIsOpen={setIsDelOpen}
-            cb={handleDelete.bind(null, selectedId)}
-            setSelectedId={setSelectedId}
-            isLoading={isLoading}
-          />
-        )}
-      </CardContent>
-    </Card>
+        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+          <div className="flex-1 overflow-auto">
+            <TableComponent table={table} columns={columns} />
+          </div>
+
+          {pagination.total > 0 && (
+            <div className="border-t px-4 py-3 flex items-center justify-between bg-muted/30">
+              <GuardianBottomFilter
+                filters={combinedFilters}
+                onChange={updateFilter}
+              />
+              <Paginations
+                pagination={pagination}
+                setPagination={setPagination}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {selectedId && (
+        <DeleteAlert
+          isOpen={isDelOpen}
+          setIsOpen={setIsDelOpen}
+          cb={handleDelete.bind(null, selectedId)}
+          setSelectedId={setSelectedId}
+          isLoading={isLoading}
+        />
+      )}
+    </div>
   );
 }
-
-export default GuardianPage;

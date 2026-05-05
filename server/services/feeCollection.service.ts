@@ -147,10 +147,8 @@ export const register = async ({
     let previousAdvance = 0;
 
     if (monthlyFees.includes(validData.data.feeType)) {
-      const balanceKey = validData.data
-        .feeType as keyof typeof student.feeBalance;
-      const feeBalance = (student.feeBalance?.[balanceKey] as any) || {};
-
+      const feeBalance =
+        ((student as any).feeBalance?.[validData.data.feeType] as any) || {};
       previousDue = feeBalance.due || 0;
       previousAdvance = feeBalance.advance || 0;
     }
@@ -346,17 +344,19 @@ export const updates = async ({
       payableAmount = validData.data.payableAmount;
     }
 
-    if (validData.data.receivedAmount >= payableAmount) {
+    const newReceived = validData.data.receivedAmount ?? fee.receivedAmount;
+
+    if (newReceived >= payableAmount) {
       paymentStatus = PaymentStatus.PAID;
-      advanceAmount = validData.data.receivedAmount - payableAmount;
+      advanceAmount = newReceived - payableAmount;
       dueAmount = 0;
-    } else if (validData.data.receivedAmount === 0) {
+    } else if (newReceived === 0) {
       paymentStatus = PaymentStatus.DUE;
-      dueAmount = payableAmount - validData.data.receivedAmount;
+      dueAmount = payableAmount - newReceived;
       advanceAmount = 0;
     } else {
       paymentStatus = PaymentStatus.PARTIAL;
-      dueAmount = payableAmount - validData.data.receivedAmount;
+      dueAmount = payableAmount - newReceived;
       advanceAmount = 0;
     }
 
@@ -432,8 +432,8 @@ export const updates = async ({
 export const gets = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
 
   search: string;
   period: string;
@@ -449,7 +449,9 @@ export const gets = async (queryParams: {
 }) => {
   try {
     // Build query
-    const query: any = {};
+    const query: any = {
+      isDeleted: false,
+    };
 
     // Search by receiptNumber or _id
     if (queryParams.search) {
@@ -537,12 +539,12 @@ export const gets = async (queryParams: {
 
     // Allowable sort fields
     const sortField = ["createdAt", "updatedAt", "paymentDate"].includes(
-      queryParams.sortBy,
+      queryParams.sortWith,
     )
-      ? queryParams.sortBy
-      : "createdAt";
+      ? queryParams.sortWith
+      : "updatedAt";
     const sortDirection =
-      queryParams.sortType?.toLocaleLowerCase() === "asc" ? 1 : -1;
+      queryParams.sortOrder?.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch fees with pagination
     const [fees, total, docsCount] = await Promise.all([
@@ -693,6 +695,7 @@ export const restoreFee = async (_id: string) => {
 
     fee.isDeleted = false;
     fee.deletedAt = null;
+    await fee.save();
 
     return {
       success: {

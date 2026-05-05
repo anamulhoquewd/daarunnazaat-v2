@@ -13,6 +13,9 @@ import * as expenseService from "./expense.service";
 import * as exportService from "./export.service";
 import * as generatePDFService from "./generatePDF.service";
 import * as dashboardService from "./dashboard.service";
+import * as examService from "./exam.service";
+import * as examEnrollmentService from "./examEnrollment.service";
+import * as examResultService from "./examResult.service";
 
 export {
   blogService,
@@ -30,4 +33,7 @@ export {
   exportService,
   generatePDFService,
   dashboardService,
+  examService,
+  examEnrollmentService,
+  examResultService,
 };

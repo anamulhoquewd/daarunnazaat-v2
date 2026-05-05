@@ -11,61 +11,52 @@ interface Props {
   onChange: (key: string, value: string) => void;
 }
 
-export function StudentBottomFilter({ filters, onChange }: Props) {
+export function StaffBottomFilter({ filters, onChange }: Props) {
   return (
-    <div className="flex items-center justify-center gap-4">
-      {/* SORT BY */}
-      <div>
-        <Select
-          value={filters.sortBy as string}
-          onValueChange={(v) => onChange("sortBy", v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="joinDate">Admission Date</SelectItem>
-            <SelectItem value="fullName">Full Name</SelectItem>
-            <SelectItem value="staffId">Student Id</SelectItem>
-            <SelectItem value="createdAt">Created Date</SelectItem>
-            <SelectItem value="updatedAt">Updated Date</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+    <div className="flex items-center gap-2">
+      <Select
+        value={(filters.sortWith as string) || "createdAt"}
+        onValueChange={(v) => onChange("sortWith", v)}
+      >
+        <SelectTrigger className="h-8 text-xs w-36">
+          <SelectValue placeholder="Sort by" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="joinDate">Join Date</SelectItem>
+          <SelectItem value="fullName">Full Name</SelectItem>
+          <SelectItem value="staffId">Staff ID</SelectItem>
+          <SelectItem value="createdAt">Created Date</SelectItem>
+          <SelectItem value="updatedAt">Updated Date</SelectItem>
+        </SelectContent>
+      </Select>
 
-      {/* SORT TYPE */}
-      <div>
-        <Select
-          value={filters.sortType as string}
-          onValueChange={(v) => onChange("sortType", v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select sort type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">Ascending</SelectItem>
-            <SelectItem value="desc">Descending</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Select
+        value={(filters.sortOrder as string) || "desc"}
+        onValueChange={(v) => onChange("sortOrder", v)}
+      >
+        <SelectTrigger className="h-8 text-xs w-32">
+          <SelectValue placeholder="Sort order" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="asc">Ascending</SelectItem>
+          <SelectItem value="desc">Descending</SelectItem>
+        </SelectContent>
+      </Select>
 
-      {/* PAGE LIMIT */}
-      <div>
-        <Select
-          value={filters.limit as string}
-          onValueChange={(v) => onChange("limit", v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select page limit" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="20">20</SelectItem>
-            <SelectItem value="50">50</SelectItem>
-            <SelectItem value="100">100</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Select
+        value={(filters.limit as string) || "10"}
+        onValueChange={(v) => onChange("limit", v)}
+      >
+        <SelectTrigger className="h-8 text-xs w-20">
+          <SelectValue placeholder="Per page" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="10">10</SelectItem>
+          <SelectItem value="20">20</SelectItem>
+          <SelectItem value="50">50</SelectItem>
+          <SelectItem value="100">100</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }

@@ -33,9 +33,7 @@ function PersonalInformation() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl sm:text-2xl">
-            Personal Information
-          </CardTitle>
+          <CardTitle className="text-xl">Personal Information</CardTitle>
           <CardDescription>Basic details about the student</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -179,9 +177,7 @@ function PersonalInformation() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg sm:text-xl">
-            Guardian Information
-          </CardTitle>
+          <CardTitle className="text-xl">Guardian Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -191,17 +187,12 @@ function PersonalInformation() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Select Guardian *</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <GuardianCombobox
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                  </Select>
+                  <FormControl>
+                    <GuardianCombobox
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

@@ -22,7 +22,7 @@ export const useStaffForm = () => {
     resolver: zodResolver(staffZ),
     shouldUnregister: false,
     defaultValues: savedData ?? {
-      presentAddress: {
+      address: {
         village: "",
         postOffice: "",
         upazila: "",
@@ -109,7 +109,7 @@ export const useStaffForm = () => {
     isResettingRef.current = true;
 
     form.reset({
-      presentAddress: {
+      address: {
         village: "",
         postOffice: "",
         upazila: "",
@@ -124,7 +124,7 @@ export const useStaffForm = () => {
         division: "",
       },
       userId: "",
-      auternativePhone: "",
+      alternativePhone: "",
       whatsApp: "",
       fullName: "",
       dateOfBirth: null,
@@ -136,7 +136,7 @@ export const useStaffForm = () => {
       department: "",
       joinDate: null,
       baseSalary: "",
-      branch: "",
+      branch: [],
       resignationDate: null,
     });
 

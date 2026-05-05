@@ -1,43 +1,37 @@
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
 import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-12">
-      {/* Container with max width for premium spacing */}
-      <div className="font-cormorant w-full max-w-2xl mx-auto text-center">
-        {/* 404 Number - Large elegant display */}
-        <div className="mb-8">
-          <p className="text-[120px] md:text-[160px] font-light leading-none text-muted-foreground/30">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6">
+      <div className="w-full max-w-md text-center space-y-6">
+        <div className="space-y-2">
+          <p className="text-8xl font-bold text-muted-foreground/20 select-none tabular-nums">
             404
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Page not found
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            The page you&apos;re looking for doesn&apos;t exist or has been moved.
           </p>
         </div>
 
-        {/* Main heading */}
-        <h1 className="text-3xl md:text-4xl font-light text-foreground mb-4 tracking-wide">
-          Page Not Found
-        </h1>
-
-        {/* Subtitle */}
-        <p className="text-lg text-muted-foreground mb-12 font-light leading-relaxed max-w-md mx-auto">
-          The page you are looking for does not exist or has been removed. Let
-          us help you get back on track.
-        </p>
-
-        {/* Action buttons */}
-        <Link href="/">
-          <Button
-            size={"lg"}
-            className="rounded-none cursor-pointer text-xs tracking-[0.2em] uppercase"
-          >
-            <span className="flex items-center gap-2">
-              Back to Home
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </span>
+        <div className="flex items-center justify-center gap-3">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="javascript:history.back()">
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              Go back
+            </Link>
           </Button>
-        </Link>
+          <Button size="sm" asChild>
+            <Link href="/dashboard">
+              <Home className="h-4 w-4 mr-1.5" />
+              Dashboard
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

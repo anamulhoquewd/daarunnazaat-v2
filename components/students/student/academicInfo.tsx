@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BatchType, Branch, IStudent, IUpdateStudent } from "@/validations";
+import { Branch, IStudent, IUpdateStudent } from "@/validations";
 import { AcademicInfo, academicInfoSchema } from "@/validations/student";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -61,7 +61,6 @@ export function AcademicInfoSection({
       form.reset({
         studentId: data?.studentId ?? "",
         branch: data?.branch ?? "",
-        batchType: data?.batchType ?? "",
         classId: data?.classId?._id ?? "",
         currentSessionId: data?.currentSessionId?._id ?? "",
         admissionDate: new Date(),
@@ -138,33 +137,6 @@ export function AcademicInfoSection({
                           </FormControl>
                           <SelectContent>
                             {Object.entries(Branch).map(([key, value]) => (
-                              <SelectItem key={value} value={value}>
-                                {key}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="batchType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Batch Type</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select batch type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {Object.entries(BatchType).map(([key, value]) => (
                               <SelectItem key={value} value={value}>
                                 {key}
                               </SelectItem>

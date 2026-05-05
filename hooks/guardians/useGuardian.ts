@@ -22,7 +22,7 @@ export const useGuardianForm = () => {
     resolver: zodResolver(guardianZ),
     shouldUnregister: false,
     defaultValues: savedData ?? {
-      presentAddress: {
+      address: {
         village: "",
         postOffice: "",
         upazila: "",
@@ -55,9 +55,9 @@ export const useGuardianForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await api.post("/guardians/register", data);
+      const response = await api.post("/guardians", data);
 
-      if (!response.data.success) {
+      if (!response.data) {
         throw new Error(
           response.data.error.message || "Failed to create guardian",
         );
@@ -109,7 +109,7 @@ export const useGuardianForm = () => {
     isResettingRef.current = true;
 
     form.reset({
-      presentAddress: {
+      address: {
         village: "",
         postOffice: "",
         upazila: "",
@@ -124,7 +124,7 @@ export const useGuardianForm = () => {
         division: "",
       },
       userId: "",
-      auternativePhone: "",
+      alternativePhone: "",
       whatsApp: "",
       fullName: "",
       dateOfBirth: null,

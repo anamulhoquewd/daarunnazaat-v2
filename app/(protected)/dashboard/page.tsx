@@ -26,9 +26,7 @@ export default function DashboardPage() {
     refetch,
   } = useDashboard();
 
-  const chartData = dashboard?.charts;
-  const records = dashboard?.records;
-  const sessions = dashboard?.meta.sessions || [];
+    const sessions = dashboard?.meta.sessions || [];
 
   return (
     <div className="min-h-screen bg-muted/30">

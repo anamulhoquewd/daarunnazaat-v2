@@ -24,8 +24,9 @@ export const useGuardianActions = () => {
     setLoading((p) => ({ ...p, fetch: true }));
     try {
       const res = await api.get(`/guardians/${guardianId}`);
-      if (!res.data.success) {
+      if (!res.data) {
         toast.error("Failed to fetch guardian");
+        throw new Error("Failed to fetch guardian");
       }
       setGuardian(res.data.data);
     } catch (e) {
@@ -42,7 +43,8 @@ export const useGuardianActions = () => {
 
     try {
       const response = await api.patch(`/guardians/${id}`, data);
-      if (!response.data.success) {
+      console.log("Update response: ", response);
+      if (!response.data.data) {
         toast.error("Update failed");
         throw new Error(
           response.data.error.message || "Failed to update guardian",

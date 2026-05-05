@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const p=require\\('./package.json'\\); ['tsx','ts-node','dotenv'].forEach\\(d=>console.log\\(d+':', {...p.dependencies,...p.devDependencies}[d]||'not installed'\\)\\)\")",
+      "Bash(NODE_OPTIONS=--max-old-space-size=4096 npx tsc --noEmit)",
+      "Bash(sed 's/\\(.*$//')",
+      "Bash(sed -i 's/import { Gender, BloodGroup, mongoIdZ }/import { Gender, BloodGroup, mongoIdStringZ as mongoIdZ }/' modules/guardian/service.ts)",
+      "Bash(sed -i 's/import { Branch, Gender, BloodGroup, mongoIdZ }/import { Branch, Gender, BloodGroup, mongoIdStringZ as mongoIdZ }/' modules/staff/service.ts)",
+      "Bash(Get-ChildItem -Path \"f:\\\\SOFTWARES\\\\daarunnazaat\" -Recurse -Filter \"*.ts\" -o ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -First 5)"
+    ],
+    "additionalDirectories": [
+      "f:\\SOFTWARES\\daarunnazaat\\app\\(protected)\\dashboard\\invoices"
+    ]
+  }
+}

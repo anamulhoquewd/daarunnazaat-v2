@@ -22,9 +22,7 @@ function ContactInformation() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl sm:text-2xl">
-          Contact Information
-        </CardTitle>
+        <CardTitle className="text-xl">Contact Information</CardTitle>
         <CardDescription>Phone numbers for contact</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

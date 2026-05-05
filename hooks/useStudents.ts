@@ -61,10 +61,10 @@ export function useStudents() {
 
   // Helper to set sort
   const setSort = useCallback(
-    (sortBy: string, sortType: "asc" | "desc") => {
-      updateFilters({ sortBy, sortType, page: 1 });
+    (sortWith: string, sortOrder: "asc" | "desc") => {
+      updateFilters({ sortWith, sortOrder, page: 1 });
     },
-    [updateFilters]
+    [updateFilters],
   );
 
   // Helper to reset all filters

@@ -24,6 +24,44 @@ import {
 import { PaymentMethod, PaymentSource } from "@/validations";
 import { useFormContext } from "react-hook-form";
 
+function FeeNumberInput({
+  name,
+  label,
+  required,
+}: {
+  name: string;
+  label: string;
+  required?: boolean;
+}) {
+  const { control } = useFormContext();
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{label}{required ? " *" : ""}</FormLabel>
+          <FormControl>
+            <Input
+              type="number"
+              min={0}
+              placeholder="0"
+              name={field.name}
+              value={field.value != null ? String(field.value) : ""}
+              onChange={(e) =>
+                field.onChange(e.target.value !== "" ? Number(e.target.value) : undefined)
+              }
+              onBlur={field.onBlur}
+              ref={field.ref}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
 function FeesTab() {
   const { control, watch } = useFormContext();
 
@@ -33,194 +71,21 @@ function FeesTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl sm:text-2xl">Fee Information</CardTitle>
-        <CardDescription>Enter all applicable fees</CardDescription>
+        <CardTitle className="text-xl">Fee Information</CardTitle>
+        <CardDescription>Enter monthly rates and initial payment</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={control}
-            name="admissionFee"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Admission Fee</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    name={field.name}
-                    value={field.value != null ? String(field.value) : ""}
-                    onChange={(e) =>
-                      field.onChange(e.target.value ?? Number(e.target.value))
-                    }
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="receivedAmount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Received Amount</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    name={field.name}
-                    value={field.value != null ? String(field.value) : ""}
-                    onChange={(e) =>
-                      field.onChange(e.target.value ?? Number(e.target.value))
-                    }
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="monthlyFee"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Monthly Fee</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    name={field.name}
-                    value={field.value != null ? String(field.value) : ""}
-                    onChange={(e) =>
-                      field.onChange(e.target.value ?? Number(e.target.value))
-                    }
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="coachingFee"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Coaching Fee</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    name={field.name}
-                    value={field.value != null ? String(field.value) : ""}
-                    onChange={(e) =>
-                      field.onChange(e.target.value ?? Number(e.target.value))
-                    }
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="daycareFee"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Daycare Fee</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    name={field.name}
-                    value={field.value != null ? String(field.value) : ""}
-                    onChange={(e) =>
-                      field.onChange(e.target.value ?? Number(e.target.value))
-                    }
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {isResidential && (
-            <FormField
-              control={control}
-              name="residentialFee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Residential Fee</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      name={field.name}
-                      value={field.value != null ? String(field.value) : ""}
-                      onChange={(e) =>
-                        field.onChange(e.target.value ?? Number(e.target.value))
-                      }
-                      onBlur={field.onBlur}
-                      ref={field.ref}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-
-          {isMealIncluded && (
-            <FormField
-              control={control}
-              name="mealFee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meal Fee</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      name={field.name}
-                      value={field.value != null ? String(field.value) : ""}
-                      onChange={(e) =>
-                        field.onChange(e.target.value ?? Number(e.target.value))
-                      }
-                      onBlur={field.onBlur}
-                      ref={field.ref}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Options first */}
+        <div className="flex flex-wrap gap-6">
           <FormField
             control={control}
             name="isResidential"
             render={({ field }) => (
-              <FormItem className="flex items-center space-x-2">
+              <FormItem className="flex items-center gap-2 space-y-0">
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
-                <FormLabel className="font-normal cursor-pointer">
-                  Is Residential Student
-                </FormLabel>
+                <FormLabel className="font-normal cursor-pointer">Residential student</FormLabel>
               </FormItem>
             )}
           />
@@ -228,69 +93,80 @@ function FeesTab() {
             control={control}
             name="isMealIncluded"
             render={({ field }) => (
-              <FormItem className="flex items-center space-x-2">
+              <FormItem className="flex items-center gap-2 space-y-0">
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
-                <FormLabel className="font-normal cursor-pointer">
-                  Meal Included
-                </FormLabel>
+                <FormLabel className="font-normal cursor-pointer">Meal included</FormLabel>
               </FormItem>
             )}
           />
         </div>
 
-        <FormField
-          control={control}
-          name="paymentMethod"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Payment method *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={"cash"}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select payment method" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {Object.entries(PaymentMethod).map(([key, value]) => (
-                    <SelectItem key={value} value={value}>
-                      {key}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="paymentSource"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Payment Source</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={"office"}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select payment method" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {Object.entries(PaymentSource).map(([key, value]) => (
-                    <SelectItem key={value} value={value}>
-                      {key}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Fee rates */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <FeeNumberInput name="admissionFee" label="Admission Fee" />
+          <FeeNumberInput name="monthlyFee" label="Monthly Fee" />
+          <FeeNumberInput name="coachingFee" label="Coaching Fee" />
+          <FeeNumberInput name="daycareFee" label="Daycare Fee" />
+          {isResidential && <FeeNumberInput name="residentialFee" label="Residential Fee" />}
+          {isMealIncluded && <FeeNumberInput name="mealFee" label="Meal Fee" />}
+        </div>
+
+        {/* Initial payment */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+          <FeeNumberInput name="receivedAmount" label="Received Amount (Admission)" />
+
+          <FormField
+            control={control}
+            name="paymentMethod"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Payment Method</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value ?? "cash"}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select method" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.entries(PaymentMethod).map(([key, value]) => (
+                      <SelectItem key={value} value={value}>
+                        {key.replace(/_/g, " ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="paymentSource"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Payment Source</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value ?? "office"}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select source" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.entries(PaymentSource).map(([key, value]) => (
+                      <SelectItem key={value} value={value}>
+                        {key.replace(/_/g, " ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </CardContent>
     </Card>
   );

@@ -27,8 +27,8 @@ export const register = async (c: Context) => {
 export const getPublishedBlogs = async (c: Context) => {
   const page = parseInt(c.req.query("page") as string, 10) || 1;
   const limit = parseInt(c.req.query("limit") as string, 10) || 10;
-  const sortBy = c.req.query("sortBy") || "createdAt";
-  const sortType = c.req.query("sortType") || "desc";
+  const sortWith = c.req.query("sortWith") || "createdAt";
+  const sortOrder = c.req.query("sortOrder") || "desc";
   const search = c.req.query("search") as string;
   const date = c.req.query("date") as string;
   const publishDateFrom = c.req.query("publishDateFrom") as string;
@@ -37,8 +37,8 @@ export const getPublishedBlogs = async (c: Context) => {
   const response = await blogService.gets({
     page,
     limit,
-    sortBy,
-    sortType,
+    sortWith,
+    sortOrder,
 
     search,
     date,
@@ -74,8 +74,8 @@ export const getPublishedBlog = async (c: Context) => {
 export const getUserBlogs = async (c: Context) => {
   const page = parseInt(c.req.query("page") as string, 10) || 1;
   const limit = parseInt(c.req.query("limit") as string, 10) || 10;
-  const sortBy = c.req.query("sortBy") || "createdAt";
-  const sortType = c.req.query("sortType") || "desc";
+  const sortWith = c.req.query("sortWith") || "createdAt";
+  const sortOrder = c.req.query("sortOrder") || "desc";
   const search = c.req.query("search") as string;
   const date = c.req.query("date") as string;
   const publishDateFrom = c.req.query("publishDateFrom") as string;
@@ -88,8 +88,8 @@ export const getUserBlogs = async (c: Context) => {
     queryParams: {
       page,
       limit,
-      sortBy,
-      sortType,
+      sortWith,
+      sortOrder,
 
       search,
       date,
@@ -153,8 +153,8 @@ export const deleteBlog = async (c: Context) => {
 export const getDraftBlogs = async (c: Context) => {
   const page = parseInt(c.req.query("page") as string, 10) || 1;
   const limit = parseInt(c.req.query("limit") as string, 10) || 10;
-  const sortBy = c.req.query("sortBy") || "createdAt";
-  const sortType = c.req.query("sortType") || "desc";
+  const sortWith = c.req.query("sortWith") || "createdAt";
+  const sortOrder = c.req.query("sortOrder") || "desc";
   const search = c.req.query("search") as string;
   const date = c.req.query("date") as string;
   const publishDateFrom = c.req.query("publishDateFrom") as string;
@@ -163,8 +163,8 @@ export const getDraftBlogs = async (c: Context) => {
   const response = await blogService.getDrafts({
     page,
     limit,
-    sortBy,
-    sortType,
+    sortWith,
+    sortOrder,
 
     search,
     date,

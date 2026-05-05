@@ -1,22 +1,47 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import {
+  Ban,
+  CheckCircle2,
+  MoreHorizontal,
+  Pencil,
+  RefreshCw,
+  ShieldOff,
+  Trash2,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 import { Separator } from "../ui/separator";
 
-// Define Props Interface
+const roleColors: Record<string, string> = {
+  super_admin: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+  admin: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  staff: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  guardian: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+};
+
+const roleLabel: Record<string, string> = {
+  super_admin: "Super Admin",
+  admin: "Admin",
+  staff: "Staff",
+  guardian: "Guardian",
+};
+
 interface ColumnsProps {
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   setIsAddOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsDelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setValues: (values: any) => void;
-
   activeUser: (userId: string) => Promise<void>;
   deactiveUser: (userId: string) => Promise<void>;
   blockUser: (userId: string) => Promise<void>;
@@ -24,13 +49,13 @@ interface ColumnsProps {
   deleteUser: (userId: string) => Promise<void>;
   restoreUser: (userId: string) => Promise<void>;
 }
+
 export const UserColumns = ({
   setIsEditing,
   setIsAddOpen,
   setIsDelOpen,
   setValues,
   setSelectedId,
-
   activeUser,
   deactiveUser,
   blockUser,
@@ -39,36 +64,66 @@ export const UserColumns = ({
   restoreUser,
 }: ColumnsProps): ColumnDef<any>[] => [
   {
-    header: "User ID",
-    cell: ({ row }) => row.original._id || "-",
-  },
-  {
-    header: "Roles",
-    cell: ({ row }) => row.original.roles?.join(", ") || "-",
-  },
-  {
     header: "Phone",
-    cell: ({ row }) => row.original.phone || "-",
+    cell: ({ row }) => (
+      <span className="font-mono text-sm">{row.original.phone || "—"}</span>
+    ),
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.original?.email || "-",
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.email || "—"}</span>
+    ),
+  },
+  {
+    header: "Roles",
+    cell: ({ row }) => (
+      <div className="flex flex-wrap gap-1">
+        {row.original.roles?.map((role: string) => (
+          <span
+            key={role}
+            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${roleColors[role] ?? "bg-muted text-muted-foreground"}`}
+          >
+            {roleLabel[role] ?? role}
+          </span>
+        ))}
+      </div>
+    ),
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (row.original?.isActive ? "Active" : "Deactive"),
+    cell: ({ row }) =>
+      row.original.isActive ? (
+        <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50 dark:bg-green-900/20">
+          Active
+        </Badge>
+      ) : (
+        <Badge variant="outline" className="text-muted-foreground">
+          Inactive
+        </Badge>
+      ),
   },
   {
     accessorKey: "isBlocked",
     header: "Blocked",
-    cell: ({ row }) => (row.original?.isBlocked ? "Yes" : "No"),
+    cell: ({ row }) =>
+      row.original.isBlocked ? (
+        <Badge variant="destructive" className="text-xs">Blocked</Badge>
+      ) : (
+        <span className="text-xs text-muted-foreground">—</span>
+      ),
   },
   {
     accessorKey: "isDeleted",
     header: "Deleted",
-    cell: ({ row }) => (row.original?.isDeleted ? "Yes" : "No"),
+    cell: ({ row }) =>
+      row.original.isDeleted ? (
+        <Badge variant="secondary" className="text-xs text-destructive">Deleted</Badge>
+      ) : (
+        <span className="text-xs text-muted-foreground">—</span>
+      ),
   },
   {
     id: "actions",
@@ -82,12 +137,15 @@ export const UserColumns = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
+          <DropdownMenuLabel className="text-xs text-muted-foreground">Actions</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+
           <DropdownMenuItem
             onClick={() => {
               setValues(row.original);
               setSelectedId(row.original._id);
-              setIsAddOpen!(true);
-              setIsEditing!(true);
+              setIsAddOpen(true);
+              setIsEditing(true);
             }}
           >
             <Pencil className="mr-2 h-4 w-4" />
@@ -95,54 +153,71 @@ export const UserColumns = ({
           </DropdownMenuItem>
 
           <Separator className="my-1" />
+
           <DropdownMenuItem
-            onClick={() => {
-              if (row.original.isActive) {
-                deactiveUser!(row.original._id);
-              } else {
-                activeUser!(row.original._id);
-              }
-            }}
+            onClick={() =>
+              row.original.isActive
+                ? deactiveUser(row.original._id)
+                : activeUser(row.original._id)
+            }
           >
-            <Pencil className="mr-2 h-4 w-4" />
-            {row.original.isActive ? "Deactivate" : "Activate"}
+            {row.original.isActive ? (
+              <>
+                <UserX className="mr-2 h-4 w-4" />
+                Deactivate
+              </>
+            ) : (
+              <>
+                <UserCheck className="mr-2 h-4 w-4" />
+                Activate
+              </>
+            )}
           </DropdownMenuItem>
+
           <DropdownMenuItem
-            onClick={() => {
-              if (row.original.isBlocked) {
-                unblockUser!(row.original._id);
-              } else {
-                blockUser!(row.original._id);
-              }
-            }}
+            onClick={() =>
+              row.original.isBlocked
+                ? unblockUser(row.original._id)
+                : blockUser(row.original._id)
+            }
           >
-            <Pencil className="mr-2 h-4 w-4" />
-            {row.original.isBlocked ? "Unblock" : "Block"}
+            {row.original.isBlocked ? (
+              <>
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Unblock
+              </>
+            ) : (
+              <>
+                <Ban className="mr-2 h-4 w-4" />
+                Block
+              </>
+            )}
           </DropdownMenuItem>
+
           <DropdownMenuItem
-            onClick={() => {
-              if (row.original.isDeleted) {
-                restoreUser!(row.original._id);
-              } else {
-                deleteUser!(row.original._id);
-              }
-            }}
+            onClick={() =>
+              row.original.isDeleted
+                ? restoreUser(row.original._id)
+                : deleteUser(row.original._id)
+            }
           >
-            <Pencil className="mr-2 h-4 w-4" />
-            {row.original.isDeleted ? "Restore" : "Delete"}
+            {row.original.isDeleted ? (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Restore
+              </>
+            ) : (
+              <>
+                <ShieldOff className="mr-2 h-4 w-4" />
+                Soft Delete
+              </>
+            )}
           </DropdownMenuItem>
 
-          <Separator className="my-1" />
-
-          <DropdownMenuItem>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Change Roles
-          </DropdownMenuItem>
-
-          <Separator className="my-1" />
+          <DropdownMenuSeparator />
 
           <DropdownMenuItem
-            className="text-destructive"
+            className="text-destructive focus:text-destructive"
             onClick={() => {
               setSelectedId(row.original._id);
               setIsDelOpen(true);

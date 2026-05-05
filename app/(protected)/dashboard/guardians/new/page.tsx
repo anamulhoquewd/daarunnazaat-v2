@@ -1,60 +1,84 @@
 "use client";
 
+import GuardianAddressInfo from "@/components/guardians/new/addressInfo";
+import GuardianContactInfo from "@/components/guardians/new/contactInfo";
 import GuardianPersonalInformation from "@/components/guardians/new/guardianPersonalInfo";
 import GuardianUserSelection from "@/components/guardians/new/userSelection";
-import AddressInformation from "@/components/students/new/steps/addressInformation";
-import ContactInformation from "@/components/students/new/steps/contactInformation";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { useGuardianForm } from "@/hooks/guardians/useStaffForm";
+import { useGuardianForm } from "@/hooks/guardians/useGuardian";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { FormProvider } from "react-hook-form";
 
 export default function GuardianRegistrationPage() {
   const { form, handleSubmit, isLoading, clearForm } = useGuardianForm();
 
   return (
-    <main className="w-full flex flex-col overflow-hidden gap-8">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-          Guardian Registration
-        </h1>
-        <p className="text-gray-600 text-sm sm:text-base">
-          Complete all sections to register for the upcoming session
-        </p>
+    <div className="flex flex-col gap-6 max-w-3xl">
+      {/* Page header */}
+      <div className="flex items-center gap-3">
+        <Link href="/dashboard/guardians">
+          <Button variant="ghost" size="icon" className="shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Register Guardian
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Add a new guardian — required fields are marked with *
+          </p>
+        </div>
       </div>
 
       <FormProvider {...form}>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-8"
+            onSubmit={form.handleSubmit(handleSubmit as any)}
+            className="space-y-4"
           >
+            {/* 1. User account link */}
             <GuardianUserSelection />
-            <GuardianPersonalInformation />
-            <ContactInformation />
-            <AddressInformation />
 
-            <div className="flex justify-end pt-6 gap-2.5">
+            {/* 2. Personal info */}
+            <GuardianPersonalInformation />
+
+            {/* 3. Contact */}
+            <GuardianContactInfo />
+
+            {/* 4. Address */}
+            <GuardianAddressInfo />
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-4 border-t">
               <Button
                 type="button"
                 variant="outline"
                 onClick={clearForm}
-                className="cursor-pointer"
+                disabled={isLoading}
               >
-                Clear
+                Clear Form
               </Button>
-
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="cursor-pointer"
+                className="gap-2 min-w-36"
               >
-                {isLoading ? "Submitting..." : "Confirm & Submit"}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Registering…
+                  </>
+                ) : (
+                  "Register Guardian"
+                )}
               </Button>
             </div>
           </form>
         </Form>
       </FormProvider>
-    </main>
+    </div>
   );
 }

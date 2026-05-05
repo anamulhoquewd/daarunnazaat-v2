@@ -14,8 +14,8 @@ import { useDebounce } from "../common/useDebounce";
 interface IFilter {
   dateRange: DateRange | undefined;
   netSalaryRange: { min: number | undefined; max: number | undefined };
-  sortType?: SortType;
-  sortBy?: "createdAt" | "updatedAt" | "netSalary" | "paymentDate";
+  sortOrder?: sortOrder;
+  sortWith?: "createdAt" | "updatedAt" | "netSalary" | "paymentDate";
   limit?: string;
   paymentMethod: "all" | PaymentMethod;
   branch: "all" | Branch;
@@ -27,7 +27,7 @@ interface ISearch {
   staffId: string;
 }
 
-type SortType = "asc" | "desc";
+type sortOrder = "asc" | "desc";
 
 function useSalariesQuery() {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,12 +39,12 @@ function useSalariesQuery() {
     global: "",
   });
   const [values, setValues] = useState<ISalaryPayment | null>(null);
-  const [filterBy, setFilterBy] = useState<IFilter>({
+  const [filterWith, setfilterWith] = useState<IFilter>({
     dateRange: { from: undefined, to: undefined },
     netSalaryRange: { min: undefined, max: undefined },
     paymentMethod: "all",
-    sortBy: "createdAt",
-    sortType: "desc" as SortType,
+    sortWith: "createdAt",
+    sortOrder: "desc" as sortOrder,
     limit: "10",
     branch: "all",
   });
@@ -90,8 +90,8 @@ function useSalariesQuery() {
           filters.netSalaryRange.max !== undefined
             ? filters.netSalaryRange.max
             : undefined,
-        sortBy: filters?.sortBy,
-        sortType: filters?.sortType,
+        sortWith: filters?.sortWith,
+        sortOrder: filters?.sortOrder,
         limit: filters?.limit,
       });
 
@@ -113,15 +113,15 @@ function useSalariesQuery() {
   const activeFilterCount = () => {
     let count = 0;
     // Range filter
-    if (filterBy.dateRange?.from && filterBy.dateRange?.to) count++;
+    if (filterWith.dateRange?.from && filterWith.dateRange?.to) count++;
     if (
-      filterBy.netSalaryRange.min !== undefined &&
-      filterBy.netSalaryRange.max !== undefined
+      filterWith.netSalaryRange.min !== undefined &&
+      filterWith.netSalaryRange.max !== undefined
     )
       count++;
 
     // Select filters (only count if not "all")
-    if (filterBy.paymentMethod && filterBy.paymentMethod !== "all") count++;
+    if (filterWith.paymentMethod && filterWith.paymentMethod !== "all") count++;
 
     // Search filters (only count if not empty)
     if (debouncedPaidBySearch && debouncedPaidBySearch.trim()) count++;
@@ -132,7 +132,7 @@ function useSalariesQuery() {
   };
 
   const handleClearFilters = () => {
-    setFilterBy({
+    setfilterWith({
       dateRange: { from: undefined, to: undefined },
       netSalaryRange: { min: undefined, max: undefined },
       paymentMethod: "all",
@@ -152,7 +152,7 @@ function useSalariesQuery() {
       return;
     }
 
-    setFilterBy((prev) => ({ ...prev, [key]: value }));
+    setfilterWith((prev) => ({ ...prev, [key]: value }));
 
     setPagination((prev) => ({
       ...prev,
@@ -168,26 +168,26 @@ function useSalariesQuery() {
         staffId: debouncedStaffSearch,
         paidBy: debouncedPaidBySearch,
       },
-      filters: filterBy,
+      filters: filterWith,
       currentPage: pagination.page,
     });
   }, [
     debouncedGlobalSearch,
     debouncedPaidBySearch,
     debouncedStaffSearch,
-    filterBy,
+    filterWith,
     pagination.page,
   ]);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
   const combinedFilters = useMemo<Record<string, string | undefined>>(() => {
-    const { dateRange, netSalaryRange, ...restFilters } = filterBy;
+    const { dateRange, netSalaryRange, ...restFilters } = filterWith;
     return {
       ...restFilters,
       staffId: search.staffId,
       paidBy: search.paidBy,
     };
-  }, [filterBy, search.paidBy, search.staffId]);
+  }, [filterWith, search.paidBy, search.staffId]);
 
   return {
     salaries,
@@ -198,8 +198,8 @@ function useSalariesQuery() {
     setValues,
     setSearch,
     search,
-    filterBy,
-    setFilterBy,
+    filterWith,
+    setfilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,

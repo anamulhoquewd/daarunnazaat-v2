@@ -53,8 +53,8 @@ function TransactionsPage() {
     setPagination,
     search,
     setSearch,
-    filterBy,
-    setFilterBy,
+    filterWith,
+    setfilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,
@@ -159,10 +159,10 @@ function TransactionsPage() {
             </label>
 
             <DateRangePicker
-              initialDateFrom={filterBy.dateRange?.from}
-              initialDateTo={filterBy.dateRange?.to}
+              initialDateFrom={filterWith.dateRange?.from}
+              initialDateTo={filterWith.dateRange?.to}
               onUpdate={(values) =>
-                setFilterBy((prev) => ({
+                setfilterWith((prev) => ({
                   ...prev,
                   dateRange: values.range,
                 }))
@@ -179,10 +179,10 @@ function TransactionsPage() {
               <Input
                 type="number"
                 placeholder="Min"
-                value={filterBy.amountRange?.min}
+                value={filterWith.amountRange?.min}
                 min={0}
                 onChange={(e) =>
-                  setFilterBy((values) => ({
+                  setfilterWith((values) => ({
                     ...values,
                     amountRange: {
                       ...values.amountRange,
@@ -197,9 +197,9 @@ function TransactionsPage() {
                 min={0}
                 type="number"
                 placeholder="Max"
-                value={filterBy.amountRange.max}
+                value={filterWith.amountRange.max}
                 onChange={(e) =>
-                  setFilterBy((values) => ({
+                  setfilterWith((values) => ({
                     ...values,
                     amountRange: {
                       ...values.amountRange,

@@ -6,12 +6,11 @@ import {
   PaymentStatus,
   TransactionType,
 } from "@/validations";
-import { Student } from "../models/students.model";
-import { Session } from "../models/sessions.model";
-import { FeeCollection } from "../models/feeCollections.model";
-import { createTransactionLog } from "./transactions.service";
-import z from "zod";
 import { schemaValidationError } from "../error";
+import { FeeCollection } from "../models/feeCollections.model";
+import { Session } from "../models/sessions.model";
+import { Student } from "../models/students.model";
+import { createTransactionLog } from "./transactions.service";
 
 export const payAdmissionDue = async ({
   body,
@@ -68,7 +67,7 @@ export const payAdmissionDue = async ({
     }
 
     // ===== CURRENT BALANCE =====
-    const admissionBalance = student.feeBalance?.admissionFee || {
+    const admissionBalance = (student as any).feeBalance?.admissionFee || {
       due: 0,
       advance: 0,
     };
@@ -98,12 +97,10 @@ export const payAdmissionDue = async ({
 
     // ===== UPDATE FEE COLLECTION =====
     await FeeCollection.findByIdAndUpdate(admissionFee._id, {
-      $inc: {
-        receivedAmount: validData.data.receivedAmount,
-        advanceAmount,
-      },
+      $inc: { receivedAmount: validData.data.receivedAmount },
       $set: {
         dueAmount,
+        advanceAmount,
         paymentStatus,
       },
     });

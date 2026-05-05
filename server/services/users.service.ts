@@ -129,8 +129,8 @@ export const register = async (body: IUser) => {
 export const gets = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
   roles: string;
   search: string;
   isActive?: boolean;
@@ -148,8 +148,8 @@ export const gets = async (queryParams: {
       search,
       page,
       limit,
-      sortBy,
-      sortType,
+      sortWith,
+      sortOrder,
       createdDateRange,
       roles: rolesParam,
       isDeleted,
@@ -197,18 +197,19 @@ export const gets = async (queryParams: {
     const allowedSortFields = ["createdAt", "updatedAt", "email"];
 
     // Allowable sort fields
-    const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
-    const sortDirection = sortType?.toLocaleLowerCase() === "asc" ? 1 : -1;
+    const sortField = allowedSortFields.includes(sortWith)
+      ? sortWith
+      : "createdAt";
+    const sortDirection = sortOrder?.toLocaleLowerCase() === "asc" ? 1 : -1;
 
     // Fetch users
-    const [users, total, totalDocs] = await Promise.all([
+    const [users, total] = await Promise.all([
       User.find(query)
         .sort({ [sortField]: sortDirection })
         .skip((page - 1) * limit)
         .limit(limit)
         .exec(),
       User.countDocuments(query),
-      User.countDocuments(),
     ]);
 
     // Pagination
@@ -216,7 +217,6 @@ export const gets = async (queryParams: {
       page: page,
       limit: limit,
       total,
-      totalDocs,
     });
 
     return {
@@ -977,12 +977,12 @@ export const login = async (body: {
   }
 
   // Destructure Body
-  const { email, phone, password } = validData.data;
+  const { email, password } = validData.data;
 
   try {
     // Check if user exists
     const user = await User.findOne({
-      $or: [{ email }, { phone }],
+      $or: [{ email }, { phone: email }],
     }).select("password email roles isActive isBlocked refreshTokens");
 
     if (!user) {

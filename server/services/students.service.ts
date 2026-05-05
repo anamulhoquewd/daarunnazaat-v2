@@ -1,5 +1,4 @@
 import {
-  BatchType,
   Branch,
   FeeType,
   Gender,
@@ -67,15 +66,13 @@ export const createStudent = async ({
     const currentSession = await Session.findOne({
       _id: validData.data.currentSessionId,
       isActive: true,
-      batchType: validData.data.batchType,
     }).session(session);
 
     if (!currentSession) {
       await session.abortTransaction();
       return {
         error: {
-          message:
-            "Session not found,  deactive Session or do not match 'batchType'",
+          message: "Session not found or not active",
         },
       };
     }
@@ -86,20 +83,6 @@ export const createStudent = async ({
     const student = new Student({
       ...validData.data,
       studentId,
-      sessionHistory: validData.data.sessionHistory || [],
-    });
-
-    // Ensure sessionHistory is initialized
-    if (!student.sessionHistory) {
-      student.sessionHistory = [];
-    }
-
-    student.sessionHistory.push({
-      sessionId: validData.data.currentSessionId,
-      classId: validData.data.classId,
-      enrollmentDate: new Date(),
-      completionDate: null,
-      status: "ongoing",
     });
 
     // Save new student with session
@@ -107,7 +90,7 @@ export const createStudent = async ({
 
     // ✅ **CREATE ADMISSION FEE COLLECTION**
     const admissionFeeResult = await createAdmissionFee({
-      student: newStudent,
+      student: newStudent as any,
       authUser,
       session,
       paymentMethod: validData.data.paymentMethod,
@@ -231,18 +214,6 @@ export const createAdmissionFee = async ({
     // Save with session (with transaction)
     const savedFee = await admissionFee.save({ session });
 
-    // Update student feeBalance
-    await Student.findByIdAndUpdate(
-      student._id,
-      {
-        $set: {
-          "feeBalance.admissionFee.due": dueAmount,
-          "feeBalance.admissionFee.advance": advanceAmount,
-        },
-      },
-      { session, new: true },
-    );
-
     // Create Transaction Log (always - even if receivedAmount is 0)
     await createTransactionLog({
       transactionType: TransactionType.INCOME,
@@ -251,7 +222,7 @@ export const createAdmissionFee = async ({
       amount: receivedAmount,
       description: `Admission fee collected for student ${student.studentId}`,
       performedBy: authUser._id,
-      branch: student.branch,
+      branch: student.branch as any,
     });
 
     return { success: true, data: savedFee };
@@ -263,8 +234,8 @@ export const createAdmissionFee = async ({
 export const gets = async (queryParams: {
   page: number;
   limit: number;
-  sortBy: string;
-  sortType: string;
+  sortWith: string;
+  sortOrder: string;
   search: string;
 
   classId: string;
@@ -274,7 +245,6 @@ export const gets = async (queryParams: {
   isResidential?: boolean;
   guardianId: string;
   currentSessionId: string;
-  batchType: BatchType;
   admissionDateRange: {
     from: string | Date | undefined;
     to: string | Date | undefined;
@@ -284,14 +254,13 @@ export const gets = async (queryParams: {
     const {
       page,
       limit,
-      sortBy,
-      sortType,
+      sortWith,
+      sortOrder,
       search,
       classId,
       branch,
       sessionId,
       guardianId,
-      batchType,
       gender,
       isResidential,
       admissionDateRange,
@@ -353,26 +322,6 @@ export const gets = async (queryParams: {
       },
     });
 
-    // sessionHistory - populate sessionId
-    pipeline.push({
-      $lookup: {
-        from: "sessions",
-        localField: "sessionHistory.sessionId",
-        foreignField: "_id",
-        as: "sessionHistory.session",
-      },
-    });
-
-    // sessionHistory - populate classId
-    pipeline.push({
-      $lookup: {
-        from: "classes",
-        localField: "sessionHistory.classId",
-        foreignField: "_id",
-        as: "sessionHistory.class",
-      },
-    });
-
     /* =========================
        MATCH (FILTERS)
     ========================= */
@@ -385,7 +334,6 @@ export const gets = async (queryParams: {
       matchStage.currentSessionId = new mongoose.Types.ObjectId(sessionId);
     if (guardianId)
       matchStage.guardianId = new mongoose.Types.ObjectId(guardianId);
-    if (batchType) matchStage.batchType = batchType;
     if (gender) matchStage.gender = gender;
     if (typeof isResidential === "boolean")
       matchStage.isResidential = isResidential;
@@ -425,11 +373,11 @@ export const gets = async (queryParams: {
       "admissionDate",
     ];
 
-    const finalSortField = allowedSortFields.includes(sortBy)
-      ? sortBy
+    const finalSortField = allowedSortFields.includes(sortWith)
+      ? sortWith
       : "createdAt";
 
-    const sortDirection = sortType?.toLowerCase() === "asc" ? 1 : -1;
+    const sortDirection = sortOrder?.toLowerCase() === "asc" ? 1 : -1;
 
     pipeline.push({
       $sort: { [finalSortField]: sortDirection },
@@ -565,15 +513,6 @@ export const get = async (_id: string) => {
 
     // sessionHistory - populate sessionId
     pipeline.push({
-      $lookup: {
-        from: "sessions",
-        localField: "sessionHistory.sessionId",
-        foreignField: "_id",
-        as: "sessionHistory",
-      },
-    });
-
-    pipeline.push({
       $match: { _id: new mongoose.Types.ObjectId(idValidation.data._id) },
     });
 
@@ -667,9 +606,7 @@ export const updates = async ({
     const populatedStudent = await Student.findById(docs._id)
       .populate("guardianId")
       .populate("classId")
-      .populate("currentSessionId")
-      .populate("sessionHistory.sessionId")
-      .populate("sessionHistory.classId");
+      .populate("currentSessionId");
 
     return {
       success: {
@@ -1006,34 +943,45 @@ export const promote = async ({
       };
     }
 
-    // Initialize sessionHistory if undefined
-    if (!student.sessionHistory) {
-      student.sessionHistory = [];
-    }
+    // Complete the current enrollment
+    const { Enrollment } = await import("@/modules/enrollment/schema");
+    const { EnrollmentStatus } = await import("@/validations");
 
-    // Complete current session
-    const currentHistory = student.sessionHistory.find(
-      (h: any) =>
-        h.sessionId.toString() === student.currentSessionId.toString(),
+    await Enrollment.findOneAndUpdate(
+      {
+        studentId: student._id,
+        status: EnrollmentStatus.ONGOING,
+        isDeleted: false,
+      },
+      { status: EnrollmentStatus.PROMOTED, completionDate: new Date() },
+      { session },
     );
 
-    if (currentHistory) {
-      currentHistory.completionDate = new Date();
-      currentHistory.status = "completed";
-    }
+    // Create new enrollment for the new session
+    await Enrollment.create(
+      [
+        {
+          studentId: student._id,
+          sessionId: new Types.ObjectId(validData.data.newSessionId),
+          classId: new Types.ObjectId(validData.data.newClassId),
+          branch: student.branch,
+          enrollmentDate: new Date(),
+          status: EnrollmentStatus.ONGOING,
+          promotionMeta: {
+            fromClassId: student.classId,
+            toClassId: new Types.ObjectId(validData.data.newClassId),
+            promotedAt: new Date(),
+          },
+        },
+      ],
+      { session },
+    );
 
-    // Add new session to history
-    student.sessionHistory.push({
-      sessionId: new Types.ObjectId(validData.data.newSessionId),
-      classId: new Types.ObjectId(validData.data.newClassId),
-      enrollmentDate: new Date(),
-      completionDate: null,
-      status: "ongoing",
-    });
-
-    // Update current session and class
-    student.currentSessionId = new Types.ObjectId(validData.data.newSessionId);
-    student.classId = new Types.ObjectId(validData.data.newClassId);
+    // Update current session and class on student doc
+    (student as any).currentSessionId = new Types.ObjectId(
+      validData.data.newSessionId,
+    );
+    (student as any).classId = new Types.ObjectId(validData.data.newClassId);
 
     await student.save({ session });
     await session.commitTransaction();

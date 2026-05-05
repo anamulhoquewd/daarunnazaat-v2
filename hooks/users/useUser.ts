@@ -20,8 +20,8 @@ interface IFilter {
   isActive: "all" | boolean;
   isBlocked: "all" | boolean;
   isDelete: "all" | boolean;
-  sortType?: SortType;
-  sortBy?: "createdAt" | "updatedAt" | "email" | "userId";
+  sortOrder?: sortOrder;
+  sortWith?: "createdAt" | "updatedAt" | "email" | "userId";
   roles: string | "all";
   limit?: string;
 }
@@ -30,7 +30,7 @@ interface ISearch {
   global: string;
 }
 
-type SortType = "asc" | "desc";
+type sortOrder = "asc" | "desc";
 
 function useUser() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -43,12 +43,12 @@ function useUser() {
     global: "",
   });
   const [values, setValues] = useState<IUser | null>(null);
-  const [filterBy, setFilterBy] = useState<IFilter>({
+  const [filterWith, setfilterWith] = useState<IFilter>({
     dateRange: { from: undefined, to: undefined },
     isActive: "all",
     isBlocked: "all",
-    sortBy: "createdAt",
-    sortType: "desc" as SortType,
+    sortWith: "createdAt",
+    sortOrder: "desc" as sortOrder,
     limit: "10",
     roles: "all",
     isDelete: "all",
@@ -89,7 +89,7 @@ function useUser() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
     } catch (error: any) {
@@ -118,7 +118,7 @@ function useUser() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
     } catch (error: any) {
@@ -145,7 +145,7 @@ function useUser() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
     } catch (error: any) {
@@ -174,7 +174,7 @@ function useUser() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
     } catch (error: any) {
@@ -201,7 +201,7 @@ function useUser() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
     } catch (error: any) {
@@ -230,7 +230,7 @@ function useUser() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
     } catch (error: any) {
@@ -255,7 +255,7 @@ function useUser() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
 
@@ -294,7 +294,7 @@ function useUser() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
 
@@ -359,8 +359,8 @@ function useUser() {
           filters?.isBlocked === "all" ? undefined : filters?.isBlocked,
         isDelete: filters?.isDelete === "all" ? undefined : filters?.isDelete,
         roles: filters?.roles === "all" ? undefined : filters?.roles,
-        sortBy: filters?.sortBy,
-        sortType: filters?.sortType,
+        sortWith: filters?.sortWith,
+        sortOrder: filters?.sortOrder,
         limit: filters?.limit,
       });
 
@@ -381,17 +381,17 @@ function useUser() {
 
   const activeFilterCount = () => {
     let count = 0;
-    if (filterBy.dateRange?.from && filterBy.dateRange?.to) count++;
+    if (filterWith.dateRange?.from && filterWith.dateRange?.to) count++;
     if (debouncedGlobalSearch && debouncedGlobalSearch.trim()) count++;
-    if (filterBy.isActive && filterBy.isActive !== "all") count++;
-    if (filterBy.isBlocked && filterBy.isBlocked !== "all") count++;
-    if (filterBy.roles && filterBy.roles !== "all") count++;
+    if (filterWith.isActive && filterWith.isActive !== "all") count++;
+    if (filterWith.isBlocked && filterWith.isBlocked !== "all") count++;
+    if (filterWith.roles && filterWith.roles !== "all") count++;
 
     return count;
   };
 
   const handleClearFilters = () => {
-    setFilterBy({
+    setfilterWith({
       dateRange: { from: undefined, to: undefined },
       isActive: "all",
       isBlocked: "all",
@@ -409,12 +409,12 @@ function useUser() {
       // Convert string to boolean or "all"
       const boolValue =
         value === "all" ? "all" : value === "true" ? true : false;
-      setFilterBy((prev) => ({ ...prev, [key]: boolValue }));
+      setfilterWith((prev) => ({ ...prev, [key]: boolValue }));
       return;
     }
 
     // Handle other filter fields (branch, gender, batchType)
-    setFilterBy((prev) => ({ ...prev, [key]: value }));
+    setfilterWith((prev) => ({ ...prev, [key]: value }));
 
     setPagination((prev) => ({
       ...prev,
@@ -442,7 +442,7 @@ function useUser() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
       toast.success(
@@ -462,32 +462,32 @@ function useUser() {
       search: {
         global: debouncedGlobalSearch,
       },
-      filters: filterBy,
+      filters: filterWith,
       currentPage: pagination.page,
     });
-  }, [debouncedGlobalSearch, filterBy, pagination.page]);
+  }, [debouncedGlobalSearch, filterWith, pagination.page]);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
   const combinedFilters = useMemo<
     Record<string, string | boolean | undefined>
   >(() => {
-    const { dateRange, ...restFilters } = filterBy;
+    const { dateRange, ...restFilters } = filterWith;
     return {
       ...restFilters,
     };
-  }, [filterBy]);
+  }, [filterWith]);
 
   return {
     users,
     isLoading,
     pagination,
     search,
-    filterBy,
+    filterWith,
     setPagination,
     refetch: getUsers,
     setValues,
     setSearch,
-    setFilterBy,
+    setfilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,

@@ -1,18 +1,30 @@
 import connectDB from "@/server/config/db";
 import { notFoundError } from "@/server/error";
+import auditRoutes from "@/modules/shared/audit-log/routes";
+import sessionRoutes from "@/modules/session/routes";
+import studentRoutes from "@/modules/student/routes";
+import enrollmentRoutes from "@/modules/enrollment/routes";
+import feeChangeLogRoutes from "@/modules/student-fee-change-log/routes";
+import invoiceRoutes from "@/modules/invoice/routes";
+import paymentRoutes from "@/modules/payment/routes";
+import adjustmentRoutes from "@/modules/adjustment/routes";
+import reportRoutes from "@/modules/reports/routes";
+import salaryV5Routes from "@/modules/salary/routes";
+import promotionRoutes from "@/modules/promotion/routes";
+import guardianPortalRoutes from "@/modules/guardian-portal/routes";
+import onlinePaymentRoutes from "@/modules/online-payment/routes";
 import authRoutes from "@/server/routes/auth.route";
 import blogRoutes from "@/server/routes/blog.route";
-import classRoutes from "@/server/routes/classes.route";
+import classRoutes from "@/modules/class/routes";
 import expenseRoutes from "@/server/routes/expense.route";
 import dashboardRoutes from "@/server/routes/dashboard.route";
 import exportRoutes from "@/server/routes/export.route";
+import examRoutes, { myStudentsRoutes } from "@/server/routes/exam.routes";
 import feeCollectionRoutes from "@/server/routes/feeCollection.route";
-import guardianRoutes from "@/server/routes/guardian.route";
+import guardianRoutes from "@/modules/guardian/routes";
 import payAdmissionDueRoutes from "@/server/routes/payAdmissionDue.route";
 import salaryPaymentRoutes from "@/server/routes/salary.route";
-import sessionRoute from "@/server/routes/session.route";
-import staffRoutes from "@/server/routes/staff.route";
-import studentRoutes from "@/server/routes/students.route";
+import staffRoutes from "@/modules/staff/routes";
 import transactionRoutes from "@/server/routes/transaction.route";
 import userRoutes from "@/server/routes/users.route";
 import { Hono } from "hono";
@@ -54,7 +66,7 @@ app.route("/users", userRoutes);
 // Auth routes
 app.route("/auth", authRoutes);
 
-// Studetns routes
+// Students routes (v5 module)
 app.route("/students", studentRoutes);
 
 // Guardian routes
@@ -63,8 +75,14 @@ app.route("/guardians", guardianRoutes);
 // Class routes
 app.route("/classes", classRoutes);
 
-// Session routes
-app.route("/sessions", sessionRoute);
+// Session routes (v5 module)
+app.route("/sessions", sessionRoutes);
+
+// Enrollment routes (v5 module)
+app.route("/enrollments", enrollmentRoutes);
+
+// Student fee change log routes (v5 module)
+app.route("/student-fee-change-logs", feeChangeLogRoutes);
 
 // Salaries routes
 app.route("/salaries", salaryPaymentRoutes);
@@ -92,6 +110,39 @@ app.route("/pay-admission-due", payAdmissionDueRoutes);
 
 // blogs routes
 app.route("/exports", exportRoutes);
+
+// Exam routes (CRUD + enrollments + fees + results)
+app.route("/exams", examRoutes);
+
+// Invoice routes (v5 module)
+app.route("/invoices", invoiceRoutes);
+
+// Payment routes (v5 module)
+app.route("/payments", paymentRoutes);
+
+// Adjustment routes (v5 module)
+app.route("/adjustments", adjustmentRoutes);
+
+// Report routes (v5 module)
+app.route("/reports", reportRoutes);
+
+// Salary v5 routes
+app.route("/salary-v5", salaryV5Routes);
+
+// Promotion routes (v5 module)
+app.route("/promotions", promotionRoutes);
+
+// Guardian portal routes (own student data only)
+app.route("/guardian-portal", guardianPortalRoutes);
+
+// Online payment routes (guardian-initiated bKash/Nagad)
+app.route("/online-payments", onlinePaymentRoutes);
+
+// Audit log routes (admin only)
+app.route("/audit-logs", auditRoutes);
+
+// Guardian-facing student routes (results + fees)
+app.route("/my-students", myStudentsRoutes);
 
 // Global Error Handler
 app.onError((error: any, c) => {

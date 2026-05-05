@@ -9,8 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 interface IFilter {
   isActive: "all" | boolean;
-  sortType?: SortType;
-  sortBy?: "createdAt" | "updatedAt" | "className";
+  sortOrder?: sortOrder;
+  sortWith?: "createdAt" | "updatedAt" | "className";
   limit?: string;
 }
 
@@ -18,7 +18,7 @@ interface ISearch {
   global: string;
 }
 
-type SortType = "asc" | "desc";
+type sortOrder = "asc" | "desc";
 
 function useClassQuery() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,10 +32,10 @@ function useClassQuery() {
   const [isAddOpen, setIsAddOpen] = useState<boolean>(false);
   const [values, setValues] = useState<IClass | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [filterBy, setFilterBy] = useState<IFilter>({
+  const [filterWith, setfilterWith] = useState<IFilter>({
     isActive: "all",
-    sortBy: "createdAt",
-    sortType: "desc" as SortType,
+    sortWith: "createdAt",
+    sortOrder: "desc" as sortOrder,
     limit: "10",
   });
 
@@ -70,8 +70,8 @@ function useClassQuery() {
         page: currentPage,
         search: search.global,
         isActive: filters?.isActive === "all" ? undefined : filters?.isActive,
-        sortBy: filters?.sortBy,
-        sortType: filters?.sortType,
+        sortWith: filters?.sortWith,
+        sortOrder: filters?.sortOrder,
         limit: filters?.limit,
       });
 
@@ -106,7 +106,7 @@ function useClassQuery() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
 
@@ -139,13 +139,13 @@ function useClassQuery() {
   const activeFilterCount = () => {
     let count = 0;
     if (debouncedGlobalSearch && debouncedGlobalSearch.trim()) count++;
-    if (filterBy.isActive && filterBy.isActive !== "all") count++;
+    if (filterWith.isActive && filterWith.isActive !== "all") count++;
 
     return count;
   };
 
   const handleClearFilters = () => {
-    setFilterBy({
+    setfilterWith({
       isActive: "all",
     });
     setSearch({
@@ -159,12 +159,12 @@ function useClassQuery() {
       // Convert string to boolean or "all"
       const boolValue =
         value === "all" ? "all" : value === "true" ? true : false;
-      setFilterBy((prev) => ({ ...prev, [key]: boolValue }));
+      setfilterWith((prev) => ({ ...prev, [key]: boolValue }));
       return;
     }
 
     // Handle other filter fields (branch, gender, batchType)
-    setFilterBy((prev) => ({ ...prev, [key]: value }));
+    setfilterWith((prev) => ({ ...prev, [key]: value }));
 
     setPagination((prev) => ({
       ...prev,
@@ -186,7 +186,7 @@ function useClassQuery() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
       toast.success("Updated successfully");
@@ -215,7 +215,7 @@ function useClassQuery() {
         search: {
           global: debouncedGlobalSearch,
         },
-        filters: filterBy,
+        filters: filterWith,
         currentPage: pagination.page,
       });
       setIsDelOpen(false);
@@ -232,32 +232,32 @@ function useClassQuery() {
       search: {
         global: debouncedGlobalSearch,
       },
-      filters: filterBy,
+      filters: filterWith,
       currentPage: pagination.page,
     });
-  }, [debouncedGlobalSearch, filterBy, pagination.page]);
+  }, [debouncedGlobalSearch, filterWith, pagination.page]);
 
   // Combined filters for component usage (excluding dateRange as it's handled separately)
   const combinedFilters = useMemo<
     Record<string, string | boolean | undefined>
   >(() => {
-    const { ...restFilters } = filterBy;
+    const { ...restFilters } = filterWith;
     return {
       ...restFilters,
     };
-  }, [filterBy]);
+  }, [filterWith]);
 
   return {
     classes,
     isLoading,
     pagination,
     search,
-    filterBy,
+    filterWith,
     setPagination,
     refetch: getClasses,
     setValues,
     setSearch,
-    setFilterBy,
+    setfilterWith,
     activeFilterCount,
     handleClearFilters,
     updateFilter,

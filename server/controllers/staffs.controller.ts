@@ -1,4 +1,4 @@
-import { BloodGroup, Branch, Gender } from "@/validations";
+import { Branch, Gender } from "@/validations";
 import type { Context } from "hono";
 import { badRequestError, serverError } from "../error";
 import { staffService } from "../services";
@@ -22,8 +22,8 @@ export const register = async (c: Context) => {
 export const gets = async (c: Context) => {
   const page = parseInt(c.req.query("page") as string, 10) || 1;
   const limit = parseInt(c.req.query("limit") as string, 10) || 10;
-  const sortBy = c.req.query("sortBy") || "name";
-  const sortType = c.req.query("sortType") || "desc";
+  const sortWith = c.req.query("sortWith") || "name";
+  const sortOrder = c.req.query("sortOrder") || "desc";
   const search = c.req.query("search") as string;
   const branch = c.req.query("branch") as Branch;
   const gender = c.req.query("gender") as Gender;
@@ -39,8 +39,8 @@ export const gets = async (c: Context) => {
   const response = await staffService.gets({
     page,
     limit,
-    sortBy,
-    sortType,
+    sortWith,
+    sortOrder,
     gender,
     search,
     joinDateRange,

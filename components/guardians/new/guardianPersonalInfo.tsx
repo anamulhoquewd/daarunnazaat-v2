@@ -31,9 +31,7 @@ function GuardianPersonalInformation() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl sm:text-2xl">
-          Personal Information
-        </CardTitle>
+        <CardTitle className="text-xl">Personal Information</CardTitle>
         <CardDescription>Basic details about the guardian</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

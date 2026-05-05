@@ -7,25 +7,18 @@ import TableComponent from "@/components/common/table";
 import { StudentBottomFilter } from "@/components/students/studentBottomFilter";
 import { StudentColumns } from "@/components/students/studentColumns";
 import StudentFilters from "@/components/students/studentFilter";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { useStudentActions } from "@/hooks/students/useStudentActions";
 import useStudentQuery from "@/hooks/students/useStudentQuery";
 import {
   ColumnFiltersState,
@@ -36,47 +29,52 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Filter, X } from "lucide-react";
+import {
+  ChevronDown,
+  Download,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-function StudentPage() {
-  const [isDelOpen, setIsDelOpen] = useState<boolean>(false);
+export default function StudentPage() {
+  const [isDelOpen, setIsDelOpen] = useState(false);
   const [selectId, setSelectedId] = useState<string | null>(null);
-
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     nid: false,
-    branch: false,
-    batch: false,
+    phone: false,
+    branch: true,
     email: false,
     guardian_email: false,
     status: false,
-    residential: false,
-    gender: false,
-    blood_group: false,
-    dob: true,
     isBlocked: false,
     isDeleted: false,
+    blood_group: false,
+    dob: false,
   });
 
   const {
-    pagination,
     students,
+    isLoading,
+    deleteLoading,
+    pagination,
     setPagination,
     search,
     setSearch,
-    filterBy,
-    setFilterBy,
+    filterWith,
+    setfilterWith,
+    combinedFilters,
     activeFilterCount,
     handleClearFilters,
     updateFilter,
-    combinedFilters,
     handleExportAsPDF,
     handleExportAsSheet,
-    isLoading,
-
+    handleDelete,
     activeUser,
     deactiveUser,
     blockUser,
@@ -85,15 +83,9 @@ function StudentPage() {
     restoreUser,
   } = useStudentQuery();
 
-  const {
-    handleDelete,
-    loading: { delete: deleteLoading },
-  } = useStudentActions();
-
   const columns = StudentColumns({
     setIsDelOpen,
     setSelectedId,
-
     activeUser,
     deactiveUser,
     blockUser,
@@ -111,208 +103,180 @@ function StudentPage() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-    },
-
+    state: { sorting, columnFilters, columnVisibility },
     manualPagination: true,
-
-    initialState: {
-      pagination: {
-        pageSize: pagination.page,
-      },
-    },
+    initialState: { pagination: { pageSize: pagination.page } },
   });
 
+  const filterCount = activeFilterCount();
+
   return (
-    // Full-height card so header stays fixed and table area scrolls
-    <Card className="w-full  flex flex-col overflow-hidden">
-      <CardHeader className="border-b">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <CardTitle>Student Management</CardTitle>
-            <CardDescription className="mt-1">
-              Manage and view all students
-            </CardDescription>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {activeFilterCount() > 0 && (
-              <Button
-                variant="ghost"
-                onClick={handleClearFilters}
-                className="cursor-pointer"
-              >
-                <X className="mr-2" />
-                Clear Filters
-              </Button>
+    <div className="flex flex-col gap-4 h-full">
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Students</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {pagination.total > 0 ? (
+              <>
+                Showing {students.length} of{" "}
+                <span className="font-medium text-foreground">
+                  {pagination.total}
+                </span>{" "}
+                students
+              </>
+            ) : (
+              "Manage and view all students"
             )}
-            {activeFilterCount() > 0 && (
-              <span className="inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full">
-                <Filter size={14} />
-                {activeFilterCount()} filter
-                {activeFilterCount() !== 1 ? "s" : ""} active
-              </span>
-            )}
-
-            <Link href={"/dashboard/students/new"}>
-              <Button className="cursor-pointer">Add One</Button>
-            </Link>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                {isLoading ? (
-                  <Button variant="outline" disabled>
-                    Exporting...
-                  </Button>
-                ) : (
-                  <Button variant="outline">Export</Button>
-                )}
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Export Options</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleExportAsPDF.bind(null, {
-                    search,
-                    filters: filterBy,
-                  })}
-                >
-                  Export as PDF
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleExportAsSheet.bind(null, {
-                    search,
-                    filters: filterBy,
-                    currentPage: pagination.page,
-                  })}
-                >
-                  Export as Sheet
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          </p>
         </div>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        {/* Filter Controls Row */}
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <StudentFilters
-            filters={combinedFilters}
-            onChange={updateFilter}
-            isExpanded={false}
-            activeFilterCount={activeFilterCount()}
-          />
-        </div>
-
-        <div className="flex flex-col md:flex-row justify-between md:items-end py-4 gap-2">
-          <div className="flex-1">
-            <label className="text-sm font-medium mb-2 block">
-              Search by name, ID, nid, phone or email
-            </label>
-            <Input
-              placeholder="Search students..."
-              value={search.global}
-              onChange={(e) =>
-                setSearch((prev) => ({
-                  ...prev,
-                  global: e.target.value,
-                }))
-              }
-            />
-          </div>
-
-          {/* Admission Date Range */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Admission Date Range
-            </label>
-
-            <DateRangePicker
-              initialDateFrom={filterBy.dateRange?.from}
-              initialDateTo={filterBy.dateRange?.to}
-              onUpdate={(values) =>
-                setFilterBy((prev) => ({
-                  ...prev,
-                  dateRange: values.range,
-                }))
-              }
-            />
-          </div>
-
+        <div className="flex items-center gap-2">
           <DropdownMenu>
-            <DropdownMenuTrigger className="w-fit ml-auto">
-              <Button
-                variant="outline"
-                className="cursor-pointer bg-transparent"
-              >
-                Columns <ChevronDown className="w-4 h-4" />
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={isLoading}>
+                <Download className="h-4 w-4 mr-1.5" />
+                Export
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter(
-                  (column: {
-                    id: string;
-                    getCanHide: () => boolean;
-                    getIsVisible: () => boolean;
-                    toggleVisibility: (value: boolean) => void;
-                  }) => column.getCanHide(),
-                )
-                .map(
-                  (column: {
-                    id: string;
-                    getCanHide: () => boolean;
-                    getIsVisible: () => boolean;
-                    toggleVisibility: (value: boolean) => void;
-                  }) => {
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="cursor-pointer capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
-                      >
-                        {column.id}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  },
-                )}
+              <DropdownMenuLabel>Export Options</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2 pb-1">
+                Exports current filter &amp; search
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel
+                className="cursor-pointer font-normal hover:bg-accent rounded px-2 py-1.5"
+                onClick={handleExportAsPDF}
+              >
+                Export as PDF
+              </DropdownMenuLabel>
+              <DropdownMenuLabel
+                className="cursor-pointer font-normal hover:bg-accent rounded px-2 py-1.5"
+                onClick={handleExportAsSheet}
+              >
+                Export as Sheet
+              </DropdownMenuLabel>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Link href="/dashboard/students/new">
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-1.5" />
+              Register Student
+            </Button>
+          </Link>
         </div>
+      </div>
 
-        <TableComponent table={table} columns={columns} />
+      <Card className="flex-1 flex flex-col overflow-hidden">
+        <CardHeader className="pb-3 border-b">
+          {/* Search + Date + Columns */}
+          <div className="flex flex-col md:flex-row gap-2 items-start md:items-end">
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search by name, ID, NID, phone or email…"
+                value={search.global}
+                onChange={(e) =>
+                  setSearch((prev) => ({ ...prev, global: e.target.value }))
+                }
+                className="pl-9"
+              />
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <DateRangePicker
+                initialDateFrom={filterWith.dateRange?.from}
+                initialDateTo={filterWith.dateRange?.to}
+                onUpdate={(values) =>
+                  setfilterWith((prev) => ({
+                    ...prev,
+                    dateRange: values.range,
+                  }))
+                }
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <ChevronDown className="h-4 w-4" />
+                    Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((col) => col.getCanHide())
+                    .map((col) => (
+                      <DropdownMenuCheckboxItem
+                        key={col.id}
+                        className="capitalize"
+                        checked={col.getIsVisible()}
+                        onCheckedChange={(v) => col.toggleVisibility(!!v)}
+                      >
+                        {col.id.replace(/_/g, " ")}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
 
-        {pagination.total > 0 && (
-          <div className="pt-4 flex items-center justify-between">
-            <StudentBottomFilter
+          {/* Filter bar */}
+          <div className="flex items-center gap-2 pt-2">
+            <StudentFilters
               filters={combinedFilters}
               onChange={updateFilter}
+              activeFilterCount={filterCount}
             />
-            <Paginations
-              pagination={pagination}
-              setPagination={setPagination}
-            />
+            {filterCount > 0 && (
+              <div className="flex items-center gap-2 ml-auto shrink-0">
+                <Badge variant="secondary" className="gap-1">
+                  <SlidersHorizontal className="h-3 w-3" />
+                  {filterCount} filter{filterCount !== 1 ? "s" : ""}
+                </Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-7 px-2 text-xs"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear
+                </Button>
+              </div>
+            )}
           </div>
-        )}
-        {selectId && (
-          <DeleteAlert
-            isOpen={isDelOpen}
-            setIsOpen={setIsDelOpen}
-            cb={handleDelete.bind(null, selectId)}
-            setSelectedId={setSelectedId}
-            isLoading={deleteLoading}
-          />
-        )}
-      </CardContent>
-    </Card>
+        </CardHeader>
+
+        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+          <div className="flex-1 overflow-auto">
+            <TableComponent table={table} columns={columns} />
+          </div>
+
+          {pagination.total > 0 && (
+            <div className="border-t px-4 py-3 flex items-center justify-between bg-muted/30">
+              <StudentBottomFilter
+                filters={combinedFilters}
+                onChange={updateFilter}
+              />
+              <Paginations
+                pagination={pagination}
+                setPagination={setPagination}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {selectId && (
+        <DeleteAlert
+          isOpen={isDelOpen}
+          setIsOpen={setIsDelOpen}
+          cb={handleDelete.bind(null, selectId)}
+          setSelectedId={setSelectedId}
+          isLoading={deleteLoading}
+        />
+      )}
+    </div>
   );
 }
-
-export default StudentPage;

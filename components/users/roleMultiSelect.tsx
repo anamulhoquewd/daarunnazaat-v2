@@ -6,13 +6,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { UserRole } from "@/validations";
 
+// add an "All" option to the beginning of the roles array
 const roles = [
   { label: "All", value: "all" },
-  { label: "Super Admin", value: "super_admin" },
-  { label: "Admin", value: "admin" },
-  { label: "Staff", value: "staff" },
-  { label: "Guardian", value: "guardian" },
+  ...Object.values(UserRole).map((role) => ({
+    label: role
+      .split("_")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(" "),
+    value: role,
+  })),
 ];
 
 export function RoleMultiSelect({

@@ -73,7 +73,7 @@ FeeCollectionSchema.index(
   {
     unique: true,
     partialFilterExpression: {
-      isDeleted: false,
+      // isDeleted: false,
       period: { $exists: true },
     },
   },

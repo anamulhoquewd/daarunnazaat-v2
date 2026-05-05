@@ -12,6 +12,7 @@ import * as payAdmissionDueController from "./payAdmissionDue.controller";
 import * as expenseController from "./expense.controller";
 import * as exportController from "./export.controller";
 import * as dashboardController from "./dashboard.controller";
+import * as examController from "./exam.controller";
 
 export {
   blogController,
@@ -28,4 +29,5 @@ export {
   payAdmissionDueController,
   expenseController,
   dashboardController,
+  examController,
 };

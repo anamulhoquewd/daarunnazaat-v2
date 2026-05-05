@@ -16,9 +16,9 @@ interface TableComponentProps {
 
 function TableComponent({ table, columns }: TableComponentProps) {
   return (
-    <div className="w-full max-w-7xl rounded-md border overflow-x-auto">
+    <div className="w-full max-w-10xl rounded-md border overflow-x-auto">
       <ScrollArea className="w-full">
-        <Table className="miw-max">
+        <Table className="min-w-full">
           <TableHeader>
             {table
               .getHeaderGroups()

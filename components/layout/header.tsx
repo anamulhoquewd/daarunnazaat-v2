@@ -27,15 +27,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { useSidebar } from "../ui/sidebar";
+import { SidebarTrigger, useSidebar } from "../ui/sidebar";
 
 function Header() {
   const { isMobile, setOpenMobile } = useSidebar();
   const { me } = useAuthStore();
   const { handleLogout } = useLogout();
 
-  // Figure out the profile. staff first, if not then guardian. This is because a user can have both roles, but we want to prioritize staff for the profile information.
-  const profile = me?.staff || me?.guardian;
+  const displayName = me?.user?.name || me?.user?.email || "DN";
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 md:px-6">
@@ -53,11 +52,11 @@ function Header() {
       )}
 
       <div className="flex items-center gap-2 order-2 md:order-1">
+        {!isMobile && <SidebarTrigger className="-ml-1 cursor-pointer" />}
         <Link
           href="/dashboard"
           className="flex items-center gap-2 font-semibold md:flex"
         >
-          {/* <Image src={logo} width={50} height={50} alt="darunnazat" /> */}
           <span className="hidden md:inline-block">DARUNNAZAT</span>
         </Link>
       </div>
@@ -69,9 +68,11 @@ function Header() {
           <DropdownMenuTrigger className="h-9 w-9 rounded-full cursor-pointer">
             <Avatar className="h-9 w-9">
               <AvatarFallback>
-                {profile?.fullName
+                {displayName
                   .split(" ")
                   .map((ch: string) => ch[0])
+                  .filter(Boolean)
+                  .slice(0, 2)
                   .join("")
                   .toUpperCase() || "DN"}
               </AvatarFallback>
@@ -81,7 +82,7 @@ function Header() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {profile?.fullName || "DN"}
+                  {displayName}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {me?.user?.email || "darunnazat@gmail.com"}
